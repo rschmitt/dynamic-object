@@ -88,6 +88,28 @@ public class DynamicObjectTest {
         assertEquals(edn, withUnknowns.toString());
     }
 
+    @Test
+    public void assocEx() {
+        SimpleSchema initial = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
+        SimpleSchema assoced = initial.assocEx("new-field", "new-value");
+        assertEquals("new-value", assoced.getMap().valAt(getKeyword("new-field")));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void invalidAssocEx() {
+        SimpleSchema simpleSchema = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
+        simpleSchema.assocEx("str", "str");
+    }
+
+    @Test
+    public void without() {
+        SimpleSchema simpleSchema = DynamicObject.deserialize("{:str \"value\"}", SimpleSchema.class);
+
+        SimpleSchema empty = simpleSchema.without("str");
+
+        assertEquals("{}", empty.toString());
+    }
+
     private Keyword getKeyword(String keyword) {
         return Keyword.intern(Symbol.intern(keyword));
     }
@@ -108,9 +130,8 @@ interface NestedSchema extends DynamicObject<NestedSchema> {
 }
 
 /*
- * TODO list:
- * support lists
- * support sets
+ * TODO:
+ * support lists and sets
  * support withers, e.g. String str() => SimpleSchema str(String str)
  * support Edn reader tags
  * support arbitrary default methods in subclasses of DynamicObject

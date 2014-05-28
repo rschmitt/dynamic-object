@@ -24,6 +24,17 @@ public interface DynamicObject<T> {
         return wrap(newMap, getType());
     }
 
+    default <T> T assocEx(String key, Object value) {
+        Keyword keyword = Keyword.intern(Symbol.intern(key));
+        IPersistentMap newMap = getMap().assocEx(keyword, value);
+        return wrap(newMap, getType());
+    }
+
+    default <T> T without(String key) {
+        Keyword keyword = Keyword.intern(Symbol.intern(key));
+        return wrap(getMap().without(keyword), getType());
+    }
+
     /**
      * Deserializes a DynamicObject from a String.
      * @param edn The String representation of the object, serialized in Edn, Clojure's Extensible Data Notation.
@@ -48,6 +59,8 @@ public interface DynamicObject<T> {
                         case "getType":
                             return clazz;
                         case "assoc":
+                        case "assocEx":
+                        case "without":
                             return MethodHandles.lookup()
                                     .in(method.getDeclaringClass())
                                     .unreflectSpecial(method, method.getDeclaringClass())
