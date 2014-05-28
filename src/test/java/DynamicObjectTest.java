@@ -1,6 +1,10 @@
 import clojure.lang.*;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static org.junit.Assert.*;
 
 import static java.lang.String.format;
@@ -110,6 +114,38 @@ public class DynamicObjectTest {
         assertEquals("{}", empty.toString());
     }
 
+    @Test
+    public void listOfStrings() {
+        ListSchema listSchema = DynamicObject.deserialize("{:strings [\"one\" \"two\" \"three\"]}", ListSchema.class);
+        List<String> stringList = listSchema.strings();
+        assertEquals("one", stringList.get(0));
+        assertEquals("two", stringList.get(1));
+        assertEquals("three", stringList.get(2));
+    }
+
+    // This is just here to prove a point about Java<->Clojure interop.
+    @Test
+    public void listStream() {
+        ListSchema listSchema = DynamicObject.deserialize("{:strings [\"one\" \"two\" \"three\"]}", ListSchema.class);
+        List<String> stringList = listSchema.strings();
+
+        List<Integer> collect = stringList.stream().map(x -> x.length()).collect(Collectors.toList());
+
+        assertEquals(3, collect.get(0).intValue());
+        assertEquals(3, collect.get(1).intValue());
+        assertEquals(5, collect.get(2).intValue());
+    }
+
+    @Test
+    public void setOfStrings() {
+        SetSchema setSchema = DynamicObject.deserialize("{:strings #{\"one\" \"two\" \"three\"}}", SetSchema.class);
+        Set<String> stringSet = setSchema.strings();
+        assertEquals(3, stringSet.size());
+        assertTrue(stringSet.contains("one"));
+        assertTrue(stringSet.contains("two"));
+        assertTrue(stringSet.contains("three"));
+    }
+
     private Keyword getKeyword(String keyword) {
         return Keyword.intern(Symbol.intern(keyword));
     }
@@ -129,10 +165,17 @@ interface NestedSchema extends DynamicObject<NestedSchema> {
     SimpleSchema simple();
 }
 
+interface ListSchema extends DynamicObject<ListSchema> {
+    List<String> strings();
+}
+
+interface SetSchema extends DynamicObject<SetSchema> {
+    Set<String> strings();
+}
+
 /*
  * TODO:
- * support lists and sets
- * support withers, e.g. String str() => SimpleSchema str(String str)
  * support Edn reader tags
- * support arbitrary default methods in subclasses of DynamicObject
+ * Consider support for withers, e.g. String str() => SimpleSchema str(String str)
+ * Consider supporting arbitrary default methods in subclasses of DynamicObject
  */
