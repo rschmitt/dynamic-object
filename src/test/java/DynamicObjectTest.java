@@ -175,7 +175,10 @@ interface SetSchema extends DynamicObject<SetSchema> {
 
 /*
  * TODO:
- * support Edn reader tags
+ * Consider adding support for kebab-case (but note the possible impact on round-tripping)
+ ** Consider adding support for a @Keyword annotation, so as to not be totally dependent on convention
  * Consider support for withers, e.g. String str() => SimpleSchema str(String str)
  * Consider supporting arbitrary default methods in subclasses of DynamicObject
+ * Think about adding a validate() method that will be called before new instances are published
+ * Add tests for Map support (should be covered by APersistentMap)
  */
