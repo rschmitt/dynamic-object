@@ -125,7 +125,6 @@ public class SmokeTest {
 
 /*
  * TODO:
- * Consider support for withers, e.g. String str() => SimpleSchema str(String str)
  * Consider supporting arbitrary default methods in subclasses of DynamicObject (is this possible from 1.7?)
  * Think about adding a validate() method that will be called before new instances are published
  */

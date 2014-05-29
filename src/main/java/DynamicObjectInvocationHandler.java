@@ -37,6 +37,9 @@ class DynamicObjectInvocationHandler<T> implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
 
+        if (method.getReturnType().equals(clazz))
+            return assoc(methodName, args[0]);
+
         switch (methodName) {
             case "getMap":
                 return map;

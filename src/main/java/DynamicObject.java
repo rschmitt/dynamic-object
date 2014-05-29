@@ -57,6 +57,14 @@ public interface DynamicObject<T> {
     }
 
     /**
+     * Create a "blank" instance of {@code clazz}, backed by an empty {@link clojure.lang.IPersistentMap}. All fields
+     * will be null.
+     */
+    public static <T> T newInstance(Class<T> clazz) {
+        return wrap(PersistentHashMap.EMPTY, clazz);
+    }
+
+    /**
      * Register an {@link EdnTranslator} to enable instances of {@code clazz} to be serialized to and deserialized from
      * Edn using reader tags.
      */
