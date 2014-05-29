@@ -20,7 +20,7 @@ public abstract class EdnTranslator<T> extends AFn {
     public abstract String getTag();
 
     /**
-     * For use by the EdnReader only. Do not call directly.
+     * For use by EdnReader only. Do not call directly.
      */
     @Override
     public final Object invoke(Object arg) {
@@ -28,7 +28,7 @@ public abstract class EdnTranslator<T> extends AFn {
     }
 
     /**
-     * For use by the EdnReader only. Do not call directly.
+     * For use by print-method only. Do not call directly.
      */
     @Override
     public final Object invoke(Object arg1, Object arg2) {

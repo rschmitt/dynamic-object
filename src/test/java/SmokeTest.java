@@ -1,13 +1,8 @@
 import clojure.lang.*;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.junit.Assert.*;
-
 import static java.lang.String.format;
+import static org.junit.Assert.*;
 
 public class SmokeTest {
     static final String SIMPLE_SCHEMA_EDN = "{:str \"expected value\", :i 4, :d 3.14, :f 3.14, :lng 1234567890, :shrt 4}";
@@ -39,12 +34,6 @@ public class SmokeTest {
         SimpleSchema simpleSchema = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
 
         assertEquals(SIMPLE_SCHEMA_EDN, simpleSchema.toString());
-    }
-
-    @Test
-    public void getType() {
-        SimpleSchema simpleSchema = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
-        assertEquals(simpleSchema.getType(), SimpleSchema.class);
     }
 
     @Test
@@ -117,25 +106,26 @@ public class SmokeTest {
     private Keyword getKeyword(String keyword) {
         return Keyword.intern(Symbol.intern(keyword));
     }
+
+    public interface SimpleSchema extends DynamicObject<SimpleSchema> {
+        short shrt();
+        int i();
+        long lng();
+        float f();
+        double d();
+        String str();
+    }
+
+    public interface NestedSchema extends DynamicObject<NestedSchema> {
+        int version();
+        SimpleSchema simple();
+    }
 }
 
-interface SimpleSchema extends DynamicObject<SimpleSchema> {
-    short shrt();
-    int i();
-    long lng();
-    float f();
-    double d();
-    String str();
-}
-
-interface NestedSchema extends DynamicObject<NestedSchema> {
-    int version();
-    SimpleSchema simple();
-}
 
 /*
  * TODO:
  * Consider support for withers, e.g. String str() => SimpleSchema str(String str)
- * Consider supporting arbitrary default methods in subclasses of DynamicObject
+ * Consider supporting arbitrary default methods in subclasses of DynamicObject (is this possible from 1.7?)
  * Think about adding a validate() method that will be called before new instances are published
  */

@@ -1,9 +1,6 @@
 import clojure.java.api.Clojure;
 import clojure.lang.*;
 
-import java.lang.annotation.Annotation;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 public interface DynamicObject<T> {
@@ -13,38 +10,58 @@ public interface DynamicObject<T> {
     IPersistentMap getMap();
 
     /**
-     * @return the Class for this instance's type. This method is required due to erasure.
-     */
-    Class<T> getType();
-
-    /**
      * Return a persistent copy of this object with the new value associated with the given key.
      */
-    default <T> T assoc(String key, Object value) {
-        Keyword keyword = Keyword.intern(key);
-        IPersistentMap newMap = getMap().assoc(keyword, value);
-        return wrap(newMap, getType());
-    }
+    T assoc(String key, Object value);
 
-    default <T> T assocEx(String key, Object value) {
-        Keyword keyword = Keyword.intern(key);
-        IPersistentMap newMap = getMap().assocEx(keyword, value);
-        return wrap(newMap, getType());
-    }
+    /**
+     * Same as {@link DynamicObject#assoc}, but throws an exception if the given key already exists.
+     */
+    T assocEx(String key, Object value);
 
-    default <T> T without(String key) {
-        Keyword keyword = Keyword.intern(key);
-        return wrap(getMap().without(keyword), getType());
-    }
+    /**
+     * Returns a persistent copy of this object without the entry for the given key.
+     */
+    T without(String key);
 
+    /**
+     * Serialize the given object to Edn. Any {@code EdnTranslator}s that have been registered through
+     * {@link DynamicObject#registerType} will be invoked as needed.
+     */
     public static String serialize(DynamicObject o) {
         IFn var = Clojure.var("clojure.core", "pr-str");
         IPersistentMap map = o.getMap();
         return (String) var.invoke(map);
     }
 
+    /**
+     * Deserializes a DynamicObject from a String.
+     *
+     * @param edn   The Edn representation of the object.
+     * @param clazz The type of class to deserialize. Must be an interface that extends DynamicObject.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T deserialize(String edn, Class<T> clazz) {
+        IPersistentMap map = (IPersistentMap) EdnReader.readString(edn, TranslatorRegistry.getReadersAsOptions());
+        return wrap(map, clazz);
+    }
+
+    /**
+     * Use the supplied {@code map} to back an instance of {@code clazz}.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T wrap(IPersistentMap map, Class<T> clazz) {
+        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+                new Class[]{clazz},
+                new DynamicObjectInvocationHandler(map, clazz));
+    }
+
+    /**
+     * Register an {@link EdnTranslator} to enable instances of {@code clazz} to be serialized to and deserialized from
+     * Edn using reader tags.
+     */
     public static <T> void registerType(Class<T> clazz, EdnTranslator<T> translator) {
-        synchronized(DynamicObject.class) {
+        synchronized (DynamicObject.class) {
             // install as a reader
             TranslatorRegistry.readers = TranslatorRegistry.readers.assocEx(Symbol.intern(translator.getTag()), translator);
 
@@ -55,8 +72,12 @@ public interface DynamicObject<T> {
         }
     }
 
+    /**
+     * Deregister the given {@code translator}. After this method is invoked, it will no longer be possible to read or
+     * write instances of {@code clazz} unless another translator is registered.
+     */
     public static <T> void deregisterType(Class<T> clazz, EdnTranslator<T> translator) {
-        synchronized(DynamicObject.class) {
+        synchronized (DynamicObject.class) {
             // uninstall reader
             TranslatorRegistry.readers = TranslatorRegistry.readers.without(Symbol.intern(translator.getTag()));
 
@@ -65,77 +86,6 @@ public interface DynamicObject<T> {
             MultiFn printMethod = (MultiFn) varPrintMethod.get();
             printMethod.removeMethod(clazz);
         }
-    }
-
-    /**
-     * Deserializes a DynamicObject from a String.
-     * @param edn The String representation of the object, serialized in Edn, Clojure's Extensible Data Notation.
-     * @param clazz The type of class to deserialize. Must be an interface that extends DynamicObject.
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T deserialize(String edn, Class clazz) {
-        IPersistentMap map = (IPersistentMap) EdnReader.readString(edn, TranslatorRegistry.getReadersAsOptions());
-        return wrap(map, clazz);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> T wrap(IPersistentMap map, Class clazz) {
-        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                new Class[]{clazz},
-                (Object proxy, Method method, Object[] args) -> {
-                    String methodName = method.getName();
-
-                    switch (methodName) {
-                        case "getMap":
-                            return map;
-                        case "getType":
-                            return clazz;
-                        case "assoc":
-                        case "assocEx":
-                        case "without":
-                            return MethodHandles.lookup()
-                                    .in(method.getDeclaringClass())
-                                    .unreflectSpecial(method, method.getDeclaringClass())
-                                    .bindTo(proxy)
-                                    .invokeWithArguments(args);
-                        case "toString":
-                        case "hashCode":
-                            return method.invoke(map, args);
-                        case "equals":
-                            Object other = args[0];
-                            if (other instanceof DynamicObject) {
-                                return map.equals(((DynamicObject) other).getMap());
-                            } else
-                                return method.invoke(map, args);
-                        default:
-                            Keyword keywordKey = Keyword.intern(methodName);
-                            IMapEntry entry = map.entryAt(keywordKey);
-                            if (entry == null) {
-                                for (Annotation annotation : method.getAnnotations()) {
-                                    if (annotation.annotationType().equals(Key.class)) {
-                                        String key = ((Key) annotation).value();
-                                        if (key.charAt(0) == ':')
-                                            key = key.substring(1);
-                                        entry = map.entryAt(Keyword.intern(key));
-                                    }
-                                }
-                            }
-                            if (entry == null)
-                                return null;
-                            Object val = entry.val();
-                            Class<?> returnType = method.getReturnType();
-                            if (returnType.equals(int.class) || returnType.equals(Integer.class))
-                                return ((Long) val).intValue();
-                            if (returnType.equals(float.class) || returnType.equals(Float.class))
-                                return ((Double) val).floatValue();
-                            if (returnType.equals(short.class) || returnType.equals(Short.class))
-                                return ((Long) val).shortValue();
-                            if (DynamicObject.class.isAssignableFrom(returnType))
-                                return DynamicObject.wrap((IPersistentMap) map.valAt(Keyword.intern(methodName)), returnType);
-                            return val;
-                    }
-                }
-        );
     }
 }
 
