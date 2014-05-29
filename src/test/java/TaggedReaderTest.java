@@ -4,6 +4,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 
 public class TaggedReaderTest {
@@ -19,19 +21,19 @@ public class TaggedReaderTest {
 
     @Test
     public void roundTrip() {
-        String edn = "{:dumb #MyDumbClass {:version 1, :str \"str\"}}";
+        String edn = "{:dumb [#MyDumbClass {:version 1, :str \"str\"}]}";
 
         DumbClassHolder deserialized = DynamicObject.deserialize(edn, DumbClassHolder.class);
         String serialized = DynamicObject.serialize(deserialized);
 
         assertEquals(edn, serialized);
-        assertEquals(new DumbClass(1, "str"), deserialized.dumb());
+        assertEquals(new DumbClass(1, "str"), deserialized.dumb().get(0));
     }
 }
 
 // This is a DynamicObject that contains a regular POJO.
 interface DumbClassHolder extends DynamicObject<DumbClass> {
-    DumbClass dumb();
+    List<DumbClass> dumb();
 }
 
 // This is a translation class that functions as an Edn reader/writer for its associated POJO.
