@@ -18,12 +18,16 @@ class DynamicObjectInvocationHandler<T> implements InvocationHandler {
 
     private T assoc(String key, Object value) {
         Keyword keyword = Keyword.intern(key);
+        if (value instanceof DynamicObject)
+            value = ((DynamicObject) value).getMap();
         IPersistentMap newMap = map.assoc(keyword, value);
         return DynamicObject.wrap(newMap, clazz);
     }
 
     private T assocEx(String key, Object value) {
         Keyword keyword = Keyword.intern(key);
+        if (value instanceof DynamicObject)
+            value = ((DynamicObject) value).getMap();
         IPersistentMap newMap = map.assocEx(keyword, value);
         return DynamicObject.wrap(newMap, clazz);
     }
@@ -57,9 +61,9 @@ class DynamicObjectInvocationHandler<T> implements InvocationHandler {
                 return map.hashCode();
             case "equals":
                 Object other = args[0];
-                if (other instanceof DynamicObject) {
+                if (other instanceof DynamicObject)
                     return map.equals(((DynamicObject) other).getMap());
-                } else
+                else
                     return method.invoke(map, args);
             default:
                 return getValueFor(method);
