@@ -25,6 +25,17 @@ public interface DynamicObject<T> {
     T without(String key);
 
     /**
+     * Invokes clojure.pprint/pprint, which writes a pretty-printed representation of the object to the currently bound
+     * value of *out*, which defaults to System.out (stdout).
+     */
+    void prettyPrint();
+
+    /**
+     * Like {@link DynamicObject#prettyPrint}, but returns the pretty-printed string instead of writing it to *out*.
+     */
+    String toFormattedString();
+
+    /**
      * Serialize the given object to Edn. Any {@code EdnTranslator}s that have been registered through
      * {@link DynamicObject#registerType} will be invoked as needed.
      */

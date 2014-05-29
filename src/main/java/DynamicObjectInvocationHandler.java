@@ -1,13 +1,26 @@
+import clojure.java.api.Clojure;
+import clojure.lang.IFn;
 import clojure.lang.IMapEntry;
 import clojure.lang.IPersistentMap;
 import clojure.lang.Keyword;
 
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 class DynamicObjectInvocationHandler<T> implements InvocationHandler {
+    private static final IFn PPRINT;
+
+    static {
+        IFn require = Clojure.var("clojure.core", "require");
+        require.invoke(Clojure.read("clojure.pprint"));
+
+        PPRINT = Clojure.var("clojure.pprint/pprint");
+    }
+
     private final IPersistentMap map;
     private final Class<T> clazz;
 
@@ -59,6 +72,13 @@ class DynamicObjectInvocationHandler<T> implements InvocationHandler {
                 return map.toString();
             case "hashCode":
                 return map.hashCode();
+            case "prettyPrint":
+                PPRINT.invoke(map);
+                return null;
+            case "toFormattedString":
+                Writer w = new StringWriter();
+                PPRINT.invoke(map, w);
+                return w.toString();
             case "equals":
                 Object other = args[0];
                 if (other instanceof DynamicObject)

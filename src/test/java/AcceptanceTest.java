@@ -1,5 +1,3 @@
-import clojure.java.api.Clojure;
-import clojure.lang.IFn;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,11 +38,7 @@ public class AcceptanceTest {
     }
 
     private void roundTrip(Document document) {
-        IFn require = Clojure.var("clojure.core", "require");
-        require.invoke(Clojure.read("clojure.pprint"));
-
-        IFn pprint = Clojure.var("clojure.pprint/pprint");
-        pprint.invoke(document.getMap());
+        document.prettyPrint();
         assertEquals(document, DynamicObject.deserialize(DynamicObject.serialize(document), Document.class));
     }
 
