@@ -1,3 +1,4 @@
+import clojure.java.api.Clojure;
 import clojure.lang.*;
 
 import java.lang.invoke.MethodHandles;
@@ -35,6 +36,36 @@ public interface DynamicObject<T> {
         return wrap(getMap().without(keyword), getType());
     }
 
+    public static String serialize(DynamicObject o) {
+        IFn var = Clojure.var("clojure.core", "pr-str");
+        IPersistentMap map = o.getMap();
+        return (String) var.invoke(map);
+    }
+
+    public static <T> void registerType(Class<T> clazz, EdnTranslator<T> translator) {
+        synchronized(DynamicObject.class) {
+            // install as a reader
+            TranslatorRegistry.readers = TranslatorRegistry.readers.assocEx(Symbol.intern(translator.getTag()), translator);
+
+            // install multimethod for writing
+            Var varPrintMethod = (Var) Clojure.var("clojure.core", "print-method");
+            MultiFn printMethod = (MultiFn) varPrintMethod.get();
+            printMethod.addMethod(clazz, translator);
+        }
+    }
+
+    public static <T> void deregisterType(Class<T> clazz, EdnTranslator<T> translator) {
+        synchronized(DynamicObject.class) {
+            // uninstall reader
+            TranslatorRegistry.readers = TranslatorRegistry.readers.without(Symbol.intern(translator.getTag()));
+
+            // uninstall print-method multimethod
+            Var varPrintMethod = (Var) Clojure.var("clojure.core", "print-method");
+            MultiFn printMethod = (MultiFn) varPrintMethod.get();
+            printMethod.removeMethod(clazz);
+        }
+    }
+
     /**
      * Deserializes a DynamicObject from a String.
      * @param edn The String representation of the object, serialized in Edn, Clojure's Extensible Data Notation.
@@ -42,7 +73,7 @@ public interface DynamicObject<T> {
      */
     @SuppressWarnings("unchecked")
     public static <T> T deserialize(String edn, Class clazz) {
-        IPersistentMap map = (IPersistentMap) EdnReader.readString(edn, PersistentHashMap.EMPTY);
+        IPersistentMap map = (IPersistentMap) EdnReader.readString(edn, TranslatorRegistry.getReadersAsOptions());
         return wrap(map, clazz);
     }
 
@@ -91,5 +122,13 @@ public interface DynamicObject<T> {
                     }
                 }
         );
+    }
+}
+
+class TranslatorRegistry {
+    static volatile IPersistentMap readers = PersistentHashMap.EMPTY;
+
+    static IPersistentMap getReadersAsOptions() {
+        return PersistentHashMap.EMPTY.assoc(Keyword.intern("readers"), readers);
     }
 }

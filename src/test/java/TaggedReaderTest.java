@@ -1,35 +1,62 @@
-import clojure.lang.EdnReader;
 import clojure.lang.IPersistentMap;
-import clojure.lang.PersistentHashMap;
-import clojure.lang.Symbol;
+import clojure.lang.Keyword;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import static clojure.lang.Keyword.intern;
 import static org.junit.Assert.assertEquals;
 
 public class TaggedReaderTest {
+    @Before
+    public void setup() {
+        DynamicObject.registerType(DumbClass.class, new DumbClassTranslator());
+    }
+
+    @After
+    public void teardown() {
+        DynamicObject.deregisterType(DumbClass.class, new DumbClassTranslator());
+    }
+
     @Test
-    public void basicReading() {
-        String edn = "#DumbClass {:version 1, :str \"str\"}";
+    public void roundTrip() {
+        String edn = "{:dumb #MyDumbClass {:version 1, :str \"str\"}}";
 
-        DumbClass dumbClass = (DumbClass) EdnReader.readString(edn, options(reader(DumbClass.SYMBOL, new DumbClassReader())));
+        DumbClassHolder deserialized = DynamicObject.deserialize(edn, DumbClassHolder.class);
+        String serialized = DynamicObject.serialize(deserialized);
 
-        assertEquals(1, dumbClass.getVersion());
-        assertEquals("str", dumbClass.getStr());
-    }
-
-    private IPersistentMap options(IPersistentMap readers) {
-        return PersistentHashMap.EMPTY.assoc(intern(null, "readers"), readers);
-    }
-
-    private IPersistentMap reader(Symbol symbol, EdnTypeReader reader) {
-        return PersistentHashMap.EMPTY.assoc(symbol, reader);
+        assertEquals(edn, serialized);
+        assertEquals(new DumbClass(1, "str"), deserialized.dumb());
     }
 }
 
-class DumbClass {
-    public static final Symbol SYMBOL = Symbol.intern("DumbClass");
+// This is a DynamicObject that contains a regular POJO.
+interface DumbClassHolder extends DynamicObject<DumbClass> {
+    DumbClass dumb();
+}
 
+// This is a translation class that functions as an Edn reader/writer for its associated POJO.
+class DumbClassTranslator extends EdnTranslator<DumbClass> {
+    @Override
+    public DumbClass read(Object obj) {
+        IPersistentMap map = (IPersistentMap) obj;
+        long version = (Long) map.valAt(Keyword.intern("version"));
+        String str = (String) map.valAt(Keyword.intern("str"));
+        return new DumbClass(version, str);
+    }
+
+    @Override
+    public String write(DumbClass obj) {
+        return String.format("{:version %d, :str \"%s\"}", obj.getVersion(), obj.getStr());
+    }
+
+    @Override
+    public String getTag() {
+        return "MyDumbClass"; // This is deliberately different from the class name.
+    }
+}
+
+// This is a POJO that has no knowledge of Edn.
+class DumbClass {
     private final long version;
     private final String str;
 
@@ -45,20 +72,29 @@ class DumbClass {
     public String getStr() {
         return str;
     }
-}
 
-class DumbClassReader extends EdnTypeReader {
     @Override
-    public Object read(Object o) {
-        IPersistentMap map = (IPersistentMap) o;
-        long version = (Long) map.valAt(intern("version"));
-        String str = (String) map.valAt(intern("str"));
-        return new DumbClass(version, str);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DumbClass dumbClass = (DumbClass) o;
+
+        if (version != dumbClass.version) return false;
+        if (!str.equals(dumbClass.str)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (version ^ (version >>> 32));
+        result = 31 * result + str.hashCode();
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        throw new UnsupportedOperationException("I'm a useless legacy toString() method that doesn't produce Edn!");
     }
 }
-
-/*
- * TODO:
- * support Edn reader tags
- * investigate Edn *writing*--does Clojure rely purely on toString() for most types?
- */
