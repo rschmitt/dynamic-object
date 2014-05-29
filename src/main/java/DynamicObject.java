@@ -1,6 +1,7 @@
 import clojure.java.api.Clojure;
 import clojure.lang.*;
 
+import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -108,7 +109,20 @@ public interface DynamicObject<T> {
                                 return method.invoke(map, args);
                         default:
                             Keyword keywordKey = Keyword.intern(methodName);
-                            Object val = map.entryAt(keywordKey).val();
+                            IMapEntry entry = map.entryAt(keywordKey);
+                            if (entry == null) {
+                                for (Annotation annotation : method.getAnnotations()) {
+                                    if (annotation.annotationType().equals(Key.class)) {
+                                        String key = ((Key) annotation).value();
+                                        if (key.charAt(0) == ':')
+                                            key = key.substring(1);
+                                        entry = map.entryAt(Keyword.intern(key));
+                                    }
+                                }
+                            }
+                            if (entry == null)
+                                return null;
+                            Object val = entry.val();
                             Class<?> returnType = method.getReturnType();
                             if (returnType.equals(int.class) || returnType.equals(Integer.class))
                                 return ((Long) val).intValue();
