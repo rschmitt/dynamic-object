@@ -20,19 +20,19 @@ public interface DynamicObject<T> {
      * Return a persistent copy of this object with the new value associated with the given key.
      */
     default <T> T assoc(String key, Object value) {
-        Keyword keyword = Keyword.intern(Symbol.intern(key));
+        Keyword keyword = Keyword.intern(key);
         IPersistentMap newMap = getMap().assoc(keyword, value);
         return wrap(newMap, getType());
     }
 
     default <T> T assocEx(String key, Object value) {
-        Keyword keyword = Keyword.intern(Symbol.intern(key));
+        Keyword keyword = Keyword.intern(key);
         IPersistentMap newMap = getMap().assocEx(keyword, value);
         return wrap(newMap, getType());
     }
 
     default <T> T without(String key) {
-        Keyword keyword = Keyword.intern(Symbol.intern(key));
+        Keyword keyword = Keyword.intern(key);
         return wrap(getMap().without(keyword), getType());
     }
 
@@ -107,7 +107,7 @@ public interface DynamicObject<T> {
                             } else
                                 return method.invoke(map, args);
                         default:
-                            Keyword keywordKey = Keyword.intern(Symbol.intern(methodName));
+                            Keyword keywordKey = Keyword.intern(methodName);
                             Object val = map.entryAt(keywordKey).val();
                             Class<?> returnType = method.getReturnType();
                             if (returnType.equals(int.class) || returnType.equals(Integer.class))
@@ -117,7 +117,7 @@ public interface DynamicObject<T> {
                             if (returnType.equals(short.class) || returnType.equals(Short.class))
                                 return ((Long) val).shortValue();
                             if (DynamicObject.class.isAssignableFrom(returnType))
-                                return DynamicObject.wrap((IPersistentMap) map.valAt(Keyword.intern(Symbol.intern(methodName))), returnType);
+                                return DynamicObject.wrap((IPersistentMap) map.valAt(Keyword.intern(methodName)), returnType);
                             return val;
                     }
                 }
