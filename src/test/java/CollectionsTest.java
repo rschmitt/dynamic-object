@@ -1,6 +1,7 @@
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,6 +40,14 @@ public class CollectionsTest {
         assertTrue(stringSet.contains("two"));
         assertTrue(stringSet.contains("three"));
     }
+
+    @Test
+    public void embeddedMap() {
+        String edn = "{:dictionary {\"key\" \"value\"}}";
+        MapSchema mapSchema = DynamicObject.deserialize(edn, MapSchema.class);
+        assertEquals("value", mapSchema.dictionary().get("key"));
+        assertEquals(1, mapSchema.dictionary().size());
+    }
 }
 
 interface ListSchema extends DynamicObject<ListSchema> {
@@ -47,4 +56,8 @@ interface ListSchema extends DynamicObject<ListSchema> {
 
 interface SetSchema extends DynamicObject<SetSchema> {
     Set<String> strings();
+}
+
+interface MapSchema extends DynamicObject<MapSchema> {
+    Map<String, String> dictionary();
 }
