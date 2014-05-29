@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 
 import static java.lang.String.format;
 
-public class DynamicObjectTest {
+public class SmokeTest {
     static final String SIMPLE_SCHEMA_EDN = "{:str \"expected value\", :i 4, :d 3.14, :f 3.14, :lng 1234567890, :shrt 4}";
     static final String NESTED_SCHEMA_EDN = format("{:version 1, :simple %s}", SIMPLE_SCHEMA_EDN);
 
@@ -114,38 +114,6 @@ public class DynamicObjectTest {
         assertEquals("{}", empty.toString());
     }
 
-    @Test
-    public void listOfStrings() {
-        ListSchema listSchema = DynamicObject.deserialize("{:strings [\"one\" \"two\" \"three\"]}", ListSchema.class);
-        List<String> stringList = listSchema.strings();
-        assertEquals("one", stringList.get(0));
-        assertEquals("two", stringList.get(1));
-        assertEquals("three", stringList.get(2));
-    }
-
-    // This is just here to prove a point about Java<->Clojure interop.
-    @Test
-    public void listStream() {
-        ListSchema listSchema = DynamicObject.deserialize("{:strings [\"one\" \"two\" \"three\"]}", ListSchema.class);
-        List<String> stringList = listSchema.strings();
-
-        List<Integer> collect = stringList.stream().map(x -> x.length()).collect(Collectors.toList());
-
-        assertEquals(3, collect.get(0).intValue());
-        assertEquals(3, collect.get(1).intValue());
-        assertEquals(5, collect.get(2).intValue());
-    }
-
-    @Test
-    public void setOfStrings() {
-        SetSchema setSchema = DynamicObject.deserialize("{:strings #{\"one\" \"two\" \"three\"}}", SetSchema.class);
-        Set<String> stringSet = setSchema.strings();
-        assertEquals(3, stringSet.size());
-        assertTrue(stringSet.contains("one"));
-        assertTrue(stringSet.contains("two"));
-        assertTrue(stringSet.contains("three"));
-    }
-
     private Keyword getKeyword(String keyword) {
         return Keyword.intern(Symbol.intern(keyword));
     }
@@ -163,14 +131,6 @@ interface SimpleSchema extends DynamicObject<SimpleSchema> {
 interface NestedSchema extends DynamicObject<NestedSchema> {
     int version();
     SimpleSchema simple();
-}
-
-interface ListSchema extends DynamicObject<ListSchema> {
-    List<String> strings();
-}
-
-interface SetSchema extends DynamicObject<SetSchema> {
-    Set<String> strings();
 }
 
 /*
