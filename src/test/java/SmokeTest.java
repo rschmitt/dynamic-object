@@ -5,7 +5,7 @@ import static java.lang.String.format;
 import static org.junit.Assert.*;
 
 public class SmokeTest {
-    static final String SIMPLE_SCHEMA_EDN = "{:str \"expected value\", :i 4, :d 3.14, :f 3.14, :lng 1234567890, :shrt 4}";
+    static final String SIMPLE_SCHEMA_EDN = "{:str \"expected value\", :i 4, :d 3.14, :f 3.14, :lng 1234567890, :shrt 4, :b true}";
     static final String NESTED_SCHEMA_EDN = format("{:version 1, :simple %s}", SIMPLE_SCHEMA_EDN);
 
     @Test
@@ -18,6 +18,7 @@ public class SmokeTest {
         assertEquals(1234567890L, simpleSchema.lng());
         assertEquals(3.14, simpleSchema.d(), 0.001);
         assertEquals(3.14, simpleSchema.f(), 0.001);
+        assertTrue(simpleSchema.b());
     }
 
     @Test
@@ -114,6 +115,7 @@ public class SmokeTest {
         float f();
         double d();
         String str();
+        boolean b();
     }
 
     public interface NestedSchema extends DynamicObject<NestedSchema> {
