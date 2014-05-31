@@ -23,7 +23,7 @@ public class TaggedReaderTest {
 
     @Test
     public void roundTrip() {
-        String edn = "{:dumb [#MyDumbClass {:version 1, :str \"str\"}]}";
+        String edn = "{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}";
 
         DumbClassHolder deserialized = DynamicObject.deserialize(edn, DumbClassHolder.class);
         String serialized = DynamicObject.serialize(deserialized);

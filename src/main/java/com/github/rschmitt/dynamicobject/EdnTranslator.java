@@ -36,7 +36,7 @@ public abstract class EdnTranslator<T> extends AFn {
     public final Object invoke(Object arg1, Object arg2) {
         Writer writer = (Writer) arg2;
         try {
-            String output = String.format("#%s %s", getTag(), write((T) arg1));
+            String output = String.format("#%s%s", getTag(), write((T) arg1));
             writer.write(output);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
