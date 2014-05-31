@@ -103,16 +103,36 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         Object val = entry.val();
         Class<?> returnType = method.getReturnType();
         if (returnType.equals(int.class) || returnType.equals(Integer.class))
-            return ((Long) val).intValue();
+            return returnInt(val);
         if (returnType.equals(float.class) || returnType.equals(Float.class))
-            return ((Double) val).floatValue();
+            return returnFloat(val);
         if (returnType.equals(short.class) || returnType.equals(Short.class))
-            return ((Long) val).shortValue();
+            return returnShort(val);
         if (DynamicObject.class.isAssignableFrom(returnType)) {
             Class<T> dynamicObjectType = (Class<T>) returnType;
             return DynamicObject.wrap((IPersistentMap) map.valAt(Keyword.intern(methodName)), dynamicObjectType);
         }
         return val;
+    }
+
+    private float returnFloat(Object val) {
+        if (val instanceof Float)
+            return (Float) val;
+        return ((Double) val).floatValue();
+    }
+
+    private int returnInt(Object val) {
+        if (val instanceof Integer)
+            return (Integer) val;
+        else return ((Long) val).intValue();
+    }
+
+    private short returnShort(Object val) {
+        if (val instanceof Short)
+            return (Short) val;
+        if (val instanceof Integer)
+            return ((Integer) val).shortValue();
+        else return ((Long) val).shortValue();
     }
 
     private IMapEntry getNonDefaultKey(Method method) {
