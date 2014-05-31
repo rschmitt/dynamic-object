@@ -15,7 +15,7 @@ public class RecordTest {
 
     @After
     public void teardown() {
-        DynamicObject.deregisterTag(Defrecord.class, "com.github.rschmitt.dynamicobject.Defrecord");
+        DynamicObject.deregisterTag(Defrecord.class);
     }
 
     @Test

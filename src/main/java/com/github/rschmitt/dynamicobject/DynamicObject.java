@@ -4,7 +4,10 @@ import clojure.java.api.Clojure;
 import clojure.lang.*;
 
 import java.lang.reflect.Proxy;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public interface DynamicObject<T extends DynamicObject<T>> {
     /**
@@ -95,6 +98,8 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      */
     public static <T> void registerType(Class<T> clazz, EdnTranslator<T> translator) {
         synchronized (DynamicObject.class) {
+            TranslatorRegistry.translatorCache.put(clazz, translator);
+
             // install as a reader
             TranslatorRegistry.readers = TranslatorRegistry.readers.assocEx(Symbol.intern(translator.getTag()), translator);
 
@@ -102,6 +107,27 @@ public interface DynamicObject<T extends DynamicObject<T>> {
             Var varPrintMethod = (Var) Clojure.var("clojure.core", "print-method");
             MultiFn printMethod = (MultiFn) varPrintMethod.get();
             printMethod.addMethod(clazz, translator);
+        }
+    }
+
+    /**
+     * Deregister the given {@code translator}. After this method is invoked, it will no longer be possible to read or
+     * write instances of {@code clazz} unless another translator is registered.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> void deregisterType(Class<T> clazz) {
+        synchronized (DynamicObject.class) {
+            EdnTranslator<T> translator = (EdnTranslator<T>) TranslatorRegistry.translatorCache.get(clazz);
+
+            // uninstall reader
+            TranslatorRegistry.readers = TranslatorRegistry.readers.without(Symbol.intern(translator.getTag()));
+
+            // uninstall print-method multimethod
+            Var varPrintMethod = (Var) Clojure.var("clojure.core", "print-method");
+            MultiFn printMethod = (MultiFn) varPrintMethod.get();
+            printMethod.removeMethod(clazz);
+
+            TranslatorRegistry.translatorCache.remove(clazz);
         }
     }
 
@@ -119,27 +145,8 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     /**
      * Deregister the reader tag for the given DynamicObject type.
      */
-    public static <T extends DynamicObject<T>> void deregisterTag(Class<T> clazz, String tag) {
-        synchronized (DynamicObject.class) {
-            deregisterType(clazz, new RecordTranslator<>(tag, clazz));
-            TranslatorRegistry.records.remove(clazz);
-        }
-    }
-
-    /**
-     * Deregister the given {@code translator}. After this method is invoked, it will no longer be possible to read or
-     * write instances of {@code clazz} unless another translator is registered.
-     */
-    public static <T> void deregisterType(Class<T> clazz, EdnTranslator<T> translator) {
-        synchronized (DynamicObject.class) {
-            // uninstall reader
-            TranslatorRegistry.readers = TranslatorRegistry.readers.without(Symbol.intern(translator.getTag()));
-
-            // uninstall print-method multimethod
-            Var varPrintMethod = (Var) Clojure.var("clojure.core", "print-method");
-            MultiFn printMethod = (MultiFn) varPrintMethod.get();
-            printMethod.removeMethod(clazz);
-        }
+    public static <T extends DynamicObject<T>> void deregisterTag(Class<T> clazz) {
+        deregisterType(clazz);
     }
 }
 
@@ -171,7 +178,8 @@ class RecordTranslator<T extends DynamicObject<T>> extends EdnTranslator<T> {
 
 class TranslatorRegistry {
     static volatile IPersistentMap readers = PersistentHashMap.EMPTY;
-    static final HashSet<Class<? extends DynamicObject<?>>> records = new HashSet<>();
+    static final Set<Class<? extends DynamicObject<?>>> records = Collections.synchronizedSet(new HashSet<>());
+    static final ConcurrentHashMap<Class<?>, EdnTranslator<?>> translatorCache = new ConcurrentHashMap<>();
 
     static IPersistentMap getReadersAsOptions() {
         return PersistentHashMap.EMPTY.assoc(Keyword.intern("readers"), readers);

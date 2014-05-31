@@ -20,7 +20,7 @@ public class AcceptanceTest {
 
     @After
     public void teardown() {
-        DynamicObject.deregisterType(Path.class, new PathTranslator());
+        DynamicObject.deregisterType(Path.class);
     }
 
     @Test

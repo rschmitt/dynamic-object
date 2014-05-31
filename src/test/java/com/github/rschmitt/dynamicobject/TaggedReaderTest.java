@@ -18,7 +18,7 @@ public class TaggedReaderTest {
 
     @After
     public void teardown() {
-        DynamicObject.deregisterType(DumbClass.class, new DumbClassTranslator());
+        DynamicObject.deregisterType(DumbClass.class);
     }
 
     @Test
