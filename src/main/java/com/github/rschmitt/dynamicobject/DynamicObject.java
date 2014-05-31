@@ -1,3 +1,5 @@
+package com.github.rschmitt.dynamicobject;
+
 import clojure.java.api.Clojure;
 import clojure.lang.*;
 

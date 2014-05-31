@@ -1,3 +1,5 @@
+package com.github.rschmitt.dynamicobject;
+
 import org.junit.Test;
 
 import java.util.List;

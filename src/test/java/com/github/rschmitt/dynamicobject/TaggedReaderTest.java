@@ -1,3 +1,5 @@
+package com.github.rschmitt.dynamicobject;
+
 import clojure.lang.IPersistentMap;
 import clojure.lang.Keyword;
 import org.junit.After;

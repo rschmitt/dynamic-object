@@ -1,3 +1,5 @@
+package com.github.rschmitt.dynamicobject;
+
 import clojure.lang.AFn;
 
 import java.io.IOException;

@@ -1,3 +1,5 @@
+package com.github.rschmitt.dynamicobject;
+
 import clojure.lang.*;
 import org.junit.Test;
 
