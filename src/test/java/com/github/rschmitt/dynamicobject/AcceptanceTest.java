@@ -4,7 +4,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
 import static org.junit.Assert.assertEquals;
@@ -129,19 +132,29 @@ class PathTranslator extends EdnTranslator<Path> {
 
 interface DocumentPointer extends DynamicObject<DocumentPointer> {
     String location();
+
     DocumentPointer location(String location);
 }
 
 interface Document extends DynamicObject<Document> {
     UUID uuid();
+
     String name();
+
     Date date();
+
     Set<Path> paths();
-    @Key(":document-pointer") DocumentPointer documentPointer();
+
+    @Key(":document-pointer")
+    DocumentPointer documentPointer();
 
     Document uuid(UUID uuid);
+
     Document name(String name);
+
     Document date(Date date);
+
     Document paths(Set<Path> paths);
+
     Document documentPointer(DocumentPointer documentPointer);
 }

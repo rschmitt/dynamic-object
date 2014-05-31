@@ -112,16 +112,23 @@ public class SmokeTest {
 
     public interface SimpleSchema extends DynamicObject<SimpleSchema> {
         short shrt();
+
         int i();
+
         long lng();
+
         float f();
+
         double d();
+
         String str();
+
         boolean b();
     }
 
     public interface NestedSchema extends DynamicObject<NestedSchema> {
         int version();
+
         SimpleSchema simple();
     }
 }

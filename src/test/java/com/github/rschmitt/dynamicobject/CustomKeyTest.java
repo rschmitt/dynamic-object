@@ -21,6 +21,9 @@ public class CustomKeyTest {
 }
 
 interface KeywordInterface extends DynamicObject<KeywordInterface> {
-    @Key("a-sample-int") int aSampleInt();
-    @Key(":another-sample-int") int anotherSampleInt();
+    @Key("a-sample-int")
+    int aSampleInt();
+
+    @Key(":another-sample-int")
+    int anotherSampleInt();
 }

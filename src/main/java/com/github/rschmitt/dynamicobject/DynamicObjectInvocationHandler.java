@@ -64,11 +64,11 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             case "getType":
                 return clazz;
             case "assoc":
-                return assoc((String)args[0], args[1]);
+                return assoc((String) args[0], args[1]);
             case "assocEx":
-                return assocEx((String)args[0], args[1]);
+                return assocEx((String) args[0], args[1]);
             case "without":
-                return without((String)args[0]);
+                return without((String) args[0]);
             case "toString":
                 return map.toString();
             case "hashCode":

@@ -35,8 +35,10 @@ public class BuilderTest {
 
 interface Buildable extends DynamicObject<Buildable> {
     String str();
+
     Buildable str(String str);
 
     int i();
+
     Buildable i(int i);
 }
