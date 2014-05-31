@@ -32,7 +32,7 @@ dynamic-object is designed with an emphasis on preserving Clojure's excellent su
 
 ## Persistent modification
 
-dynamic-object makes it easy to leverage Clojure's immutable persistent data structures, which use structural sharing to enable cheap copying and "modification." A `DynamicObject` can create "wither" methods (inspired by Lombok's [`@Wither`](http://projectlombok.org/features/experimental/Wither.html) annotation); these map directly to `IPersistentMap#assoc`. For example:
+dynamic-object makes it easy to leverage Clojure's immutable persistent data structures, which use structural sharing to enable cheap copying and "modification." A `DynamicObject` can declare "wither" methods (inspired by Lombok's [`@Wither`](http://projectlombok.org/features/experimental/Wither.html) annotation); these map directly to `IPersistentMap#assoc`. For example:
 
 ```java
 interface Buildable extends DynamicObject<Buildable> {
@@ -55,8 +55,10 @@ dynamic-object is currently an early prototype. There are a number of outstandin
 * **User-defined methods.** While the ability to add arbitrary methods to a `DynamicObject` could easily be abused, there are many cases where it would be both harmless and idiomatic.
 * **Validation routines.** One excellent property of a traditional Java value class is that they can be made both immutable and self-validating: the constructor can verify that the object is internally consistent before publishing it. Similar functionality should be made available to `DynamicObjects` without compromising the ability to incrementally build and modify existing objects.
 * **`defrecord` interop.** Clojure's `defrecord` creates a type that can be handled like a generic map, but which also has a distinct identity, including its own reader tag. Although dynamic-object is mainly intended for near-pure Java codebases, it should be able to work with serialized records produced by Clojure code.
+* **[`data.generators`](https://github.com/clojure/data.generators) support.** `DynamicObject` instances could be randomly generated for use as test data, which would facilitate generative testing in the style of [test.check](https://github.com/clojure/test.check) and [QuickCheck](http://www.haskell.org/haskellwiki/Introduction_to_QuickCheck2).
+* **Clojure metadata.** It might be possible to expose Clojure's support for metadata in some limited way, e.g. as a `Map<String, String>`.
 
-## Limitations
+## Constraints and Limitations
 
 * Only keyword keys are supported. Map entries that are keyed off of a different type (e.g. a symbol, a string, a vector) cannot be exposed through a `DynamicObject` schema, although they can still be transparently round tripped.
 
