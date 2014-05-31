@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
 
 public class RecordTest {
@@ -25,7 +26,13 @@ public class RecordTest {
 
         assertEquals("a string", record.str());
         assertEquals(edn, DynamicObject.serialize(record));
-//        assertEquals(edn, record.toFormattedString());
+    }
+
+    @Test
+    public void pprintOmitsReaderTag() {
+        String edn = "#com.github.rschmitt.dynamicobject.Defrecord{:str \"a string\"}";
+        Defrecord record = DynamicObject.deserialize(edn, Defrecord.class);
+        assertEquals(format("{:str \"a string\"}%n"), record.toFormattedString());
     }
 }
 
