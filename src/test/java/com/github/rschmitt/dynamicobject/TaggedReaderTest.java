@@ -84,10 +84,7 @@ class DumbClass {
 
         DumbClass dumbClass = (DumbClass) o;
 
-        if (version != dumbClass.version) return false;
-        if (!str.equals(dumbClass.str)) return false;
-
-        return true;
+        return version == dumbClass.version && str.equals(dumbClass.str);
     }
 
     @Override

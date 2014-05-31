@@ -62,7 +62,6 @@ public class SmokeTest {
         SimpleSchema instance1 = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
         SimpleSchema instance2 = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
 
-        assertTrue(instance1 == instance1);
         assertFalse(instance1 == instance2);
         assertTrue(instance1.equals(instance1));
         assertTrue(instance1.equals(instance2));
