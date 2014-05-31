@@ -5,11 +5,8 @@ import clojure.lang.*;
 
 import java.lang.reflect.Proxy;
 import java.util.HashSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.atomic.AtomicReference;
 
-public interface DynamicObject<T> {
+public interface DynamicObject<T extends DynamicObject<T>> {
     /**
      * @return the underlying IPersistentMap backing this instance.
      */
@@ -51,7 +48,7 @@ public interface DynamicObject<T> {
      * Serialize the given object to Edn. Any {@code EdnTranslator}s that have been registered through
      * {@link DynamicObject#registerType} will be invoked as needed.
      */
-    public static String serialize(DynamicObject o) {
+    public static <T extends DynamicObject<T>> String serialize(T o) {
         IFn var = Clojure.var("clojure.core", "pr-str");
         if (TranslatorRegistry.records.contains(o.getType()))
             return (String) var.invoke(o);
@@ -66,7 +63,7 @@ public interface DynamicObject<T> {
      * @param clazz The type of class to deserialize. Must be an interface that extends DynamicObject.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T deserialize(String edn, Class<T> clazz) {
+    public static <T extends DynamicObject<T>> T deserialize(String edn, Class<T> clazz) {
         Object obj = EdnReader.readString(edn, TranslatorRegistry.getReadersAsOptions());
         if (obj instanceof DynamicObject)
             return (T) obj;
@@ -78,17 +75,17 @@ public interface DynamicObject<T> {
      * Use the supplied {@code map} to back an instance of {@code clazz}.
      */
     @SuppressWarnings("unchecked")
-    public static <T> T wrap(IPersistentMap map, Class<T> clazz) {
+    public static <T extends DynamicObject<T>> T wrap(IPersistentMap map, Class<T> clazz) {
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                new Class[]{clazz},
-                new DynamicObjectInvocationHandler(map, clazz));
+                new Class<?>[]{clazz},
+                new DynamicObjectInvocationHandler<>(map, clazz));
     }
 
     /**
      * Create a "blank" instance of {@code clazz}, backed by an empty {@link clojure.lang.IPersistentMap}. All fields
      * will be null.
      */
-    public static <T> T newInstance(Class<T> clazz) {
+    public static <T extends DynamicObject<T>> T newInstance(Class<T> clazz) {
         return wrap(PersistentHashMap.EMPTY, clazz);
     }
 
@@ -112,9 +109,9 @@ public interface DynamicObject<T> {
      * Register a reader tag for a DynamicObject type. This is useful for reading Edn representations of Clojure
      * records.
      */
-    public static <T> void registerTag(Class clazz, String tag) {
+    public static <T extends DynamicObject<T>> void registerTag(Class<T> clazz, String tag) {
         synchronized (DynamicObject.class) {
-            registerType(clazz, new RecordTranslator<T>(tag, clazz));
+            registerType(clazz, new RecordTranslator<>(tag, clazz));
             TranslatorRegistry.records.add(clazz);
         }
     }
@@ -122,9 +119,9 @@ public interface DynamicObject<T> {
     /**
      * Deregister the reader tag for the given DynamicObject type.
      */
-    public static <T> void deregisterTag(Class clazz, String tag) {
+    public static <T extends DynamicObject<T>> void deregisterTag(Class<T> clazz, String tag) {
         synchronized (DynamicObject.class) {
-            deregisterType(clazz, new RecordTranslator<T>(tag, clazz));
+            deregisterType(clazz, new RecordTranslator<>(tag, clazz));
             TranslatorRegistry.records.remove(clazz);
         }
     }
@@ -146,7 +143,7 @@ public interface DynamicObject<T> {
     }
 }
 
-class RecordTranslator<T> extends EdnTranslator<DynamicObject<T>> {
+class RecordTranslator<T extends DynamicObject<T>> extends EdnTranslator<T> {
     private final String tag;
     private final Class<T> type;
 
@@ -156,12 +153,12 @@ class RecordTranslator<T> extends EdnTranslator<DynamicObject<T>> {
     }
 
     @Override
-    public DynamicObject read(Object obj) {
-        return DynamicObject.wrap((IPersistentMap) obj, (Class<DynamicObject>) type);
+    public T read(Object obj) {
+        return DynamicObject.wrap((IPersistentMap) obj, type);
     }
 
     @Override
-    public String write(DynamicObject obj) {
+    public String write(T obj) {
         IFn var = Clojure.var("clojure.core", "pr-str");
         return (String) var.invoke(obj.getMap());
     }
@@ -174,7 +171,7 @@ class RecordTranslator<T> extends EdnTranslator<DynamicObject<T>> {
 
 class TranslatorRegistry {
     static volatile IPersistentMap readers = PersistentHashMap.EMPTY;
-    static final HashSet<Class> records = new HashSet<>();
+    static final HashSet<Class<? extends DynamicObject<?>>> records = new HashSet<>();
 
     static IPersistentMap getReadersAsOptions() {
         return PersistentHashMap.EMPTY.assoc(Keyword.intern("readers"), readers);

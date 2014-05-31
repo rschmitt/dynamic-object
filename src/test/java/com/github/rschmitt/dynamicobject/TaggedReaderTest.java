@@ -34,7 +34,7 @@ public class TaggedReaderTest {
 }
 
 // This is a DynamicObject that contains a regular POJO.
-interface DumbClassHolder extends DynamicObject<DumbClass> {
+interface DumbClassHolder extends DynamicObject<DumbClassHolder> {
     List<DumbClass> dumb();
 }
 

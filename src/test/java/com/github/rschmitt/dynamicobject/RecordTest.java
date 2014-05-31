@@ -25,6 +25,7 @@ public class RecordTest {
 
         assertEquals("a string", record.str());
         assertEquals(edn, DynamicObject.serialize(record));
+//        assertEquals(edn, record.toFormattedString());
     }
 }
 

@@ -33,6 +33,7 @@ public abstract class EdnTranslator<T> extends AFn {
      * For use by print-method only. Do not call directly.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public final Object invoke(Object arg1, Object arg2) {
         Writer writer = (Writer) arg2;
         try {

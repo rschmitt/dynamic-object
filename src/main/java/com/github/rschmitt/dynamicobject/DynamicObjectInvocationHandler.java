@@ -9,11 +9,10 @@ import clojure.lang.Keyword;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
-class DynamicObjectInvocationHandler<T> implements InvocationHandler {
+class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
     private static final IFn PPRINT;
 
     static {
@@ -92,6 +91,7 @@ class DynamicObjectInvocationHandler<T> implements InvocationHandler {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Object getValueFor(Method method) {
         String methodName = method.getName();
         Keyword keywordKey = Keyword.intern(methodName);
@@ -108,8 +108,10 @@ class DynamicObjectInvocationHandler<T> implements InvocationHandler {
             return ((Double) val).floatValue();
         if (returnType.equals(short.class) || returnType.equals(Short.class))
             return ((Long) val).shortValue();
-        if (DynamicObject.class.isAssignableFrom(returnType))
-            return DynamicObject.wrap((IPersistentMap) map.valAt(Keyword.intern(methodName)), returnType);
+        if (DynamicObject.class.isAssignableFrom(returnType)) {
+            Class<T> dynamicObjectType = (Class<T>) returnType;
+            return DynamicObject.wrap((IPersistentMap) map.valAt(Keyword.intern(methodName)), dynamicObjectType);
+        }
         return val;
     }
 
