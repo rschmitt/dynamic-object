@@ -1,5 +1,6 @@
 package com.github.rschmitt.dynamicobject;
 
+import clojure.java.api.Clojure;
 import clojure.lang.*;
 import org.junit.Test;
 
@@ -79,7 +80,7 @@ public class SmokeTest {
         SimpleSchema regular = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
 
         assertFalse(withUnknowns.equals(regular));
-        assertEquals(withUnknowns.getMap().valAt(getKeyword("unknown")), "unknown");
+        assertEquals(withUnknowns.getMap().valAt(Clojure.read(":unknown")), "unknown");
         assertEquals(edn, withUnknowns.toString());
     }
 
@@ -87,7 +88,7 @@ public class SmokeTest {
     public void assocEx() {
         SimpleSchema initial = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
         SimpleSchema assoced = initial.assocEx("new-field", "new-value");
-        assertEquals("new-value", assoced.getMap().valAt(getKeyword("new-field")));
+        assertEquals("new-value", assoced.getMap().valAt(Clojure.read(":new-field")));
     }
 
     @Test(expected = RuntimeException.class)
@@ -103,10 +104,6 @@ public class SmokeTest {
         SimpleSchema empty = simpleSchema.without("str");
 
         assertEquals("{}", empty.toString());
-    }
-
-    private Keyword getKeyword(String keyword) {
-        return Keyword.intern(Symbol.intern(keyword));
     }
 
     public interface SimpleSchema extends DynamicObject<SimpleSchema> {

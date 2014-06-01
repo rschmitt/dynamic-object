@@ -35,7 +35,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private T assoc(String key, Object value) {
-        Keyword keyword = Keyword.intern(key);
+        Keyword keyword = (Keyword) Clojure.read(":" + key);
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
         IPersistentMap newMap = map.assoc(keyword, value);
@@ -43,7 +43,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private T assocEx(String key, Object value) {
-        Keyword keyword = Keyword.intern(key);
+        Keyword keyword = (Keyword) Clojure.read(":" + key);
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
         IPersistentMap newMap = map.assocEx(keyword, value);
@@ -51,7 +51,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private T without(String key) {
-        Keyword keyword = Keyword.intern(key);
+        Keyword keyword = (Keyword) Clojure.read(":" + key);
         return DynamicObject.wrap(map.without(keyword), clazz);
     }
 
@@ -110,7 +110,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     @SuppressWarnings("unchecked")
     private Object getValueFor(Method method) {
         String methodName = method.getName();
-        Keyword keywordKey = Keyword.intern(methodName);
+        Keyword keywordKey = (Keyword) Clojure.read(":" + methodName);
         IMapEntry entry = map.entryAt(keywordKey);
         if (entry == null)
             entry = getNonDefaultKey(method);
@@ -126,7 +126,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             return returnShort(val);
         if (DynamicObject.class.isAssignableFrom(returnType)) {
             Class<T> dynamicObjectType = (Class<T>) returnType;
-            return DynamicObject.wrap((IPersistentMap) map.valAt(Keyword.intern(methodName)), dynamicObjectType);
+            return DynamicObject.wrap((IPersistentMap) map.valAt(Clojure.read(":" + methodName)), dynamicObjectType);
         }
         return val;
     }
@@ -155,9 +155,9 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         for (Annotation annotation : method.getAnnotations()) {
             if (annotation.annotationType().equals(Key.class)) {
                 String key = ((Key) annotation).value();
-                if (key.charAt(0) == ':')
-                    key = key.substring(1);
-                return map.entryAt(Keyword.intern(key));
+                if (key.charAt(0) != ':')
+                    key = ":" + key;
+                return map.entryAt(Clojure.read(key));
             }
         }
         return null;

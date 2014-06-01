@@ -1,5 +1,6 @@
 package com.github.rschmitt.dynamicobject;
 
+import clojure.java.api.Clojure;
 import clojure.lang.IPersistentMap;
 import clojure.lang.Keyword;
 import org.junit.After;
@@ -43,8 +44,8 @@ class DumbClassTranslator extends EdnTranslator<DumbClass> {
     @Override
     public DumbClass read(Object obj) {
         IPersistentMap map = (IPersistentMap) obj;
-        long version = (Long) map.valAt(Keyword.intern("version"));
-        String str = (String) map.valAt(Keyword.intern("str"));
+        long version = (Long) map.valAt(Clojure.read(":version"));
+        String str = (String) map.valAt(Clojure.read(":str"));
         return new DumbClass(version, str);
     }
 
