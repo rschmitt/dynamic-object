@@ -98,6 +98,12 @@ dynamic-object is currently an early prototype. There are a number of outstandin
 
 * Only keyword keys are supported. Map entries that are keyed off of a different type (e.g. a symbol, a string, a vector) cannot be exposed through a `DynamicObject` schema, although they can still be transparently round tripped.
 
+## Developing
+
+dynamic-object should work out-of-the-box with [IntelliJ 13](http://www.jetbrains.com/idea/download/). The Community Edition is sufficient. You'll need [JDK8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed and configured as an SDK within IntelliJ. You will also need the Gradle plugin for dependency resolution; this is generally included by default.
+
+You can also invoke Gradle directly with `./gradlew build`.
+
 ## Influences and similar ideas
 
 * [Lombok](http://www.projectlombok.org/) is a boilerplate elimination tool for Java. It offers the excellent [`@Value`](http://projectlombok.org/features/Value.html) annotation, which helps to take the pain out of Java data modeling. Unfortunately, Lombok by itself does little to solve the problem of serialization/deserialization, and its implementation does horrible violence to the internals of the compiler, whereas dynamic-object is implemented entirely with Java's built-in reflection capabilities--no bytecode manipulation, no annotation processors, no IDE plugins, no Gradle task.
