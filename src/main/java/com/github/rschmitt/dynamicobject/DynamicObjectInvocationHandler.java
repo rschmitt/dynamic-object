@@ -59,7 +59,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
 
-        if (method.getReturnType().equals(clazz) && args.length > 0)
+        if (method.getReturnType().equals(clazz) && (args != null && args.length > 0))
             return assoc(methodName, args[0]);
 
         if (method.isDefault())
