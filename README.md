@@ -17,7 +17,7 @@ public interface Album extends DynamicObject<Album> {
 }
 ```
 
-dynamic-object also supports `Set`, `List`, `Map`, custom key names, and composition of `DynamicObjects`:
+dynamic-object also supports `Set`, `List`, `Map`, custom key names, composition of `DynamicObjects`, and user-defined methods:
 
 ```java
 public interface AlbumCollection extends DynamicObject<AlbumCollection> {
@@ -25,6 +25,10 @@ public interface AlbumCollection extends DynamicObject<AlbumCollection> {
 
   @Key(":favorite-album-title")
   String favoriteAlbumTitle();
+
+  default int totalTracksInCollection() {
+    return albums().stream().map(album -> album.tracks()).reduce((x, y) -> x + y).get();
+  }
 }
 ```
 
