@@ -17,12 +17,14 @@ public interface Album extends DynamicObject<Album> {
 }
 ```
 
-dynamic-object also supports `Set`, `List`, `Map`, custom key names, and composition with other schemas:
+dynamic-object also supports `Set`, `List`, `Map`, custom key names, and composition of `DynamicObjects`:
 
 ```java
 public interface AlbumCollection extends DynamicObject<AlbumCollection> {
   Set<Album> albums();
-  @Key(":favorite-album-title") String favoriteAlbumTitle();
+
+  @Key(":favorite-album-title")
+  String favoriteAlbumTitle();
 }
 ```
 
@@ -54,7 +56,6 @@ dynamic-object is currently an early prototype. There are a number of outstandin
 
 * **User-defined methods.** While the ability to add arbitrary methods to a `DynamicObject` could easily be abused, there are many cases where it would be both harmless and idiomatic.
 * **Validation routines.** One excellent property of a traditional Java value class is that they can be made both immutable and self-validating: the constructor can verify that the object is internally consistent before publishing it. Similar functionality should be made available to `DynamicObjects` without compromising the ability to incrementally build and modify existing objects.
-* **`defrecord` interop.** Clojure's `defrecord` creates a type that can be handled like a generic map, but which also has a distinct identity, including its own reader tag. Although dynamic-object is mainly intended for near-pure Java codebases, it should be able to work with serialized records produced by Clojure code.
 * **[`data.generators`](https://github.com/clojure/data.generators) support.** `DynamicObject` instances could be randomly generated for use as test data, which would facilitate generative testing in the style of [test.check](https://github.com/clojure/test.check) and [QuickCheck](http://www.haskell.org/haskellwiki/Introduction_to_QuickCheck2).
 * **Clojure metadata.** It might be possible to expose Clojure's support for metadata in some limited way, e.g. as a `Map<String, String>`.
 
