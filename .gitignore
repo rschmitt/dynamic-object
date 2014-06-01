@@ -1,4 +1,8 @@
-/.idea
 /.gradle
 /build
 /out
+/.idea/*
+!/.idea/modules.xml
+!/.idea/gradle.xml
+!/.idea/compiler.xml
+!/.idea/misc.xml
