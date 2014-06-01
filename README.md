@@ -27,9 +27,41 @@ public interface AlbumCollection extends DynamicObject<AlbumCollection> {
   String favoriteAlbumTitle();
 
   default int totalTracksInCollection() {
-    return albums().stream().map(album -> album.tracks()).reduce((x, y) -> x + y).get();
+    return albums().stream()
+                   .map(album -> album.tracks())
+                   .reduce((x, y) -> x + y)
+                   .get();
   }
 }
+```
+
+dynamic-object even supports structural recursion:
+
+```java
+interface LinkedList extends DynamicObject<LinkedList> {
+  long value();
+  LinkedList next();
+
+  LinkedList value(long value);
+  LinkedList next(LinkedList linkedList);
+}
+
+@Test
+public void recursion() {
+  LinkedList tail = newInstance(LinkedList.class).value(3);
+  LinkedList middle = newInstance(LinkedList.class).value(2).next(tail);
+  LinkedList head = newInstance(LinkedList.class).value(1).next(middle);
+
+  assertEquals(1, head.value());
+  assertEquals(2, head.next().value());
+  assertEquals(3, head.next().next().value());
+  assertNull(head.next().next().next());
+
+  assertEquals("{:value 1, :next {:value 2, :next {:value 3}}}", serialize(head));
+  assertEquals("{:value 2, :next {:value 3}}", serialize(middle));
+  assertEquals("{:value 3}", serialize(tail));
+}
+
 ```
 
 ## Serialization and deserialization
