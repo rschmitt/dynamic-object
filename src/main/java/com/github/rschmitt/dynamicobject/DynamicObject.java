@@ -52,11 +52,12 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * {@link DynamicObject#registerType} will be invoked as needed.
      */
     public static <T extends DynamicObject<T>> String serialize(T o) {
-        IFn var = Clojure.var("clojure.core", "pr-str");
-        if (TranslatorRegistry.records.contains(o.getType()))
-            return (String) var.invoke(o);
+        IFn prstr = Clojure.var("clojure.core", "pr-str");
+        Class<T> type = o.getType();
+        if (TranslatorRegistry.translatorCache.containsKey(type))
+            return (String) prstr.invoke(o);
         IPersistentMap map = o.getMap();
-        return (String) var.invoke(map);
+        return (String) prstr.invoke(map);
     }
 
     /**
@@ -138,7 +139,6 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     public static <T extends DynamicObject<T>> void registerTag(Class<T> clazz, String tag) {
         synchronized (DynamicObject.class) {
             registerType(clazz, new RecordTranslator<>(tag, clazz));
-            TranslatorRegistry.records.add(clazz);
         }
     }
 
@@ -178,7 +178,6 @@ class RecordTranslator<T extends DynamicObject<T>> extends EdnTranslator<T> {
 
 class TranslatorRegistry {
     static volatile IPersistentMap readers = PersistentHashMap.EMPTY;
-    static final Set<Class<? extends DynamicObject<?>>> records = Collections.synchronizedSet(new HashSet<>());
     static final ConcurrentHashMap<Class<?>, EdnTranslator<?>> translatorCache = new ConcurrentHashMap<>();
 
     static IPersistentMap getReadersAsOptions() {
