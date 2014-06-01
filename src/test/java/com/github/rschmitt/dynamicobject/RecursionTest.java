@@ -1,9 +1,10 @@
 package com.github.rschmitt.dynamicobject;
 
 
+import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertNull;
 
 public class RecursionTest {
@@ -31,6 +32,24 @@ public class RecursionTest {
         } finally {
             DynamicObject.deregisterTag(LinkedList.class);
         }
+    }
+
+    @Test
+    @Ignore
+    public void registeringTheTagDoesNotAffectEqualityOfDeserializedInstances() {
+        LinkedList obj1 = DynamicObject.deserialize("{:value \"1\", :next {:value \"2\", :next {:value \"3\"}}}", LinkedList.class);
+        DynamicObject.registerTag(LinkedList.class, "LinkedList");
+        LinkedList obj2 = DynamicObject.deserialize("#LinkedList{:value \"1\", :next #LinkedList{:value \"2\", :next #LinkedList{:value \"3\"}}}", LinkedList.class);
+        DynamicObject.deregisterTag(LinkedList.class);
+
+        LinkedList next = obj1.next().next();
+        LinkedList next2 = obj1.next().next();
+        assertEquals(next, next2);
+        assertTrue(next.equals(next2));
+        assertTrue(obj1.equals(obj2));
+        assertEquals(obj1.next(), obj2.next());
+        assertEquals(obj1, obj2);
+        assertEquals(DynamicObject.serialize(obj1), DynamicObject.serialize(obj2));
     }
 
     private void roundTrip(LinkedList linkedList) {

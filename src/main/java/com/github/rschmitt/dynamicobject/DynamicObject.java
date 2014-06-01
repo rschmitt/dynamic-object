@@ -167,7 +167,14 @@ class RecordTranslator<T extends DynamicObject<T>> extends EdnTranslator<T> {
 
     @Override
     public T read(Object obj) {
-        return DynamicObject.wrap((IPersistentMap) obj, type);
+        IObj mapWithMeta = (IObj) obj;
+        IPersistentMap meta = mapWithMeta.meta();
+        if (meta == null)
+            meta = PersistentHashMap.EMPTY;
+        IPersistentMap newMeta = meta.assoc(Keyword.intern("type"),
+                Keyword.intern(type.getCanonicalName()));
+        IObj newMap = mapWithMeta.withMeta(newMeta);
+        return DynamicObject.wrap((IPersistentMap) newMap, type);
     }
 
     @Override
