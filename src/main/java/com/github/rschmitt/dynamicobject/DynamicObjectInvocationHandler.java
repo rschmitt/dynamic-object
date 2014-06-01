@@ -100,7 +100,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
         Class<?> declaringClass = method.getDeclaringClass();
-        return constructor.newInstance(declaringClass, MethodHandles.Lookup.PRIVATE)
+        int TRUSTED = -1;
+        return constructor.newInstance(declaringClass, TRUSTED)
                 .unreflectSpecial(method, declaringClass)
                 .bindTo(proxy)
                 .invokeWithArguments(args);

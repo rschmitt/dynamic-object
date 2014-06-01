@@ -81,8 +81,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     public static <T extends DynamicObject<T>> T wrap(IPersistentMap map, Class<T> clazz) {
         try {
             Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
-            if (!constructor.isAccessible())
-                constructor.setAccessible(true);
+            constructor.setAccessible(true);
 
             return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                     new Class<?>[]{clazz},
