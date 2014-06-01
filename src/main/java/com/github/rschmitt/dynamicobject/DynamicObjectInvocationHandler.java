@@ -9,6 +9,8 @@ import clojure.lang.Keyword;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
@@ -24,10 +26,12 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     private final IPersistentMap map;
     private final Class<T> clazz;
+    private final Constructor<MethodHandles.Lookup> constructor;
 
-    DynamicObjectInvocationHandler(IPersistentMap map, Class<T> clazz) {
+    DynamicObjectInvocationHandler(IPersistentMap map, Class<T> clazz, Constructor<MethodHandles.Lookup> constructor) {
         this.map = map;
         this.clazz = clazz;
+        this.constructor = constructor;
     }
 
     private T assoc(String key, Object value) {
@@ -57,6 +61,9 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
         if (method.getReturnType().equals(clazz) && args.length > 0)
             return assoc(methodName, args[0]);
+
+        if (method.isDefault())
+            return invokeDefaultMethod(proxy, method, args);
 
         switch (methodName) {
             case "getMap":
@@ -89,6 +96,14 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             default:
                 return getValueFor(method);
         }
+    }
+
+    private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
+        Class<?> declaringClass = method.getDeclaringClass();
+        return constructor.newInstance(declaringClass, MethodHandles.Lookup.PRIVATE)
+                .unreflectSpecial(method, declaringClass)
+                .bindTo(proxy)
+                .invokeWithArguments(args);
     }
 
     @SuppressWarnings("unchecked")

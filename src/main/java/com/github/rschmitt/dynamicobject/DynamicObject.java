@@ -3,10 +3,9 @@ package com.github.rschmitt.dynamicobject;
 import clojure.java.api.Clojure;
 import clojure.lang.*;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Proxy;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public interface DynamicObject<T extends DynamicObject<T>> {
@@ -80,9 +79,17 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      */
     @SuppressWarnings("unchecked")
     public static <T extends DynamicObject<T>> T wrap(IPersistentMap map, Class<T> clazz) {
-        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                new Class<?>[]{clazz},
-                new DynamicObjectInvocationHandler<>(map, clazz));
+        try {
+            Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
+            if (!constructor.isAccessible())
+                constructor.setAccessible(true);
+
+            return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+                    new Class<?>[]{clazz},
+                    new DynamicObjectInvocationHandler<>(map, clazz, constructor));
+        } catch (ReflectiveOperationException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     /**
