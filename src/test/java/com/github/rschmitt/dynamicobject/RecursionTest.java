@@ -1,13 +1,21 @@
 package com.github.rschmitt.dynamicobject;
 
 
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertNull;
 
 public class RecursionTest {
+    @Before
+    public void setup() {
+        try {
+            DynamicObject.deregisterTag(LinkedList.class);
+        } catch (NullPointerException ignore) { }
+    }
+
     @Test
     public void recursion() {
         LinkedList tail = DynamicObject.newInstance(LinkedList.class).value("3");
@@ -22,20 +30,64 @@ public class RecursionTest {
         assertEquals("2", head.next().value());
         assertEquals("3", head.next().next().value());
         assertNull(head.next().next().next());
+
+        assertEquals("{:value \"1\", :next {:value \"2\", :next {:value \"3\"}}}", serialize(head));
+        assertEquals("{:value \"2\", :next {:value \"3\"}}", serialize(middle));
+        assertEquals("{:value \"3\"}", serialize(tail));
     }
 
     @Test
     public void taggedRecursion() {
         DynamicObject.registerTag(LinkedList.class, "LinkedList");
-        try {
-            recursion();
-        } finally {
-            DynamicObject.deregisterTag(LinkedList.class);
-        }
+
+        LinkedList tail = DynamicObject.newInstance(LinkedList.class).value("3");
+        LinkedList middle = DynamicObject.newInstance(LinkedList.class).value("2").next(tail);
+        LinkedList head = DynamicObject.newInstance(LinkedList.class).value("1").next(middle);
+
+        roundTrip(tail);
+        roundTrip(middle);
+        roundTrip(head);
+        assertEquals("#LinkedList{:value \"3\"}", serialize(tail));
+        assertEquals("#LinkedList{:value \"2\", :next #LinkedList{:value \"3\"}}", serialize(middle));
+        assertEquals("#LinkedList{:value \"1\", :next #LinkedList{:value \"2\", :next #LinkedList{:value \"3\"}}}", serialize(head));
     }
 
     @Test
-    @Ignore
+    public void registeringTheTagAddsItToSerializedOutput() {
+        LinkedList tail = DynamicObject.newInstance(LinkedList.class).value("3");
+        LinkedList middle = DynamicObject.newInstance(LinkedList.class).value("2").next(tail);
+        LinkedList head = DynamicObject.newInstance(LinkedList.class).value("1").next(middle);
+
+        DynamicObject.registerTag(LinkedList.class, "LinkedList");
+
+        roundTrip(tail);
+        roundTrip(middle);
+        roundTrip(head);
+        assertEquals("#LinkedList{:value \"3\"}", serialize(tail));
+        assertEquals("#LinkedList{:value \"2\", :next #LinkedList{:value \"3\"}}", serialize(middle));
+        assertEquals("#LinkedList{:value \"1\", :next #LinkedList{:value \"2\", :next #LinkedList{:value \"3\"}}}", serialize(head));
+    }
+
+    @Test
+    public void deregisteringTheTagRemovesItFromSerializedOutput() {
+        DynamicObject.registerTag(LinkedList.class, "LinkedList");
+
+        LinkedList tail = DynamicObject.newInstance(LinkedList.class).value("3");
+        LinkedList middle = DynamicObject.newInstance(LinkedList.class).value("2").next(tail);
+        LinkedList head = DynamicObject.newInstance(LinkedList.class).value("1").next(middle);
+
+        DynamicObject.deregisterTag(LinkedList.class);
+
+        roundTrip(tail);
+        roundTrip(middle);
+        roundTrip(head);
+
+        assertEquals("{:value \"1\", :next {:value \"2\", :next {:value \"3\"}}}", serialize(head));
+        assertEquals("{:value \"2\", :next {:value \"3\"}}", serialize(middle));
+        assertEquals("{:value \"3\"}", serialize(tail));
+    }
+
+    @Test
     public void registeringTheTagDoesNotAffectEqualityOfDeserializedInstances() {
         LinkedList obj1 = DynamicObject.deserialize("{:value \"1\", :next {:value \"2\", :next {:value \"3\"}}}", LinkedList.class);
         DynamicObject.registerTag(LinkedList.class, "LinkedList");
@@ -53,7 +105,7 @@ public class RecursionTest {
     }
 
     private void roundTrip(LinkedList linkedList) {
-        assertEquals(linkedList, DynamicObject.deserialize(DynamicObject.serialize(linkedList), LinkedList.class));
+        assertEquals(linkedList, deserialize(serialize(linkedList), LinkedList.class));
     }
 }
 

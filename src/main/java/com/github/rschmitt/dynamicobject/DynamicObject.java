@@ -3,6 +3,8 @@ package com.github.rschmitt.dynamicobject;
 import clojure.java.api.Clojure;
 import clojure.lang.*;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Proxy;
@@ -96,7 +98,9 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * will be null.
      */
     public static <T extends DynamicObject<T>> T newInstance(Class<T> clazz) {
-        return wrap(PersistentHashMap.EMPTY, clazz);
+        IPersistentMap meta = PersistentHashMap.EMPTY.assoc(Keyword.intern("type"),
+                Keyword.intern(clazz.getCanonicalName()));
+        return wrap(PersistentHashMap.EMPTY.withMeta(meta), clazz);
     }
 
     /**
@@ -144,7 +148,40 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      */
     public static <T extends DynamicObject<T>> void registerTag(Class<T> clazz, String tag) {
         synchronized (DynamicObject.class) {
-            registerType(clazz, new RecordTranslator<>(tag, clazz));
+            TranslatorRegistry.recordTagCache.put(clazz, tag);
+            TranslatorRegistry.readers = TranslatorRegistry.readers
+                    .assocEx(Symbol.intern(tag),
+                            new AFn() {
+                                @Override
+                                public Object invoke(Object obj) {
+                                    IObj mapWithMeta = (IObj) obj;
+                                    IPersistentMap meta = mapWithMeta.meta();
+                                    if (meta == null)
+                                        meta = PersistentHashMap.EMPTY;
+                                    IPersistentMap newMeta = meta.assoc(Keyword.intern("type"),
+                                            Keyword.intern(clazz.getCanonicalName()));
+                                    return mapWithMeta.withMeta(newMeta);
+                                }
+                            }
+                    );
+
+
+            Var varPrintMethod = (Var) Clojure.var("clojure.core", "print-method");
+            MultiFn printMethod = (MultiFn) varPrintMethod.get();
+            printMethod.addMethod(Keyword.intern(clazz.getCanonicalName()), new AFn() {
+                @Override
+                public Object invoke(Object arg1, Object arg2) {
+                    Writer writer = (Writer) arg2;
+                    IObj obj = (IObj) arg1;
+                    obj = obj.withMeta(null);
+                    try {
+                        writer.write(String.format("#%s%s", tag, obj.toString()));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                }
+            });
         }
     }
 
@@ -152,45 +189,19 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * Deregister the reader tag for the given DynamicObject type.
      */
     public static <T extends DynamicObject<T>> void deregisterTag(Class<T> clazz) {
-        deregisterType(clazz);
-    }
-}
+        String tag = TranslatorRegistry.recordTagCache.get(clazz);
+        TranslatorRegistry.readers = TranslatorRegistry.readers.without(Symbol.intern(tag));
+        TranslatorRegistry.recordTagCache.remove(clazz);
 
-class RecordTranslator<T extends DynamicObject<T>> extends EdnTranslator<T> {
-    private final String tag;
-    private final Class<T> type;
-
-    RecordTranslator(String tag, Class<T> type) {
-        this.tag = tag;
-        this.type = type;
-    }
-
-    @Override
-    public T read(Object obj) {
-        IObj mapWithMeta = (IObj) obj;
-        IPersistentMap meta = mapWithMeta.meta();
-        if (meta == null)
-            meta = PersistentHashMap.EMPTY;
-        IPersistentMap newMeta = meta.assoc(Keyword.intern("type"),
-                Keyword.intern(type.getCanonicalName()));
-        IObj newMap = mapWithMeta.withMeta(newMeta);
-        return DynamicObject.wrap((IPersistentMap) newMap, type);
-    }
-
-    @Override
-    public String write(T obj) {
-        IFn var = Clojure.var("clojure.core", "pr-str");
-        return (String) var.invoke(obj.getMap());
-    }
-
-    @Override
-    public String getTag() {
-        return tag;
+        Var varPrintMethod = (Var) Clojure.var("clojure.core", "print-method");
+        MultiFn printMethod = (MultiFn) varPrintMethod.get();
+        printMethod.removeMethod(Keyword.intern(clazz.getCanonicalName()));
     }
 }
 
 class TranslatorRegistry {
     static volatile IPersistentMap readers = PersistentHashMap.EMPTY;
+    static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
     static final ConcurrentHashMap<Class<?>, EdnTranslator<?>> translatorCache = new ConcurrentHashMap<>();
 
     static IPersistentMap getReadersAsOptions() {
