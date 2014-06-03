@@ -11,10 +11,18 @@ import java.lang.reflect.Proxy;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DynamicObjects {
+    private static volatile IPersistentMap readers = PersistentHashMap.EMPTY;
+    private static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, EdnTranslator<?>> translatorCache = new ConcurrentHashMap<>();
+
+    private static IPersistentMap getReadersAsOptions() {
+        return PersistentHashMap.EMPTY.assoc(Clojure.read(":readers"), readers);
+    }
+
     static <T extends DynamicObject<T>> String serialize(T o) {
         IFn prstr = Clojure.var("clojure.core", "pr-str");
         Class<T> type = o.getType();
-        if (TranslatorRegistry.translatorCache.containsKey(type))
+        if (translatorCache.containsKey(type))
             return (String) prstr.invoke(o);
         IPersistentMap map = o.getMap();
         return (String) prstr.invoke(map);
@@ -22,7 +30,7 @@ public class DynamicObjects {
 
     @SuppressWarnings("unchecked")
     static <T extends DynamicObject<T>> T deserialize(String edn, Class<T> clazz) {
-        Object obj = EdnReader.readString(edn, TranslatorRegistry.getReadersAsOptions());
+        Object obj = EdnReader.readString(edn, getReadersAsOptions());
         if (obj instanceof DynamicObject)
             return (T) obj;
         IPersistentMap map = (IPersistentMap) obj;
@@ -51,10 +59,10 @@ public class DynamicObjects {
 
     static <T> void registerType(Class<T> clazz, EdnTranslator<T> translator) {
         synchronized (DynamicObject.class) {
-            TranslatorRegistry.translatorCache.put(clazz, translator);
+            translatorCache.put(clazz, translator);
 
             // install as a reader
-            TranslatorRegistry.readers = TranslatorRegistry.readers.assocEx(Clojure.read(translator.getTag()), translator);
+            readers = readers.assocEx(Clojure.read(translator.getTag()), translator);
 
             // install multimethod for writing
             Var varPrintMethod = (Var) Clojure.var("clojure.core", "print-method");
@@ -66,24 +74,24 @@ public class DynamicObjects {
     @SuppressWarnings("unchecked")
     static <T> void deregisterType(Class<T> clazz) {
         synchronized (DynamicObject.class) {
-            EdnTranslator<T> translator = (EdnTranslator<T>) TranslatorRegistry.translatorCache.get(clazz);
+            EdnTranslator<T> translator = (EdnTranslator<T>) translatorCache.get(clazz);
 
             // uninstall reader
-            TranslatorRegistry.readers = TranslatorRegistry.readers.without(Clojure.read(translator.getTag()));
+            readers = readers.without(Clojure.read(translator.getTag()));
 
             // uninstall print-method multimethod
             Var varPrintMethod = (Var) Clojure.var("clojure.core", "print-method");
             MultiFn printMethod = (MultiFn) varPrintMethod.get();
             printMethod.removeMethod(clazz);
 
-            TranslatorRegistry.translatorCache.remove(clazz);
+            translatorCache.remove(clazz);
         }
     }
 
     static <T extends DynamicObject<T>> void registerTag(Class<T> clazz, String tag) {
         synchronized (DynamicObject.class) {
-            TranslatorRegistry.recordTagCache.put(clazz, tag);
-            TranslatorRegistry.readers = TranslatorRegistry.readers
+            recordTagCache.put(clazz, tag);
+            readers = readers
                     .assocEx(Clojure.read(tag),
                             new AFn() {
                                 @Override
@@ -120,23 +128,12 @@ public class DynamicObjects {
     }
 
     static <T extends DynamicObject<T>> void deregisterTag(Class<T> clazz) {
-        String tag = TranslatorRegistry.recordTagCache.get(clazz);
-        TranslatorRegistry.readers = TranslatorRegistry.readers.without(Clojure.read(tag));
-        TranslatorRegistry.recordTagCache.remove(clazz);
+        String tag = recordTagCache.get(clazz);
+        readers = readers.without(Clojure.read(tag));
+        recordTagCache.remove(clazz);
 
         Var varPrintMethod = (Var) Clojure.var("clojure.core", "print-method");
         MultiFn printMethod = (MultiFn) varPrintMethod.get();
         printMethod.removeMethod(Clojure.read(":" + clazz.getCanonicalName()));
-    }
-
-
-    private static class TranslatorRegistry {
-        static volatile IPersistentMap readers = PersistentHashMap.EMPTY;
-        static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
-        static final ConcurrentHashMap<Class<?>, EdnTranslator<?>> translatorCache = new ConcurrentHashMap<>();
-
-        static IPersistentMap getReadersAsOptions() {
-            return PersistentHashMap.EMPTY.assoc(Clojure.read(":readers"), readers);
-        }
     }
 }

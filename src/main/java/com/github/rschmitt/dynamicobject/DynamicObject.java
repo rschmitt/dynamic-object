@@ -1,14 +1,6 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.java.api.Clojure;
-import clojure.lang.*;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Proxy;
-import java.util.concurrent.ConcurrentHashMap;
+import clojure.lang.IPersistentMap;
 
 public interface DynamicObject<T extends DynamicObject<T>> {
     /**
