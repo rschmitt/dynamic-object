@@ -12,11 +12,13 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
+    private static final Object EMPTY_MAP = Clojure.read("{}");
     private static final IFn GET = Clojure.var("clojure.core", "get");
     private static final IFn CONTAINS_KEY = Clojure.var("clojure.core", "contains?");
     private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
     private static final IFn DISSOC = Clojure.var("clojure.core", "dissoc");
-
+    private static final IFn META = Clojure.var("clojure.core", "meta");
+    private static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
     private static final IFn PPRINT;
 
     static {
@@ -61,8 +63,11 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
 
-        if (method.getReturnType().equals(type) && (args != null && args.length > 0))
+        if (isBuilderMethod(method, args)) {
+            if (isMetadataBuilder(method))
+                return assocMeta(methodName, args[0]);
             return assoc(methodName, args[0]);
+        }
 
         if (method.isDefault())
             return invokeDefaultMethod(proxy, method, args);
@@ -96,8 +101,47 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 else
                     return method.invoke(map, args);
             default:
+                if (isMetadataGetter(method))
+                    return getMetadataFor(methodName);
                 return getValueFor(method);
         }
+    }
+
+    private Object assocMeta(String key, Object value) {
+        Object meta = META.invoke(map);
+        if (meta == null)
+            meta = EMPTY_MAP;
+        meta = ASSOC.invoke(meta, key, value);
+        return DynamicObject.wrap(WITH_META.invoke(map, meta), type);
+    }
+
+    private boolean isBuilderMethod(Method method, Object[] args) {
+        return method.getReturnType().equals(type) && method.getParameterCount() == 1;
+    }
+
+    private boolean isMetadataBuilder(Method method) {
+        if (method.getParameterCount() != 1)
+            return false;
+        for (Annotation[] annotations : method.getParameterAnnotations())
+            for (Annotation annotation : annotations)
+                if (annotation.annotationType().equals(Meta.class))
+                    return true;
+        return false;
+    }
+
+    private Object getMetadataFor(String key) {
+        Object meta = META.invoke(map);
+        Object val = GET.invoke(meta, key);
+        return val;
+    }
+
+    private boolean isMetadataGetter(Method method) {
+        if (method.getParameterCount() != 0)
+            return false;
+        for (Annotation annotation : method.getAnnotations())
+            if (annotation.annotationType().equals(Meta.class))
+                return true;
+        return false;
     }
 
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
