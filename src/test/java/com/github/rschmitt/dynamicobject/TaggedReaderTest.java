@@ -6,9 +6,12 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
 
 public class TaggedReaderTest {
+    private static final String EDN = "{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}";
+
     @Before
     public void setup() {
         DynamicObject.registerType(DumbClass.class, new DumbClassTranslator());
@@ -21,13 +24,19 @@ public class TaggedReaderTest {
 
     @Test
     public void roundTrip() {
-        String edn = "{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}";
+        DumbClassHolder holder = DynamicObject.deserialize(EDN, DumbClassHolder.class);
 
-        DumbClassHolder deserialized = DynamicObject.deserialize(edn, DumbClassHolder.class);
-        String serialized = DynamicObject.serialize(deserialized);
+        String serialized = DynamicObject.serialize(holder);
 
-        assertEquals(edn, serialized);
-        assertEquals(new DumbClass(1, "str"), deserialized.dumb().get(0));
+        assertEquals(EDN, serialized);
+        assertEquals(new DumbClass(1, "str"), holder.dumb().get(0));
+    }
+
+    @Test
+    public void prettyPrint() {
+        DumbClassHolder holder = DynamicObject.deserialize(EDN, DumbClassHolder.class);
+        String expectedFormattedString = format("{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}%n");
+        assertEquals(expectedFormattedString, holder.toFormattedString());
     }
 }
 
@@ -46,7 +55,7 @@ class DumbClassTranslator extends EdnTranslator<DumbClass> {
 
     @Override
     public String write(DumbClass obj) {
-        return String.format("{:version %d, :str \"%s\"}", obj.getVersion(), obj.getStr());
+        return format("{:version %d, :str \"%s\"}", obj.getVersion(), obj.getStr());
     }
 
     @Override
