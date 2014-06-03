@@ -26,12 +26,12 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     private final IPersistentMap map;
     private final Class<T> clazz;
-    private final Constructor<MethodHandles.Lookup> constructor;
+    private final Constructor<MethodHandles.Lookup> lookupConstructor;
 
-    DynamicObjectInvocationHandler(IPersistentMap map, Class<T> clazz, Constructor<MethodHandles.Lookup> constructor) {
+    DynamicObjectInvocationHandler(IPersistentMap map, Class<T> clazz, Constructor<MethodHandles.Lookup> lookupConstructor) {
         this.map = map;
         this.clazz = clazz;
-        this.constructor = constructor;
+        this.lookupConstructor = lookupConstructor;
     }
 
     private T assoc(String key, Object value) {
@@ -101,7 +101,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
         Class<?> declaringClass = method.getDeclaringClass();
         int TRUSTED = -1;
-        return constructor.newInstance(declaringClass, TRUSTED)
+        return lookupConstructor.newInstance(declaringClass, TRUSTED)
                 .unreflectSpecial(method, declaringClass)
                 .bindTo(proxy)
                 .invokeWithArguments(args);

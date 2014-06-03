@@ -40,12 +40,12 @@ public class DynamicObjects {
     @SuppressWarnings("unchecked")
     static <T extends DynamicObject<T>> T wrap(IPersistentMap map, Class<T> clazz) {
         try {
-            Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
-            constructor.setAccessible(true);
+            Constructor<MethodHandles.Lookup> lookupConstructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
+            lookupConstructor.setAccessible(true);
 
             return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                     new Class<?>[]{clazz},
-                    new DynamicObjectInvocationHandler<>(map, clazz, constructor));
+                    new DynamicObjectInvocationHandler<>(map, clazz, lookupConstructor));
         } catch (ReflectiveOperationException ex) {
             throw new RuntimeException(ex);
         }
