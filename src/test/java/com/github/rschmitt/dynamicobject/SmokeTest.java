@@ -7,21 +7,8 @@ import static java.lang.String.format;
 import static org.junit.Assert.*;
 
 public class SmokeTest {
-    static final String SIMPLE_SCHEMA_EDN = "{:str \"expected value\", :i 4, :d 3.14, :f 3.14, :lng 1234567890, :shrt 4, :b true}";
+    static final String SIMPLE_SCHEMA_EDN = "{:str \"expected value\", :i 4, :d 3.14}";
     static final String NESTED_SCHEMA_EDN = format("{:version 1, :simple %s}", SIMPLE_SCHEMA_EDN);
-
-    @Test
-    public void getSimpleFields() {
-        SimpleSchema simpleSchema = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
-
-        assertEquals("expected value", simpleSchema.str());
-        assertEquals(4, simpleSchema.shrt());
-        assertEquals(4, simpleSchema.i());
-        assertEquals(1234567890L, simpleSchema.lng());
-        assertEquals(3.14, simpleSchema.d(), 0.001);
-        assertEquals(3.14, simpleSchema.f(), 0.001);
-        assertTrue(simpleSchema.b());
-    }
 
     @Test
     public void nesting() {
@@ -41,9 +28,9 @@ public class SmokeTest {
 
     @Test
     public void getMap() {
-        SimpleSchema simpleSchema = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
-        IPersistentMap map = (IPersistentMap) EdnReader.readString(SIMPLE_SCHEMA_EDN, PersistentHashMap.EMPTY);
-        assertEquals(map, simpleSchema.getMap());
+        NestedSchema nestedSchema = DynamicObject.deserialize(NESTED_SCHEMA_EDN, NestedSchema.class);
+        IPersistentMap map = (IPersistentMap) EdnReader.readString(NESTED_SCHEMA_EDN, PersistentHashMap.EMPTY);
+        assertEquals(map, nestedSchema.getMap());
     }
 
     @Test
@@ -58,19 +45,11 @@ public class SmokeTest {
     }
 
     public interface SimpleSchema extends DynamicObject<SimpleSchema> {
-        short shrt();
-
         int i();
-
-        long lng();
-
-        float f();
 
         double d();
 
         String str();
-
-        boolean b();
     }
 
     public interface NestedSchema extends DynamicObject<NestedSchema> {
