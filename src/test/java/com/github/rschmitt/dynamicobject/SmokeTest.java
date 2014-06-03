@@ -1,6 +1,5 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.java.api.Clojure;
 import clojure.lang.*;
 import org.junit.Test;
 
@@ -48,31 +47,6 @@ public class SmokeTest {
     }
 
     @Test
-    public void assoc() {
-        SimpleSchema initial = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
-        SimpleSchema changed = initial.assoc("str", "new value");
-
-        assertEquals("new value", changed.str());
-
-        SimpleSchema changedBack = changed.assoc("str", "expected value");
-        assertEquals(initial, changedBack);
-    }
-
-    @Test
-    public void equalsAndHashCode() {
-        SimpleSchema instance1 = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
-        SimpleSchema instance2 = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
-
-        assertFalse(instance1 == instance2);
-        assertTrue(instance1.equals(instance1));
-        assertTrue(instance1.equals(instance2));
-        assertEquals(instance1, instance1);
-        assertEquals(instance1, instance2);
-        assertEquals(instance1.hashCode(), instance2.hashCode());
-        assertFalse(instance1.assoc("key", "new-value").equals(instance2));
-    }
-
-    @Test
     public void unknownFields() {
         String edn = "{:str \"str\", :i 4, :d 3.14, :unknown \"unknown\"}";
 
@@ -81,28 +55,6 @@ public class SmokeTest {
 
         assertFalse(withUnknowns.equals(regular));
         assertEquals(edn, withUnknowns.toString());
-    }
-
-    @Test
-    public void assocEx() {
-        SimpleSchema initial = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
-        SimpleSchema assoced = initial.assocEx("new-field", "new-value");
-        assertEquals("new-value", ((IPersistentMap) assoced.getMap()).valAt(Clojure.read(":new-field")));
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void invalidAssocEx() {
-        SimpleSchema simpleSchema = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
-        simpleSchema.assocEx("str", "str");
-    }
-
-    @Test
-    public void dissoc() {
-        SimpleSchema simpleSchema = DynamicObject.deserialize("{:str \"value\"}", SimpleSchema.class);
-
-        SimpleSchema empty = simpleSchema.dissoc("str");
-
-        assertEquals("{}", empty.toString());
     }
 
     public interface SimpleSchema extends DynamicObject<SimpleSchema> {

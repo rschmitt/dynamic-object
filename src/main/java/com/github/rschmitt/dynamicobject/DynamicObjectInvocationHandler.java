@@ -38,27 +38,6 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         this.lookupConstructor = lookupConstructor;
     }
 
-    private T assoc(String key, Object value) {
-        Object keyword = Clojure.read(":" + key);
-        if (value instanceof DynamicObject)
-            value = ((DynamicObject) value).getMap();
-        return DynamicObject.wrap(ASSOC.invoke(map, keyword, value), type);
-    }
-
-    private T assocEx(String key, Object value) {
-        Object keyword = Clojure.read(":" + key);
-        if ((boolean) CONTAINS_KEY.invoke(map, keyword)) {
-            throw new RuntimeException("");
-        }
-
-        return assoc(key, value);
-    }
-
-    private T without(String key) {
-        Object keyword = Clojure.read(":" + key);
-        return DynamicObject.wrap(DISSOC.invoke(map, keyword), type);
-    }
-
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
@@ -77,12 +56,6 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 return map;
             case "getType":
                 return type;
-            case "assoc":
-                return assoc((String) args[0], args[1]);
-            case "assocEx":
-                return assocEx((String) args[0], args[1]);
-            case "dissoc":
-                return without((String) args[0]);
             case "toString":
                 return map.toString();
             case "hashCode":
@@ -105,6 +78,13 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                     return getMetadataFor(methodName);
                 return getValueFor(method);
         }
+    }
+
+    private T assoc(String key, Object value) {
+        Object keyword = Clojure.read(":" + key);
+        if (value instanceof DynamicObject)
+            value = ((DynamicObject) value).getMap();
+        return DynamicObject.wrap(ASSOC.invoke(map, keyword, value), type);
     }
 
     private Object assocMeta(String key, Object value) {

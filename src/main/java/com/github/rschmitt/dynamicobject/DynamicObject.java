@@ -14,21 +14,6 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     Class<T> getType();
 
     /**
-     * Return a persistent copy of this object with the new value associated with the given key.
-     */
-    T assoc(String key, Object value);
-
-    /**
-     * Same as {@link DynamicObject#assoc}, but throws an exception if the given key already exists.
-     */
-    T assocEx(String key, Object value);
-
-    /**
-     * Returns a persistent copy of this object dissoc the entry for the given key.
-     */
-    T dissoc(String key);
-
-    /**
      * Invokes clojure.pprint/pprint, which writes a pretty-printed representation of the object to the currently bound
      * value of *out*, which defaults to System.out (stdout).
      */
