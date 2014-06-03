@@ -1,8 +1,5 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.java.api.Clojure;
-import clojure.lang.IPersistentMap;
-import clojure.lang.Keyword;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,10 +40,8 @@ interface DumbClassHolder extends DynamicObject<DumbClassHolder> {
 class DumbClassTranslator extends EdnTranslator<DumbClass> {
     @Override
     public DumbClass read(Object obj) {
-        IPersistentMap map = (IPersistentMap) obj;
-        long version = (Long) map.valAt(Clojure.read(":version"));
-        String str = (String) map.valAt(Clojure.read(":str"));
-        return new DumbClass(version, str);
+        DumbClassProxy proxy = DynamicObject.wrap(obj, DumbClassProxy.class);
+        return new DumbClass(proxy.version(), proxy.str());
     }
 
     @Override
@@ -57,6 +52,11 @@ class DumbClassTranslator extends EdnTranslator<DumbClass> {
     @Override
     public String getTag() {
         return "MyDumbClass"; // This is deliberately different from the class name.
+    }
+
+    interface DumbClassProxy extends DynamicObject<DumbClassProxy> {
+        long version();
+        String str();
     }
 }
 
