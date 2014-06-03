@@ -32,8 +32,8 @@ public class RecursionTest {
         assertEquals(3, head.next().next().value());
         assertNull(head.next().next().next());
 
-        assertEquals("{:value 1, :next {:value 2, :next {:value 3}}}", serialize(head));
-        assertEquals("{:value 2, :next {:value 3}}", serialize(middle));
+        assertEquals("{:next {:next {:value 3}, :value 2}, :value 1}", serialize(head));
+        assertEquals("{:next {:value 3}, :value 2}", serialize(middle));
         assertEquals("{:value 3}", serialize(tail));
     }
 
@@ -49,8 +49,8 @@ public class RecursionTest {
         roundTrip(middle);
         roundTrip(head);
         assertEquals("#LinkedList{:value 3}", serialize(tail));
-        assertEquals("#LinkedList{:value 2, :next #LinkedList{:value 3}}", serialize(middle));
-        assertEquals("#LinkedList{:value 1, :next #LinkedList{:value 2, :next #LinkedList{:value 3}}}", serialize(head));
+        assertEquals("#LinkedList{:next #LinkedList{:value 3}, :value 2}", serialize(middle));
+        assertEquals("#LinkedList{:next #LinkedList{:next #LinkedList{:value 3}, :value 2}, :value 1}", serialize(head));
     }
 
     @Test
@@ -65,8 +65,8 @@ public class RecursionTest {
         roundTrip(middle);
         roundTrip(head);
         assertEquals("#LinkedList{:value 3}", serialize(tail));
-        assertEquals("#LinkedList{:value 2, :next #LinkedList{:value 3}}", serialize(middle));
-        assertEquals("#LinkedList{:value 1, :next #LinkedList{:value 2, :next #LinkedList{:value 3}}}", serialize(head));
+        assertEquals("#LinkedList{:next #LinkedList{:value 3}, :value 2}", serialize(middle));
+        assertEquals("#LinkedList{:next #LinkedList{:next #LinkedList{:value 3}, :value 2}, :value 1}", serialize(head));
     }
 
     @Test
@@ -83,8 +83,8 @@ public class RecursionTest {
         roundTrip(middle);
         roundTrip(head);
 
-        assertEquals("{:value 1, :next {:value 2, :next {:value 3}}}", serialize(head));
-        assertEquals("{:value 2, :next {:value 3}}", serialize(middle));
+        assertEquals("{:next {:next {:value 3}, :value 2}, :value 1}", serialize(head));
+        assertEquals("{:next {:value 3}, :value 2}", serialize(middle));
         assertEquals("{:value 3}", serialize(tail));
     }
 

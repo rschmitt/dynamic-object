@@ -1,12 +1,11 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.lang.IPersistentMap;
-
 public interface DynamicObject<T extends DynamicObject<T>> {
     /**
-     * @return the underlying IPersistentMap backing this instance.
+     * @return the underlying Clojure map backing this instance. Downcasting the return value of this method to any
+     * particular Java type (e.g. IPersistentMap) is not guaranteed to work with future versions of Clojure.
      */
-    IPersistentMap getMap();
+    Object getMap();
 
     /**
      * @return the apparent type of this instance. Note that {@code getClass} will return the class of the interface
@@ -51,8 +50,8 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     /**
      * Deserializes a DynamicObject from a String.
      *
-     * @param edn   The Edn representation of the object.
-     * @param type  The type of class to deserialize. Must be an interface that extends DynamicObject.
+     * @param edn  The Edn representation of the object.
+     * @param type The type of class to deserialize. Must be an interface that extends DynamicObject.
      */
     public static <T extends DynamicObject<T>> T deserialize(String edn, Class<T> type) {
         return DynamicObjects.deserialize(edn, type);
@@ -61,13 +60,12 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     /**
      * Use the supplied {@code map} to back an instance of {@code type}.
      */
-    public static <T extends DynamicObject<T>> T wrap(IPersistentMap map, Class<T> type) {
+    public static <T extends DynamicObject<T>> T wrap(Object map, Class<T> type) {
         return DynamicObjects.wrap(map, type);
     }
 
     /**
-     * Create a "blank" instance of {@code type}, backed by an empty {@link clojure.lang.IPersistentMap}. All fields
-     * will be null.
+     * Create a "blank" instance of {@code type}, backed by an empty Clojure map. All fields will be null.
      */
     public static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
         return DynamicObjects.newInstance(type);

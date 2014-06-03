@@ -80,7 +80,6 @@ public class SmokeTest {
         SimpleSchema regular = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
 
         assertFalse(withUnknowns.equals(regular));
-        assertEquals(withUnknowns.getMap().valAt(Clojure.read(":unknown")), "unknown");
         assertEquals(edn, withUnknowns.toString());
     }
 
@@ -88,7 +87,7 @@ public class SmokeTest {
     public void assocEx() {
         SimpleSchema initial = DynamicObject.deserialize(SIMPLE_SCHEMA_EDN, SimpleSchema.class);
         SimpleSchema assoced = initial.assocEx("new-field", "new-value");
-        assertEquals("new-value", assoced.getMap().valAt(Clojure.read(":new-field")));
+        assertEquals("new-value", ((IPersistentMap) assoced.getMap()).valAt(Clojure.read(":new-field")));
     }
 
     @Test(expected = RuntimeException.class)
@@ -98,7 +97,7 @@ public class SmokeTest {
     }
 
     @Test
-    public void without() {
+    public void dissoc() {
         SimpleSchema simpleSchema = DynamicObject.deserialize("{:str \"value\"}", SimpleSchema.class);
 
         SimpleSchema empty = simpleSchema.dissoc("str");

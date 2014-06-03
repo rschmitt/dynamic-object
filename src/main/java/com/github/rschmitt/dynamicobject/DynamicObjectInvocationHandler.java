@@ -2,9 +2,6 @@ package com.github.rschmitt.dynamicobject;
 
 import clojure.java.api.Clojure;
 import clojure.lang.IFn;
-import clojure.lang.IMapEntry;
-import clojure.lang.IPersistentMap;
-import clojure.lang.Keyword;
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -15,6 +12,11 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
+    private static final IFn GET = Clojure.var("clojure.core", "get");
+    private static final IFn CONTAINS_KEY = Clojure.var("clojure.core", "contains?");
+    private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
+    private static final IFn DISSOC = Clojure.var("clojure.core", "dissoc");
+
     private static final IFn PPRINT;
 
     static {
@@ -24,35 +26,35 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         PPRINT = Clojure.var("clojure.pprint/pprint");
     }
 
-    private final IPersistentMap map;
+    private final Object map;
     private final Class<T> type;
     private final Constructor<MethodHandles.Lookup> lookupConstructor;
 
-    DynamicObjectInvocationHandler(IPersistentMap map, Class<T> type, Constructor<MethodHandles.Lookup> lookupConstructor) {
+    DynamicObjectInvocationHandler(Object map, Class<T> type, Constructor<MethodHandles.Lookup> lookupConstructor) {
         this.map = map;
         this.type = type;
         this.lookupConstructor = lookupConstructor;
     }
 
     private T assoc(String key, Object value) {
-        Keyword keyword = (Keyword) Clojure.read(":" + key);
+        Object keyword = Clojure.read(":" + key);
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
-        IPersistentMap newMap = map.assoc(keyword, value);
-        return DynamicObject.wrap(newMap, type);
+        return DynamicObject.wrap(ASSOC.invoke(map, keyword, value), type);
     }
 
     private T assocEx(String key, Object value) {
-        Keyword keyword = (Keyword) Clojure.read(":" + key);
-        if (value instanceof DynamicObject)
-            value = ((DynamicObject) value).getMap();
-        IPersistentMap newMap = map.assocEx(keyword, value);
-        return DynamicObject.wrap(newMap, type);
+        Object keyword = Clojure.read(":" + key);
+        if ((boolean) CONTAINS_KEY.invoke(map, keyword)) {
+            throw new RuntimeException("");
+        }
+
+        return assoc(key, value);
     }
 
     private T without(String key) {
-        Keyword keyword = (Keyword) Clojure.read(":" + key);
-        return DynamicObject.wrap(map.without(keyword), type);
+        Object keyword = Clojure.read(":" + key);
+        return DynamicObject.wrap(DISSOC.invoke(map, keyword), type);
     }
 
     @Override
@@ -110,13 +112,12 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     @SuppressWarnings("unchecked")
     private Object getValueFor(Method method) {
         String methodName = method.getName();
-        Keyword keywordKey = (Keyword) Clojure.read(":" + methodName);
-        IMapEntry entry = map.entryAt(keywordKey);
-        if (entry == null)
-            entry = getNonDefaultKey(method);
-        if (entry == null)
+        Object keywordKey = Clojure.read(":" + methodName);
+        Object val = GET.invoke(map, keywordKey);
+        if (val == null)
+            val = getNonDefaultValue(method);
+        if (val == null)
             return null;
-        Object val = entry.val();
         Class<?> returnType = method.getReturnType();
         if (returnType.equals(int.class) || returnType.equals(Integer.class))
             return returnInt(val);
@@ -126,7 +127,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             return returnShort(val);
         if (DynamicObject.class.isAssignableFrom(returnType)) {
             Class<T> dynamicObjectType = (Class<T>) returnType;
-            return DynamicObject.wrap((IPersistentMap) map.valAt(Clojure.read(":" + methodName)), dynamicObjectType);
+            Object keyword = Clojure.read(":" + methodName);
+            return DynamicObject.wrap(GET.invoke(map, keyword), dynamicObjectType);
         }
         return val;
     }
@@ -151,13 +153,13 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         else return ((Long) val).shortValue();
     }
 
-    private IMapEntry getNonDefaultKey(Method method) {
+    private Object getNonDefaultValue(Method method) {
         for (Annotation annotation : method.getAnnotations()) {
             if (annotation.annotationType().equals(Key.class)) {
                 String key = ((Key) annotation).value();
                 if (key.charAt(0) != ':')
                     key = ":" + key;
-                return map.entryAt(Clojure.read(key));
+                return GET.invoke(map, Clojure.read(key));
             }
         }
         return null;
