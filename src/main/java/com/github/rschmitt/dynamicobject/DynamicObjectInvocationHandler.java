@@ -25,12 +25,12 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private final IPersistentMap map;
-    private final Class<T> clazz;
+    private final Class<T> type;
     private final Constructor<MethodHandles.Lookup> lookupConstructor;
 
-    DynamicObjectInvocationHandler(IPersistentMap map, Class<T> clazz, Constructor<MethodHandles.Lookup> lookupConstructor) {
+    DynamicObjectInvocationHandler(IPersistentMap map, Class<T> type, Constructor<MethodHandles.Lookup> lookupConstructor) {
         this.map = map;
-        this.clazz = clazz;
+        this.type = type;
         this.lookupConstructor = lookupConstructor;
     }
 
@@ -39,7 +39,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
         IPersistentMap newMap = map.assoc(keyword, value);
-        return DynamicObject.wrap(newMap, clazz);
+        return DynamicObject.wrap(newMap, type);
     }
 
     private T assocEx(String key, Object value) {
@@ -47,19 +47,19 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
         IPersistentMap newMap = map.assocEx(keyword, value);
-        return DynamicObject.wrap(newMap, clazz);
+        return DynamicObject.wrap(newMap, type);
     }
 
     private T without(String key) {
         Keyword keyword = (Keyword) Clojure.read(":" + key);
-        return DynamicObject.wrap(map.without(keyword), clazz);
+        return DynamicObject.wrap(map.without(keyword), type);
     }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
 
-        if (method.getReturnType().equals(clazz) && (args != null && args.length > 0))
+        if (method.getReturnType().equals(type) && (args != null && args.length > 0))
             return assoc(methodName, args[0]);
 
         if (method.isDefault())
@@ -69,7 +69,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             case "getMap":
                 return map;
             case "getType":
-                return clazz;
+                return type;
             case "assoc":
                 return assoc((String) args[0], args[1]);
             case "assocEx":

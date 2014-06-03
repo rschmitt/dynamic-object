@@ -52,55 +52,55 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * Deserializes a DynamicObject from a String.
      *
      * @param edn   The Edn representation of the object.
-     * @param clazz The type of class to deserialize. Must be an interface that extends DynamicObject.
+     * @param type  The type of class to deserialize. Must be an interface that extends DynamicObject.
      */
-    public static <T extends DynamicObject<T>> T deserialize(String edn, Class<T> clazz) {
-        return DynamicObjects.deserialize(edn, clazz);
+    public static <T extends DynamicObject<T>> T deserialize(String edn, Class<T> type) {
+        return DynamicObjects.deserialize(edn, type);
     }
 
     /**
-     * Use the supplied {@code map} to back an instance of {@code clazz}.
+     * Use the supplied {@code map} to back an instance of {@code type}.
      */
-    public static <T extends DynamicObject<T>> T wrap(IPersistentMap map, Class<T> clazz) {
-        return DynamicObjects.wrap(map, clazz);
+    public static <T extends DynamicObject<T>> T wrap(IPersistentMap map, Class<T> type) {
+        return DynamicObjects.wrap(map, type);
     }
 
     /**
-     * Create a "blank" instance of {@code clazz}, backed by an empty {@link clojure.lang.IPersistentMap}. All fields
+     * Create a "blank" instance of {@code type}, backed by an empty {@link clojure.lang.IPersistentMap}. All fields
      * will be null.
      */
-    public static <T extends DynamicObject<T>> T newInstance(Class<T> clazz) {
-        return DynamicObjects.newInstance(clazz);
+    public static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
+        return DynamicObjects.newInstance(type);
     }
 
     /**
-     * Register an {@link EdnTranslator} to enable instances of {@code clazz} to be serialized to and deserialized from
+     * Register an {@link EdnTranslator} to enable instances of {@code type} to be serialized to and deserialized from
      * Edn using reader tags.
      */
-    public static <T> void registerType(Class<T> clazz, EdnTranslator<T> translator) {
-        DynamicObjects.registerType(clazz, translator);
+    public static <T> void registerType(Class<T> type, EdnTranslator<T> translator) {
+        DynamicObjects.registerType(type, translator);
     }
 
     /**
      * Deregister the given {@code translator}. After this method is invoked, it will no longer be possible to read or
-     * write instances of {@code clazz} unless another translator is registered.
+     * write instances of {@code type} unless another translator is registered.
      */
-    public static <T> void deregisterType(Class<T> clazz) {
-        DynamicObjects.deregisterType(clazz);
+    public static <T> void deregisterType(Class<T> type) {
+        DynamicObjects.deregisterType(type);
     }
 
     /**
      * Register a reader tag for a DynamicObject type. This is useful for reading Edn representations of Clojure
      * records.
      */
-    public static <T extends DynamicObject<T>> void registerTag(Class<T> clazz, String tag) {
-        DynamicObjects.registerTag(clazz, tag);
+    public static <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
+        DynamicObjects.registerTag(type, tag);
     }
 
     /**
      * Deregister the reader tag for the given DynamicObject type.
      */
-    public static <T extends DynamicObject<T>> void deregisterTag(Class<T> clazz) {
-        DynamicObjects.deregisterTag(clazz);
+    public static <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
+        DynamicObjects.deregisterTag(type);
     }
 }
