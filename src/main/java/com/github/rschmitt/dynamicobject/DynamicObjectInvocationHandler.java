@@ -141,12 +141,10 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (val == null)
             return null;
         Class<?> returnType = method.getReturnType();
-        if (returnType.equals(int.class) || returnType.equals(Integer.class))
-            return returnInt(val);
-        if (returnType.equals(float.class) || returnType.equals(Float.class))
-            return returnFloat(val);
-        if (returnType.equals(short.class) || returnType.equals(Short.class))
-            return returnShort(val);
+        if (returnType.equals(int.class) || returnType.equals(Integer.class)) return returnInt(val);
+        if (returnType.equals(float.class) || returnType.equals(Float.class)) return returnFloat(val);
+        if (returnType.equals(short.class) || returnType.equals(Short.class)) return returnShort(val);
+        if (returnType.equals(byte.class) || returnType.equals(Byte.class)) return returnByte(val);
         if (DynamicObject.class.isAssignableFrom(returnType)) {
             Class<T> dynamicObjectType = (Class<T>) returnType;
             Object keyword = Clojure.read(":" + methodName);
@@ -156,23 +154,26 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private float returnFloat(Object val) {
-        if (val instanceof Float)
-            return (Float) val;
+        if (val instanceof Float) return (Float) val;
         return ((Double) val).floatValue();
     }
 
     private int returnInt(Object val) {
-        if (val instanceof Integer)
-            return (Integer) val;
+        if (val instanceof Integer) return (Integer) val;
         else return ((Long) val).intValue();
     }
 
     private short returnShort(Object val) {
-        if (val instanceof Short)
-            return (Short) val;
-        if (val instanceof Integer)
-            return ((Integer) val).shortValue();
+        if (val instanceof Short) return (Short) val;
+        if (val instanceof Integer) return ((Integer) val).shortValue();
         else return ((Long) val).shortValue();
+    }
+
+    private byte returnByte(Object val) {
+        if (val instanceof Byte) return (Byte) val;
+        if (val instanceof Short) return ((Short) val).byteValue();
+        if (val instanceof Integer) return ((Integer) val).byteValue();
+        else return ((Long) val).byteValue();
     }
 
     private Object getNonDefaultValue(Method method) {
