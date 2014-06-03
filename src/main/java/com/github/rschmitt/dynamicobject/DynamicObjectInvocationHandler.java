@@ -14,9 +14,7 @@ import java.lang.reflect.Method;
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
     private static final Object EMPTY_MAP = Clojure.read("{}");
     private static final IFn GET = Clojure.var("clojure.core", "get");
-    private static final IFn CONTAINS_KEY = Clojure.var("clojure.core", "contains?");
     private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
-    private static final IFn DISSOC = Clojure.var("clojure.core", "dissoc");
     private static final IFn META = Clojure.var("clojure.core", "meta");
     private static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
     private static final IFn PPRINT;
@@ -42,7 +40,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
 
-        if (isBuilderMethod(method, args)) {
+        if (isBuilderMethod(method)) {
             if (isMetadataBuilder(method))
                 return assocMeta(methodName, args[0]);
             return assoc(methodName, args[0]);
@@ -95,7 +93,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return DynamicObject.wrap(WITH_META.invoke(map, meta), type);
     }
 
-    private boolean isBuilderMethod(Method method, Object[] args) {
+    private boolean isBuilderMethod(Method method) {
         return method.getReturnType().equals(type) && method.getParameterCount() == 1;
     }
 
