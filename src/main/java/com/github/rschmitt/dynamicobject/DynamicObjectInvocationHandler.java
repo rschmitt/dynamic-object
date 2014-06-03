@@ -74,7 +74,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 return assoc((String) args[0], args[1]);
             case "assocEx":
                 return assocEx((String) args[0], args[1]);
-            case "without":
+            case "dissoc":
                 return without((String) args[0]);
             case "toString":
                 return map.toString();

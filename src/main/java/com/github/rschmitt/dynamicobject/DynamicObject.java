@@ -25,9 +25,9 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     T assocEx(String key, Object value);
 
     /**
-     * Returns a persistent copy of this object without the entry for the given key.
+     * Returns a persistent copy of this object dissoc the entry for the given key.
      */
-    T without(String key);
+    T dissoc(String key);
 
     /**
      * Invokes clojure.pprint/pprint, which writes a pretty-printed representation of the object to the currently bound

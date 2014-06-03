@@ -101,7 +101,7 @@ public class SmokeTest {
     public void without() {
         SimpleSchema simpleSchema = DynamicObject.deserialize("{:str \"value\"}", SimpleSchema.class);
 
-        SimpleSchema empty = simpleSchema.without("str");
+        SimpleSchema empty = simpleSchema.dissoc("str");
 
         assertEquals("{}", empty.toString());
     }
