@@ -1,5 +1,7 @@
 package com.github.rschmitt.dynamicobject;
 
+import clojure.java.api.Clojure;
+import clojure.lang.IFn;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -19,7 +21,7 @@ public class PrimitiveTest {
         assertEquals(3.14, BOXED.f(), 0.001);
         assertTrue(BOXED.bool());
         assertTrue('\n' == BOXED.c());
-        assertTrue((byte)127 == BOXED.b());
+        assertTrue((byte) 127 == BOXED.b());
     }
 
     @Test
@@ -32,6 +34,36 @@ public class PrimitiveTest {
         assertTrue(UNBOXED.bool());
         assertTrue('\n' == UNBOXED.c());
         assertTrue(127 == UNBOXED.b());
+    }
+
+    @Test
+    public void boxedBuilders() {
+        Boxed boxed = DynamicObject.newInstance(Boxed.class)
+                .i(4)
+                .d(3.14)
+                .f((float) 3.14)
+                .lng(1234567890L)
+                .shrt((short) 4)
+                .bool(true)
+                .c('\n')
+                .b((byte) 127);
+
+        assertEquals(BOXED, boxed);
+    }
+
+    @Test
+    public void unboxedBuilders() {
+        Unboxed unboxed = DynamicObject.newInstance(Unboxed.class)
+                .i(4)
+                .d(3.14)
+                .f((float) 3.14)
+                .lng(1234567890L)
+                .shrt((short) 4)
+                .bool(true)
+                .c('\n')
+                .b((byte)127);
+
+        assertEquals(UNBOXED, unboxed);
     }
 
     @Test
@@ -53,37 +85,41 @@ public class PrimitiveTest {
 
     public interface Unboxed extends DynamicObject<Unboxed> {
         short shrt();
-
         int i();
-
         long lng();
-
         float f();
-
         double d();
-
         boolean bool();
-
         char c();
-
         byte b();
+
+        Unboxed shrt(short shrt);
+        Unboxed i(int i);
+        Unboxed lng(long lng);
+        Unboxed f(float f);
+        Unboxed d(double d);
+        Unboxed bool(boolean bool);
+        Unboxed c(char c);
+        Unboxed b(byte b);
     }
 
     public interface Boxed extends DynamicObject<Boxed> {
         Short shrt();
-
         Integer i();
-
         Long lng();
-
         Float f();
-
         Double d();
-
         Boolean bool();
-
         Character c();
-
         Byte b();
+
+        Boxed shrt(Short shrt);
+        Boxed i(Integer i);
+        Boxed lng(Long lng);
+        Boxed f(Float f);
+        Boxed d(Double d);
+        Boxed bool(Boolean bool);
+        Boxed c(Character c);
+        Boxed b(Byte b);
     }
 }

@@ -43,7 +43,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (isBuilderMethod(method)) {
             if (isMetadataBuilder(method))
                 return assocMeta(methodName, args[0]);
-            return assoc(methodName, args[0]);
+            Object val = maybeUpconvert(args[0]);
+            return assoc(methodName, val);
         }
 
         if (method.isDefault())
@@ -76,6 +77,14 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                     return getMetadataFor(methodName);
                 return getValueFor(method);
         }
+    }
+
+    private Object maybeUpconvert(Object val) {
+        if (val instanceof Float) val = Double.parseDouble(String.valueOf(val));
+        else if (val instanceof Short) val = Long.valueOf((short) val);
+        else if (val instanceof Byte) val = Long.valueOf((byte) val);
+        else if (val instanceof Integer) val = Long.valueOf((int) val);
+        return val;
     }
 
     private T assoc(String key, Object value) {
