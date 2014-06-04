@@ -174,24 +174,20 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         String methodName = method.getName();
         Object keywordKey = Clojure.read(":" + methodName);
         Object val = GET.invoke(map, keywordKey);
-        if (val == null)
-            val = getNonDefaultValue(method);
-        if (val == null)
-            return null;
+        if (val == null) val = getValueForCustomKey(method);
+        if (val == null) return null;
+
         Class<?> returnType = method.getReturnType();
         if (returnType.equals(int.class) || returnType.equals(Integer.class)) return ((Long) val).intValue();
         if (returnType.equals(float.class) || returnType.equals(Float.class)) return ((Double) val).floatValue();
         if (returnType.equals(short.class) || returnType.equals(Short.class)) return ((Long) val).shortValue();
         if (returnType.equals(byte.class) || returnType.equals(Byte.class)) return ((Long) val).byteValue();
-        if (DynamicObject.class.isAssignableFrom(returnType)) {
-            Class<T> dynamicObjectType = (Class<T>) returnType;
-            Object keyword = Clojure.read(":" + methodName);
-            return DynamicObject.wrap(GET.invoke(map, keyword), dynamicObjectType);
-        }
-        if (Set.class.isAssignableFrom(returnType))
-            return wrapElements((Set<Object>) val, new HashSet<>());
-        if (List.class.isAssignableFrom(returnType))
-            return wrapElements((List<Object>) val, new ArrayList<>());
+
+        if (DynamicObject.class.isAssignableFrom(returnType)) return DynamicObject.wrap(val, (Class<T>) returnType);
+
+        if (Set.class.isAssignableFrom(returnType)) return wrapElements((Set<Object>) val, new HashSet<>());
+        if (List.class.isAssignableFrom(returnType)) return wrapElements((List<Object>) val, new ArrayList<>());
+
         return val;
     }
 
@@ -223,7 +219,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return (String) NAME.invoke(typeMetadata);
     }
 
-    private Object getNonDefaultValue(Method method) {
+    private Object getValueForCustomKey(Method method) {
         for (Annotation annotation : method.getAnnotations()) {
             if (annotation.annotationType().equals(Key.class)) {
                 String key = ((Key) annotation).value();
