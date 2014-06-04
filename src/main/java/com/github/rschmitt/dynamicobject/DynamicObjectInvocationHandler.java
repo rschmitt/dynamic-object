@@ -89,7 +89,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         }
     }
 
-    private Object unwrapMapElements(Object obj) {
+    private static Object unwrapMapElements(Object obj) {
         if (obj != null && Map.class.isAssignableFrom(obj.getClass())) {
             Map<Object, Object> map = (Map<Object, Object>) obj;
             Object ret = EMPTY_MAP;
@@ -105,7 +105,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return obj;
     }
 
-    private Object unwrapCollectionElements(Object val, Class<?> type, String empty) {
+    private static Object unwrapCollectionElements(Object val, Class<?> type, String empty) {
         if (val != null && type.isAssignableFrom(val.getClass())) {
             Iterable<?> iterable = (Iterable<?>) val;
             Object ret = Clojure.read(empty);
@@ -116,7 +116,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return val;
     }
 
-    private Object unwrapAndAnnotate(Object o) {
+    private static Object unwrapAndAnnotate(Object o) {
         if (o instanceof DynamicObject) {
             DynamicObject<?> dynamicObject = (DynamicObject<?>) o;
             Object map = dynamicObject.getMap();
@@ -126,13 +126,13 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return o;
     }
 
-    private Object withTypeMetadata(Object obj, Class<?> type) {
+    private static Object withTypeMetadata(Object obj, Class<?> type) {
         Object meta = META.invoke(obj);
         Object newMeta = ASSOC.invoke(meta, Clojure.read(":type"), Clojure.read(":" + type.getCanonicalName()));
         return WITH_META.invoke(obj, newMeta);
     }
 
-    private Object maybeUpconvert(Object val) {
+    private static Object maybeUpconvert(Object val) {
         if (val instanceof Float) val = Double.parseDouble(String.valueOf(val));
         else if (val instanceof Short) val = Long.valueOf((short) val);
         else if (val instanceof Byte) val = Long.valueOf((byte) val);
@@ -159,7 +159,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return method.getReturnType().equals(type) && method.getParameterCount() == 1;
     }
 
-    private boolean isMetadataBuilder(Method method) {
+    private static boolean isMetadataBuilder(Method method) {
         if (method.getParameterCount() != 1)
             return false;
         for (Annotation[] annotations : method.getParameterAnnotations())
@@ -174,7 +174,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return GET.invoke(meta, key);
     }
 
-    private boolean isMetadataGetter(Method method) {
+    private static boolean isMetadataGetter(Method method) {
         if (method.getParameterCount() != 0)
             return false;
         for (Annotation annotation : method.getAnnotations())
@@ -215,7 +215,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return val;
     }
 
-    private Map<Object, Object> wrapMapElements(Object unwrappedMap) {
+    private static Map<Object, Object> wrapMapElements(Object unwrappedMap) {
         Map<Object, Object> ret = new HashMap<>();
         Object head = FIRST.invoke(unwrappedMap);
         unwrappedMap = REST.invoke(unwrappedMap);
@@ -233,13 +233,13 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     @SuppressWarnings("unchecked")
-    private Object wrapElements(Collection<Object> unwrappedSet, Collection<Object> ret) {
+    private static Object wrapElements(Collection<Object> unwrappedSet, Collection<Object> ret) {
         for (Object elem : unwrappedSet)
             ret.add(maybeWrapElement(elem));
         return ret;
     }
 
-    private Object maybeWrapElement(Object obj) {
+    private static Object maybeWrapElement(Object obj) {
         Class<?> type = getTypeFromMetadata(obj);
         if (type == null)
             return obj;
@@ -247,7 +247,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             return DynamicObject.wrap(obj, (Class<DynamicObject>) type);
     }
 
-    private Class<?> getTypeFromMetadata(Object obj) {
+    private static Class<?> getTypeFromMetadata(Object obj) {
         String canonicalName = getTypeMetadata(obj);
         if (canonicalName == null) return null;
         try {
@@ -257,7 +257,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         }
     }
 
-    private String getTypeMetadata(Object obj) {
+    private static String getTypeMetadata(Object obj) {
         Object metadata = META.invoke(obj);
         if (metadata == null) return null;
         Object typeMetadata = GET.invoke(metadata, Clojure.read(":type"));
