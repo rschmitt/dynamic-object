@@ -10,13 +10,16 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.*;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
     private static final Object EMPTY_MAP = Clojure.read("{}");
     private static final IFn GET = Clojure.var("clojure.core", "get");
     private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
+    private static final IFn CONJ = Clojure.var("clojure.core", "conj");
     private static final IFn META = Clojure.var("clojure.core", "meta");
     private static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
+    private static final IFn NAME = Clojure.var("clojure.core", "name");
     private static final IFn PPRINT;
 
     static {
@@ -44,6 +47,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             if (isMetadataBuilder(method))
                 return assocMeta(methodName, args[0]);
             Object val = maybeUpconvert(args[0]);
+            val = unwrapCollectionElements(val, List.class, "[]");
+            val = unwrapCollectionElements(val, Set.class, "#{}");
             return assoc(methodName, val);
         }
 
@@ -77,6 +82,30 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                     return getMetadataFor(methodName);
                 return getValueFor(method);
         }
+    }
+
+    private Object unwrapCollectionElements(Object val, Class<?> type, String empty) {
+        if (val != null && type.isAssignableFrom(val.getClass())) {
+            Iterable<?> iterable = (Iterable<?>) val;
+            Object ret = Clojure.read(empty);
+            for (Object o : iterable)
+                if (o instanceof DynamicObject) {
+                    DynamicObject<?> dynamicObject = (DynamicObject<?>) o;
+                    Object map = dynamicObject.getMap();
+                    map = withTypeMetadata(map, dynamicObject.getType());
+                    assert META.invoke(map) != null;
+                    ret = CONJ.invoke(ret, map);
+                } else
+                    ret = CONJ.invoke(ret, o);
+            return ret;
+        }
+        return val;
+    }
+
+    private Object withTypeMetadata(Object obj, Class<?> type) {
+        Object meta = META.invoke(obj);
+        Object newMeta = ASSOC.invoke(meta, Clojure.read(":type"), Clojure.read(":" + type.getCanonicalName()));
+        return WITH_META.invoke(obj, newMeta);
     }
 
     private Object maybeUpconvert(Object val) {
@@ -159,7 +188,34 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             Object keyword = Clojure.read(":" + methodName);
             return DynamicObject.wrap(GET.invoke(map, keyword), dynamicObjectType);
         }
+        if (Set.class.isAssignableFrom(returnType))
+            return wrapElements((Set<Object>) val, new HashSet<>());
+        if (List.class.isAssignableFrom(returnType))
+            return wrapElements((List<Object>) val, new ArrayList<>());
         return val;
+    }
+
+    private Object wrapElements(Collection<Object> unwrappedSet, Collection<Object> ret) {
+        for (Object elem : unwrappedSet) {
+            Object metadata = META.invoke(elem);
+            if (metadata == null) {
+                ret.add(elem);
+            } else {
+                Object typeMetadata = GET.invoke(metadata, Clojure.read(":type"));
+                if (typeMetadata == null) {
+                    ret.add(elem);
+                } else {
+                    try {
+                        String typeCanonicalName = (String) NAME.invoke(typeMetadata);
+                        Class<?> type = Class.forName(typeCanonicalName);
+                        ret.add(DynamicObject.wrap(elem, (Class<DynamicObject>) type));
+                    } catch (ReflectiveOperationException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+        }
+        return ret;
     }
 
     private Object getNonDefaultValue(Method method) {
