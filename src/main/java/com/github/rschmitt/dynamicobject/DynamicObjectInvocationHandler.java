@@ -54,7 +54,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             val = unwrapCollectionElements(val, List.class, "[]");
             val = unwrapCollectionElements(val, Set.class, "#{}");
             val = unwrapMapElements(val);
-            return assoc(methodName, val);
+            String key = getBuilderKey(method);
+            return assoc(key, val);
         }
 
         if (method.isDefault())
@@ -87,6 +88,18 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                     return getMetadataFor(methodName);
                 return getValueFor(method);
         }
+    }
+
+    private String getBuilderKey(Method method) {
+        for (Annotation[] annotations : method.getParameterAnnotations())
+            for (Annotation annotation : annotations)
+                if (annotation.annotationType().equals(Key.class)) {
+                    String key = ((Key) annotation).value();
+                    if (key.charAt(0) == ':')
+                        key = key.substring(1);
+                    return key;
+                }
+        return method.getName();
     }
 
     @SuppressWarnings("unchecked")
