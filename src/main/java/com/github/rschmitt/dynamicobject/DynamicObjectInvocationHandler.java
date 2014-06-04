@@ -197,25 +197,30 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     private Object wrapElements(Collection<Object> unwrappedSet, Collection<Object> ret) {
         for (Object elem : unwrappedSet) {
-            Object metadata = META.invoke(elem);
-            if (metadata == null) {
+            Class<?> type = getTypeFromMetadata(elem);
+            if (type == null)
                 ret.add(elem);
-            } else {
-                Object typeMetadata = GET.invoke(metadata, Clojure.read(":type"));
-                if (typeMetadata == null) {
-                    ret.add(elem);
-                } else {
-                    try {
-                        String typeCanonicalName = (String) NAME.invoke(typeMetadata);
-                        Class<?> type = Class.forName(typeCanonicalName);
-                        ret.add(DynamicObject.wrap(elem, (Class<DynamicObject>) type));
-                    } catch (ReflectiveOperationException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-            }
+            else
+                ret.add(DynamicObject.wrap(elem, (Class<DynamicObject>) type));
         }
         return ret;
+    }
+
+    private Class<?> getTypeFromMetadata(Object obj) {
+        String canonicalName = getTypeMetadata(obj);
+        if (canonicalName == null) return null;
+        try {
+            return Class.forName(canonicalName);
+        } catch (ReflectiveOperationException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private String getTypeMetadata(Object obj) {
+        Object metadata = META.invoke(obj);
+        if (metadata == null) return null;
+        Object typeMetadata = GET.invoke(metadata, Clojure.read(":type"));
+        return (String) NAME.invoke(typeMetadata);
     }
 
     private Object getNonDefaultValue(Method method) {
