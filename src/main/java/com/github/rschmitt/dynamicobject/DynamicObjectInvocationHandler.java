@@ -89,6 +89,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static Object unwrapMapElements(Object obj) {
         if (obj != null && Map.class.isAssignableFrom(obj.getClass())) {
             Map<Object, Object> map = (Map<Object, Object>) obj;
@@ -239,6 +240,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return ret;
     }
 
+    @SuppressWarnings("unchecked")
     private static Object maybeWrapElement(Object obj) {
         Class<?> type = getTypeFromMetadata(obj);
         if (type == null)
