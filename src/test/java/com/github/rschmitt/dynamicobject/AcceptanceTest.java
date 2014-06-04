@@ -43,7 +43,6 @@ public class AcceptanceTest {
     }
 
     private void roundTrip(Document document) {
-        document.prettyPrint();
         assertEquals(document, DynamicObject.deserialize(DynamicObject.serialize(document), Document.class));
     }
 

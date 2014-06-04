@@ -81,7 +81,6 @@ public class SchemaCollectionTest {
 
     private <T extends DynamicObject<T>> void roundTripTest(T obj, Class<T> type) {
         String edn = serialize(obj);
-        System.out.println(edn);
         T actual = deserialize(edn, type);
         assertEquals(obj, actual);
     }
