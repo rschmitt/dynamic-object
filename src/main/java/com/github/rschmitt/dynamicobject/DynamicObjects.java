@@ -62,33 +62,27 @@ public class DynamicObjects {
         return wrap(WITH_META.invoke(EMPTY_MAP, metadata), type);
     }
 
-    static <T> void registerType(Class<T> type, EdnTranslator<T> translator) {
-        synchronized (DynamicObject.class) {
-            translatorCache.put(type, translator);
-            readers = ASSOC.invoke(readers, Clojure.read(translator.getTag()), translator);
-            defineMultimethod(type.getCanonicalName(), "DynamicObjects/invokeWriter", translator.getTag());
-        }
+    static synchronized <T> void registerType(Class<T> type, EdnTranslator<T> translator) {
+        translatorCache.put(type, translator);
+        readers = ASSOC.invoke(readers, Clojure.read(translator.getTag()), translator);
+        defineMultimethod(type.getCanonicalName(), "DynamicObjects/invokeWriter", translator.getTag());
     }
 
     @SuppressWarnings("unchecked")
-    static <T> void deregisterType(Class<T> type) {
-        synchronized (DynamicObject.class) {
-            EdnTranslator<T> translator = (EdnTranslator<T>) translatorCache.get(type);
-            readers = DISSOC.invoke(readers, Clojure.read(translator.getTag()));
-            REMOVE_METHOD.invoke(PRINT_METHOD, translator);
-            translatorCache.remove(type);
-        }
+    static synchronized <T> void deregisterType(Class<T> type) {
+        EdnTranslator<T> translator = (EdnTranslator<T>) translatorCache.get(type);
+        readers = DISSOC.invoke(readers, Clojure.read(translator.getTag()));
+        REMOVE_METHOD.invoke(PRINT_METHOD, translator);
+        translatorCache.remove(type);
     }
 
-    static <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
-        synchronized (DynamicObject.class) {
-            recordTagCache.put(type, tag);
-            readers = ASSOC.invoke(readers, Clojure.read(tag), new RecordReader<>(type));
-            defineMultimethod(":" + type.getCanonicalName(), "RecordPrinter/printRecord", tag);
-        }
+    static synchronized <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
+        recordTagCache.put(type, tag);
+        readers = ASSOC.invoke(readers, Clojure.read(tag), new RecordReader<>(type));
+        defineMultimethod(":" + type.getCanonicalName(), "RecordPrinter/printRecord", tag);
     }
 
-    static <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
+    static synchronized <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
         String tag = recordTagCache.get(type);
         readers = DISSOC.invoke(readers, Clojure.read(tag));
         recordTagCache.remove(type);
