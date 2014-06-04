@@ -35,6 +35,7 @@ public class SchemaCollectionTest {
         Coll actual = newInstance(Coll.class).list(list);
 
         roundTripTest(expected, Coll.class);
+        roundTripTest(actual, Coll.class);
         assertEquals(expected, actual);
         assertEquals(list, expected.list());
         assertEquals(list, actual.list());
@@ -53,6 +54,7 @@ public class SchemaCollectionTest {
         Coll actual = newInstance(Coll.class).set(set);
 
         roundTripTest(expected, Coll.class);
+        roundTripTest(actual, Coll.class);
         assertEquals(expected, actual);
         assertEquals(set, expected.set());
         assertEquals(set, actual.set());
@@ -60,8 +62,26 @@ public class SchemaCollectionTest {
         assertEquals(expected.set(), set);
     }
 
+    @Test
+    public void map() {
+        Coll expected = deserialize("#Coll{:map {#X{:y 1}, #X{:y 2}}}", Coll.class);
+        Map<X, X> map = new HashMap<>();
+        map.put(newInstance(X.class).y(1), newInstance(X.class).y(2));
+
+        Coll actual = newInstance(Coll.class).map(map);
+
+        roundTripTest(expected, Coll.class);
+        roundTripTest(actual, Coll.class);
+        assertEquals(expected, actual);
+        assertEquals(map, expected.map());
+        assertEquals(map, actual.map());
+        assertEquals(actual.map(), map);
+        assertEquals(expected.map(), map);
+    }
+
     private <T extends DynamicObject<T>> void roundTripTest(T obj, Class<T> type) {
         String edn = serialize(obj);
+        System.out.println(edn);
         T actual = deserialize(edn, type);
         assertEquals(obj, actual);
     }

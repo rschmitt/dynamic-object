@@ -20,6 +20,10 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private static final IFn META = Clojure.var("clojure.core", "meta");
     private static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
     private static final IFn NAME = Clojure.var("clojure.core", "name");
+    private static final IFn KEY = Clojure.var("clojure.core", "key");
+    private static final IFn VAL = Clojure.var("clojure.core", "val");
+    private static final IFn FIRST = Clojure.var("clojure.core", "first");
+    private static final IFn REST = Clojure.var("clojure.core", "rest");
     private static final IFn PPRINT;
 
     static {
@@ -49,6 +53,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             Object val = maybeUpconvert(args[0]);
             val = unwrapCollectionElements(val, List.class, "[]");
             val = unwrapCollectionElements(val, Set.class, "#{}");
+            val = unwrapMapElements(val);
             return assoc(methodName, val);
         }
 
@@ -84,22 +89,41 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         }
     }
 
+    private Object unwrapMapElements(Object obj) {
+        if (obj != null && Map.class.isAssignableFrom(obj.getClass())) {
+            Map<Object, Object> map = (Map<Object, Object>) obj;
+            Object ret = EMPTY_MAP;
+            for (Map.Entry<Object, Object> entry : map.entrySet()) {
+                Object key = entry.getKey();
+                Object val = entry.getValue();
+                key = unwrapAndAnnotate(key);
+                val = unwrapAndAnnotate(val);
+                ret = ASSOC.invoke(ret, key, val);
+            }
+            return ret;
+        }
+        return obj;
+    }
+
     private Object unwrapCollectionElements(Object val, Class<?> type, String empty) {
         if (val != null && type.isAssignableFrom(val.getClass())) {
             Iterable<?> iterable = (Iterable<?>) val;
             Object ret = Clojure.read(empty);
             for (Object o : iterable)
-                if (o instanceof DynamicObject) {
-                    DynamicObject<?> dynamicObject = (DynamicObject<?>) o;
-                    Object map = dynamicObject.getMap();
-                    map = withTypeMetadata(map, dynamicObject.getType());
-                    assert META.invoke(map) != null;
-                    ret = CONJ.invoke(ret, map);
-                } else
-                    ret = CONJ.invoke(ret, o);
+                ret = CONJ.invoke(ret, unwrapAndAnnotate(o));
             return ret;
         }
         return val;
+    }
+
+    private Object unwrapAndAnnotate(Object o) {
+        if (o instanceof DynamicObject) {
+            DynamicObject<?> dynamicObject = (DynamicObject<?>) o;
+            Object map = dynamicObject.getMap();
+            map = withTypeMetadata(map, dynamicObject.getType());
+            return map;
+        }
+        return o;
     }
 
     private Object withTypeMetadata(Object obj, Class<?> type) {
@@ -147,8 +171,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     private Object getMetadataFor(String key) {
         Object meta = META.invoke(map);
-        Object val = GET.invoke(meta, key);
-        return val;
+        return GET.invoke(meta, key);
     }
 
     private boolean isMetadataGetter(Method method) {
@@ -187,19 +210,41 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
         if (Set.class.isAssignableFrom(returnType)) return wrapElements((Set<Object>) val, new HashSet<>());
         if (List.class.isAssignableFrom(returnType)) return wrapElements((List<Object>) val, new ArrayList<>());
+        if (Map.class.isAssignableFrom(returnType)) return wrapMapElements(val);
 
         return val;
     }
 
-    private Object wrapElements(Collection<Object> unwrappedSet, Collection<Object> ret) {
-        for (Object elem : unwrappedSet) {
-            Class<?> type = getTypeFromMetadata(elem);
-            if (type == null)
-                ret.add(elem);
-            else
-                ret.add(DynamicObject.wrap(elem, (Class<DynamicObject>) type));
+    private Map<Object, Object> wrapMapElements(Object unwrappedMap) {
+        Map<Object, Object> ret = new HashMap<>();
+        Object head = FIRST.invoke(unwrappedMap);
+        unwrappedMap = REST.invoke(unwrappedMap);
+        while (head != null) {
+            Object key = KEY.invoke(head);
+            Object val = VAL.invoke(head);
+            key = maybeWrapElement(key);
+            val = maybeWrapElement(val);
+            ret.put(key, val);
+
+            head = FIRST.invoke(unwrappedMap);
+            unwrappedMap = REST.invoke(unwrappedMap);
         }
         return ret;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object wrapElements(Collection<Object> unwrappedSet, Collection<Object> ret) {
+        for (Object elem : unwrappedSet)
+            ret.add(maybeWrapElement(elem));
+        return ret;
+    }
+
+    private Object maybeWrapElement(Object obj) {
+        Class<?> type = getTypeFromMetadata(obj);
+        if (type == null)
+            return obj;
+        else
+            return DynamicObject.wrap(obj, (Class<DynamicObject>) type);
     }
 
     private Class<?> getTypeFromMetadata(Object obj) {
