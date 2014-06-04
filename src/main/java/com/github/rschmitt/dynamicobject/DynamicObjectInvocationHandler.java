@@ -235,8 +235,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     @SuppressWarnings("unchecked")
     private static Object wrapElements(Collection<Object> unwrappedSet, Collection<Object> ret) {
-        for (Object elem : unwrappedSet)
-            ret.add(maybeWrapElement(elem));
+        unwrappedSet.stream().map(DynamicObjectInvocationHandler::maybeWrapElement).forEach(ret::add);
         return ret;
     }
 
