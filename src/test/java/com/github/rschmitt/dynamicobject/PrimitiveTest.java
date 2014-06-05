@@ -1,16 +1,17 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.java.api.Clojure;
-import clojure.lang.IFn;
 import org.junit.Test;
 
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class PrimitiveTest {
     private static final String EDN = "{:i 4, :d 3.14, :f 3.14, :lng 1234567890, :shrt 4, :bool true, :c \\newline, :b 127}";
-    private static final Unboxed UNBOXED = DynamicObject.deserialize(EDN, Unboxed.class);
-    private static final Boxed BOXED = DynamicObject.deserialize(EDN, Boxed.class);
+    private static final Unboxed UNBOXED = deserialize(EDN, Unboxed.class);
+    private static final Boxed BOXED = deserialize(EDN, Boxed.class);
 
     @Test
     public void getBoxedFields() {
@@ -67,14 +68,41 @@ public class PrimitiveTest {
     }
 
     @Test
+    public void unboxedNullBuilders() {
+        String edn = "{:b nil, :c nil, :bool nil, :shrt nil, :lng nil, :f nil, :d nil, :i nil}";
+        Boxed boxed = DynamicObject.newInstance(Boxed.class)
+                .i(null)
+                .d(null)
+                .f(null)
+                .lng(null)
+                .shrt(null)
+                .bool(null)
+                .c(null)
+                .b(null);
+
+        assertEquals(boxed, deserialize(edn, Boxed.class));
+        assertEquals(edn, serialize(boxed));
+        assertEquals(deserialize(edn, Boxed.class), boxed);
+        assertEquals(serialize(boxed), edn);
+        assertNull(boxed.shrt());
+        assertNull(boxed.i());
+        assertNull(boxed.lng());
+        assertNull(boxed.f());
+        assertNull(boxed.d());
+        assertNull(boxed.bool());
+        assertNull(boxed.c());
+        assertNull(boxed.b());
+    }
+
+    @Test
     public void unboxedRoundTrip() {
-        Unboxed unboxed = DynamicObject.deserialize(EDN, Unboxed.class);
+        Unboxed unboxed = deserialize(EDN, Unboxed.class);
         assertEquals(EDN, unboxed.toString());
     }
 
     @Test
     public void boxedRoundTrip() {
-        Boxed boxed = DynamicObject.deserialize(EDN, Boxed.class);
+        Boxed boxed = deserialize(EDN, Boxed.class);
         assertEquals(EDN, boxed.toString());
     }
 
