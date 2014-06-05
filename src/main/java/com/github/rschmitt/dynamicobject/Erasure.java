@@ -38,8 +38,9 @@ class Erasure {
         return o;
     }
 
-    private static Object withTypeMetadata(Object obj, Class<?> type) {
+    static Object withTypeMetadata(Object obj, Class<?> type) {
         Object meta = META.invoke(obj);
+        if (meta == null) meta = EMPTY_MAP;
         Object newMeta = ASSOC.invoke(meta, Clojure.read(":type"), Clojure.read(":" + type.getCanonicalName()));
         return WITH_META.invoke(obj, newMeta);
     }
