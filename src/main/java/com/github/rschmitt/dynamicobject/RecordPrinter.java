@@ -8,8 +8,11 @@ import java.io.Writer;
 
 import static java.lang.String.format;
 
-public class RecordPrinter {
+public final class RecordPrinter {
     private static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
+
+    private RecordPrinter() {
+    }
 
     /**
      * For use by print-method only. Do not call directly.

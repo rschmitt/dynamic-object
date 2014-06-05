@@ -4,7 +4,7 @@ import clojure.java.api.Clojure;
 import clojure.lang.AFn;
 import clojure.lang.IFn;
 
-public class RecordReader<T extends DynamicObject<T>> extends AFn {
+public final class RecordReader<T extends DynamicObject<T>> extends AFn {
     private static final Object EMPTY_MAP = Clojure.read("{}");
     private static final IFn META = Clojure.var("clojure.core", "meta");
     private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
@@ -12,10 +12,13 @@ public class RecordReader<T extends DynamicObject<T>> extends AFn {
 
     private final Class<T> type;
 
-    public RecordReader(Class<T> type) {
+    RecordReader(Class<T> type) {
         this.type = type;
     }
 
+    /**
+     * For use by clojure.edn/read only. Do not call directly.
+     */
     @Override
     public Object invoke(Object mapWithMeta) {
         Object meta = META.invoke(mapWithMeta);
