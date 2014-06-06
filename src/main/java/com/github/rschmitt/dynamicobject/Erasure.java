@@ -13,17 +13,22 @@ import java.util.Map;
 class Erasure {
     private static final Object EMPTY_MAP = Clojure.read("{}");
     private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
-    private static final IFn CONJ = Clojure.var("clojure.core", "conj");
     private static final IFn META = Clojure.var("clojure.core", "meta");
     private static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
+
+    private static final IFn TRANSIENT = Clojure.var("clojure.core", "transient");
+    private static final IFn PERSISTENT = Clojure.var("clojure.core", "persistent!");
+    private static final IFn ASSOC_BANG = Clojure.var("clojure.core", "assoc!");
+    private static final IFn CONJ_BANG = Clojure.var("clojure.core", "conj!");
 
     static Object unwrapCollectionElements(Object val, Class<?> type, String empty) {
         if (val != null && type.isAssignableFrom(val.getClass())) {
             Iterable<?> iterable = (Iterable<?>) val;
             Object ret = Clojure.read(empty);
+            ret = TRANSIENT.invoke(ret);
             for (Object o : iterable)
-                ret = CONJ.invoke(ret, unwrapAndAnnotate(o));
-            return ret;
+                CONJ_BANG.invoke(ret, unwrapAndAnnotate(o));
+            return PERSISTENT.invoke(ret);
         }
         return val;
     }
@@ -49,15 +54,15 @@ class Erasure {
     static Object unwrapMapElements(Object obj) {
         if (obj != null && Map.class.isAssignableFrom(obj.getClass())) {
             Map<Object, Object> map = (Map<Object, Object>) obj;
-            Object ret = EMPTY_MAP;
+            Object ret = TRANSIENT.invoke(EMPTY_MAP);
             for (Map.Entry<Object, Object> entry : map.entrySet()) {
                 Object key = entry.getKey();
                 Object val = entry.getValue();
                 key = unwrapAndAnnotate(key);
                 val = unwrapAndAnnotate(val);
-                ret = ASSOC.invoke(ret, key, val);
+                ASSOC_BANG.invoke(ret, key, val);
             }
-            return ret;
+            return PERSISTENT.invoke(ret);
         }
         return obj;
     }
