@@ -12,6 +12,7 @@ import java.util.Map;
  */
 class Erasure {
     private static final Object EMPTY_MAP = Clojure.read("{}");
+    private static final Object TYPE = Clojure.read(":type");
     private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
     private static final IFn META = Clojure.var("clojure.core", "meta");
     private static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
@@ -46,7 +47,7 @@ class Erasure {
     static Object withTypeMetadata(Object obj, Class<?> type) {
         Object meta = META.invoke(obj);
         if (meta == null) meta = EMPTY_MAP;
-        Object newMeta = ASSOC.invoke(meta, Clojure.read(":type"), Clojure.read(":" + type.getCanonicalName()));
+        Object newMeta = ASSOC.invoke(meta, TYPE, Clojure.read(":" + type.getCanonicalName()));
         return WITH_META.invoke(obj, newMeta);
     }
 

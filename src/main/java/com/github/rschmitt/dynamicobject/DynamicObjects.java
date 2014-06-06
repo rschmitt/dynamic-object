@@ -13,6 +13,7 @@ import static java.lang.String.format;
 
 public class DynamicObjects {
     private static final Object EMPTY_MAP = Clojure.read("{}");
+    private static final Object TYPE = Clojure.read(":type");
     private static final IFn GET = Clojure.var("clojure.core", "get");
     private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
     private static final IFn DISSOC = Clojure.var("clojure.core", "dissoc");
@@ -58,7 +59,7 @@ public class DynamicObjects {
     }
 
     static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
-        Object metadata = ASSOC.invoke(EMPTY_MAP, Clojure.read(":type"), Clojure.read(":" + type.getCanonicalName()));
+        Object metadata = ASSOC.invoke(EMPTY_MAP, TYPE, Clojure.read(":" + type.getCanonicalName()));
         return wrap(WITH_META.invoke(EMPTY_MAP, metadata), type);
     }
 

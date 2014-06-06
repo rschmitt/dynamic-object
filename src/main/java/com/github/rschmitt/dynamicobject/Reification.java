@@ -3,15 +3,12 @@ package com.github.rschmitt.dynamicobject;
 import clojure.java.api.Clojure;
 import clojure.lang.IFn;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 /*
  * This class contains functions responsible for taking collections, identifying unwrapped DynamicObject maps within
  * those collections, and wrapping them as proxies according to their :type metadata.
  */
 class Reification {
+    private static final Object TYPE = Clojure.read(":type");
     private static final IFn GET = Clojure.var("clojure.core", "get");
     private static final IFn META = Clojure.var("clojure.core", "meta");
     private static final IFn NAME = Clojure.var("clojure.core", "name");
@@ -78,7 +75,7 @@ class Reification {
     private static String getTypeMetadata(Object obj) {
         Object metadata = META.invoke(obj);
         if (metadata == null) return null;
-        Object typeMetadata = GET.invoke(metadata, Clojure.read(":type"));
+        Object typeMetadata = GET.invoke(metadata, TYPE);
         return (String) NAME.invoke(typeMetadata);
     }
 }
