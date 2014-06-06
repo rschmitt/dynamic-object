@@ -19,15 +19,28 @@ class Reification {
     private static final IFn VAL = Clojure.var("clojure.core", "val");
     private static final IFn FIRST = Clojure.var("clojure.core", "first");
     private static final IFn REST = Clojure.var("clojure.core", "rest");
+    private static final IFn TRANSIENT = Clojure.var("clojure.core", "transient");
+    private static final IFn PERSISTENT = Clojure.var("clojure.core", "persistent!");
+    private static final IFn ASSOC_BANG = Clojure.var("clojure.core", "assoc!");
+    private static final IFn CONJ_BANG = Clojure.var("clojure.core", "conj!");
 
     @SuppressWarnings("unchecked")
-    static Object wrapElements(Collection<Object> unwrappedSet, Collection<Object> ret) {
-        unwrappedSet.stream().map(Reification::maybeWrapElement).forEach(ret::add);
-        return ret;
+    static Object wrapElements(Object coll, String empty) {
+        Object ret = Clojure.read(empty);
+        ret = TRANSIENT.invoke(ret);
+        Object head = FIRST.invoke(coll);
+        coll = REST.invoke(coll);
+        while (head != null) {
+            CONJ_BANG.invoke(ret, maybeWrapElement(head));
+            head = FIRST.invoke(coll);
+            coll = REST.invoke(coll);
+        }
+        return PERSISTENT.invoke(ret);
     }
 
-    static Map<Object, Object> wrapMapElements(Object unwrappedMap) {
-        Map<Object, Object> ret = new HashMap<>();
+    static Object wrapMapElements(Object unwrappedMap) {
+        Object ret = Clojure.read("{}");
+        ret = TRANSIENT.invoke(ret);
         Object head = FIRST.invoke(unwrappedMap);
         unwrappedMap = REST.invoke(unwrappedMap);
         while (head != null) {
@@ -35,12 +48,12 @@ class Reification {
             Object val = VAL.invoke(head);
             key = maybeWrapElement(key);
             val = maybeWrapElement(val);
-            ret.put(key, val);
+            ASSOC_BANG.invoke(ret, key, val);
 
             head = FIRST.invoke(unwrappedMap);
             unwrappedMap = REST.invoke(unwrappedMap);
         }
-        return ret;
+        return PERSISTENT.invoke(ret);
     }
 
     @SuppressWarnings("unchecked")
