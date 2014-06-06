@@ -112,10 +112,8 @@ public class RecursionTest {
 
 interface LinkedList extends DynamicObject<LinkedList> {
     long value();
-
     LinkedList next();
 
     LinkedList value(long value);
-
     LinkedList next(LinkedList linkedList);
 }

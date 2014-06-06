@@ -41,26 +41,16 @@ public class BuilderTest {
 
 interface Buildable extends DynamicObject<Buildable> {
     String str();
-
-    Buildable str(String str);
-
     int i();
-
-    Buildable i(int i);
-
     long l();
-
-    Buildable l(long l);
-
     short s();
-
-    Buildable s(short s);
-
     float f();
-
-    Buildable f(float f);
-
     double d();
 
+    Buildable str(String str);
+    Buildable i(int i);
+    Buildable l(long l);
+    Buildable s(short s);
+    Buildable f(float f);
     Buildable d(double d);
 }

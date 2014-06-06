@@ -137,23 +137,14 @@ interface DocumentPointer extends DynamicObject<DocumentPointer> {
 
 interface Document extends DynamicObject<Document> {
     UUID uuid();
-
     String name();
-
     Date date();
-
     Set<Path> paths();
-
-    @Key(":document-pointer")
-    DocumentPointer documentPointer();
+    @Key(":document-pointer") DocumentPointer documentPointer();
 
     Document uuid(UUID uuid);
-
     Document name(String name);
-
     Document date(Date date);
-
     Document paths(Set<Path> paths);
-
     Document documentPointer(DocumentPointer documentPointer);
 }
