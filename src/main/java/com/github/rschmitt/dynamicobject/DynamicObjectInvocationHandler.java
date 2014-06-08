@@ -18,6 +18,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
     private static final IFn META = Clojure.var("clojure.core", "meta");
     private static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
+    private static final IFn MEMOIZE = Clojure.var("clojure.core", "memoize");
+    private static final IFn CACHED_READ = (IFn) MEMOIZE.invoke(Clojure.var("clojure.edn", "read-string"));
     private static final IFn PPRINT;
 
     static {
@@ -159,7 +161,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     @SuppressWarnings("unchecked")
     private Object getValueFor(Method method) {
         String methodName = method.getName();
-        Object keywordKey = Clojure.read(":" + methodName);
+        Object keywordKey = cachedRead(":" + methodName);
         Object val = GET.invoke(map, keywordKey);
         if (val == null) val = getValueForCustomKey(method);
         if (val == null) return null;
@@ -179,7 +181,6 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return val;
     }
 
-
     private Object getValueForCustomKey(Method method) {
         for (Annotation annotation : method.getAnnotations()) {
             if (annotation.annotationType().equals(Key.class)) {
@@ -190,5 +191,9 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             }
         }
         return null;
+    }
+
+    private static Object cachedRead(String edn) {
+        return CACHED_READ.invoke(edn);
     }
 }
