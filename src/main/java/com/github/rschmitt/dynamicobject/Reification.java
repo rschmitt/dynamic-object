@@ -22,9 +22,8 @@ class Reification {
     private static final IFn CONJ_BANG = Clojure.var("clojure.core", "conj!");
 
     @SuppressWarnings("unchecked")
-    static Object wrapElements(Object coll, String empty) {
-        Object ret = Clojure.read(empty);
-        ret = TRANSIENT.invoke(ret);
+    static Object wrapElements(Object coll, Object empty) {
+        Object ret = TRANSIENT.invoke(empty);
         Object head = FIRST.invoke(coll);
         coll = REST.invoke(coll);
         while (head != null) {

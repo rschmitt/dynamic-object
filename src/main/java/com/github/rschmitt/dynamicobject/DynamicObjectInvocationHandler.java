@@ -14,6 +14,8 @@ import java.util.*;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
     private static final Object EMPTY_MAP = Clojure.read("{}");
+    private static final Object EMPTY_SET = Clojure.read("#{}");
+    private static final Object EMPTY_VECTOR = Clojure.read("[]");
     private static final IFn GET = Clojure.var("clojure.core", "get");
     private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
     private static final IFn META = Clojure.var("clojure.core", "meta");
@@ -174,8 +176,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
         if (DynamicObject.class.isAssignableFrom(returnType)) return DynamicObject.wrap(val, (Class<T>) returnType);
 
-        if (Set.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, "#{}");
-        if (List.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, "[]");
+        if (Set.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_SET);
+        if (List.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_VECTOR);
         if (Map.class.isAssignableFrom(returnType)) return Reification.wrapMapElements(val);
 
         return val;
