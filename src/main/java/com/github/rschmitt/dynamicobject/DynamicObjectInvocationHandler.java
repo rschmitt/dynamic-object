@@ -11,11 +11,16 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
+    private static final Object DEFAULT = new Object();
+    private static final Object NULL = new Object();
+
     private static final Object EMPTY_MAP = Clojure.read("{}");
     private static final Object EMPTY_SET = Clojure.read("#{}");
     private static final Object EMPTY_VECTOR = Clojure.read("[]");
+
     private static final IFn GET = Clojure.var("clojure.core", "get");
     private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
     private static final IFn META = Clojure.var("clojure.core", "meta");
@@ -23,7 +28,6 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private static final IFn MEMOIZE = Clojure.var("clojure.core", "memoize");
     private static final IFn CACHED_READ = (IFn) MEMOIZE.invoke(Clojure.var("clojure.edn", "read-string"));
     private static final IFn PPRINT;
-
     static {
         IFn require = Clojure.var("clojure.core", "require");
         require.invoke(Clojure.read("clojure.pprint"));
@@ -34,6 +38,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private final Object map;
     private final Class<T> type;
     private final Constructor<MethodHandles.Lookup> lookupConstructor;
+    private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
 
     DynamicObjectInvocationHandler(Object map, Class<T> type, Constructor<MethodHandles.Lookup> lookupConstructor) {
         this.map = map;
@@ -84,8 +89,20 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             default:
                 if (isMetadataGetter(method))
                     return getMetadataFor(methodName);
-                return getValueFor(method);
+                return getAndCacheValueFor(method);
         }
+    }
+
+    private Object getAndCacheValueFor(Method method) {
+        Object cachedValue = valueCache.getOrDefault(method, DEFAULT);
+        if (cachedValue != DEFAULT) return cachedValue;
+        if (cachedValue == NULL) return null;
+        Object value = getValueFor(method);
+        if (value == null)
+            valueCache.putIfAbsent(method, NULL);
+        else
+            valueCache.putIfAbsent(method, value);
+        return value;
     }
 
     private static String getBuilderKey(Method method) {
