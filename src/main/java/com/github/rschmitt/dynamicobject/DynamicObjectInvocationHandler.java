@@ -1,7 +1,6 @@
 package com.github.rschmitt.dynamicobject;
 
 import clojure.java.api.Clojure;
-import clojure.lang.IFn;
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -10,30 +9,16 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
     private static final Object DEFAULT = new Object();
     private static final Object NULL = new Object();
-
-    private static final Object EMPTY_MAP = Clojure.read("{}");
-    private static final Object EMPTY_SET = Clojure.read("#{}");
-    private static final Object EMPTY_VECTOR = Clojure.read("[]");
-
-    private static final IFn GET = Clojure.var("clojure.core", "get");
-    private static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
-    private static final IFn META = Clojure.var("clojure.core", "meta");
-    private static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
-    private static final IFn MEMOIZE = Clojure.var("clojure.core", "memoize");
-    private static final IFn CACHED_READ = (IFn) MEMOIZE.invoke(Clojure.var("clojure.edn", "read-string"));
-    private static final IFn PPRINT;
-    static {
-        IFn require = Clojure.var("clojure.core", "require");
-        require.invoke(Clojure.read("clojure.pprint"));
-
-        PPRINT = Clojure.var("clojure.pprint/pprint");
-    }
 
     private final Object map;
     private final Class<T> type;
@@ -54,8 +39,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             if (isMetadataBuilder(method))
                 return assocMeta(methodName, args[0]);
             Object val = maybeUpconvert(args[0]);
-            val = Erasure.unwrapCollectionElements(val, List.class, "[]");
-            val = Erasure.unwrapCollectionElements(val, Set.class, "#{}");
+            val = Erasure.unwrapCollectionElements(val, List.class, EMPTY_VECTOR);
+            val = Erasure.unwrapCollectionElements(val, Set.class, EMPTY_SET);
             val = Erasure.unwrapMapElements(val);
             String key = getBuilderKey(method);
             return assoc(key, val);
@@ -126,7 +111,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private T assoc(String key, Object value) {
-        Object keyword = Clojure.read(":" + key);
+        Object keyword = cachedRead(":" + key);
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
         return DynamicObject.wrap(ASSOC.invoke(map, keyword, value), type);
@@ -210,9 +195,5 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             }
         }
         return null;
-    }
-
-    private static Object cachedRead(String edn) {
-        return CACHED_READ.invoke(edn);
     }
 }

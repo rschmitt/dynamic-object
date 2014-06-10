@@ -1,26 +1,14 @@
 package com.github.rschmitt.dynamicobject;
 
 import clojure.java.api.Clojure;
-import clojure.lang.IFn;
+
+import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 
 /*
  * This class contains functions responsible for taking collections, identifying unwrapped DynamicObject maps within
  * those collections, and wrapping them as proxies according to their :type metadata.
  */
 class Reification {
-    private static final Object TYPE = Clojure.read(":type");
-    private static final IFn GET = Clojure.var("clojure.core", "get");
-    private static final IFn META = Clojure.var("clojure.core", "meta");
-    private static final IFn NAME = Clojure.var("clojure.core", "name");
-    private static final IFn KEY = Clojure.var("clojure.core", "key");
-    private static final IFn VAL = Clojure.var("clojure.core", "val");
-    private static final IFn FIRST = Clojure.var("clojure.core", "first");
-    private static final IFn REST = Clojure.var("clojure.core", "rest");
-    private static final IFn TRANSIENT = Clojure.var("clojure.core", "transient");
-    private static final IFn PERSISTENT = Clojure.var("clojure.core", "persistent!");
-    private static final IFn ASSOC_BANG = Clojure.var("clojure.core", "assoc!");
-    private static final IFn CONJ_BANG = Clojure.var("clojure.core", "conj!");
-
     @SuppressWarnings("unchecked")
     static Object wrapElements(Object coll, Object empty) {
         Object ret = TRANSIENT.invoke(empty);
