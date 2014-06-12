@@ -92,6 +92,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return DynamicObject.wrap(mergedMap, type);
     }
 
+    @SuppressWarnings("unchecked")
     private Object getAndCacheValueFor(Method method) {
         Object cachedValue = valueCache.getOrDefault(method, DEFAULT);
         if (cachedValue != DEFAULT) return cachedValue;
