@@ -1,7 +1,5 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.java.api.Clojure;
-
 import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;

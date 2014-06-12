@@ -1,6 +1,7 @@
 package com.github.rschmitt.dynamicobject;
 
 import clojure.java.api.Clojure;
+import clojure.lang.AFn;
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -32,6 +33,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
 
@@ -65,6 +67,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 Writer w = new StringWriter();
                 PPRINT.invoke(map, w);
                 return w.toString();
+            case "merge":
+                return merge((DynamicObject<T>) args[0]);
             case "equals":
                 Object other = args[0];
                 if (other instanceof DynamicObject)
@@ -76,6 +80,16 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                     return getMetadataFor(methodName);
                 return getAndCacheValueFor(method);
         }
+    }
+
+    private T merge(DynamicObject<T> other) {
+        AFn ignoreNulls = new AFn() {
+            public Object invoke(Object arg1, Object arg2) {
+                return (arg2 == null) ? arg1 : arg2;
+            }
+        };
+        Object mergedMap = MERGE_WITH.invoke(ignoreNulls, map, other.getMap());
+        return DynamicObject.wrap(mergedMap, type);
     }
 
     private Object getAndCacheValueFor(Method method) {

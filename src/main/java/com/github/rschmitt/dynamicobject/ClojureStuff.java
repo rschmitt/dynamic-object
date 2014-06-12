@@ -18,6 +18,7 @@ class ClojureStuff {
     static final IFn VAL = Clojure.var("clojure.core", "val");
     static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
     static final IFn DISSOC = Clojure.var("clojure.core", "dissoc");
+    static final IFn MERGE_WITH = Clojure.var("clojure.core", "merge-with");
     static final IFn META = Clojure.var("clojure.core", "meta");
     static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
     static final IFn TRANSIENT = Clojure.var("clojure.core", "transient");

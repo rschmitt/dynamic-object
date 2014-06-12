@@ -25,6 +25,14 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     String toFormattedString();
 
     /**
+     * Return a copy of this instance with {@code other}'s fields merged in (nulls don't count). If a given field is
+     * present in both instances, the fields in {@code other} will take precedence.
+     *
+     * Equivalent to: {@code (merge-with (fn [a b] (if (nil? b) a b)) this other)}
+     */
+    T merge(T other);
+
+    /**
      * Serialize the given object to Edn. Any {@code EdnTranslator}s that have been registered through
      * {@link DynamicObject#registerType} will be invoked as needed.
      */
