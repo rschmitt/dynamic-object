@@ -118,10 +118,10 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private static Object maybeUpconvert(Object val) {
-        if (val instanceof Float) val = Double.parseDouble(String.valueOf(val));
-        else if (val instanceof Short) val = Long.valueOf((short) val);
-        else if (val instanceof Byte) val = Long.valueOf((byte) val);
-        else if (val instanceof Integer) val = Long.valueOf((int) val);
+        if (val instanceof Float) return Double.parseDouble(String.valueOf(val));
+        else if (val instanceof Short) return (long) ((short) val);
+        else if (val instanceof Byte) return (long) ((byte) val);
+        else if (val instanceof Integer) return (long) ((int) val);
         return val;
     }
 
