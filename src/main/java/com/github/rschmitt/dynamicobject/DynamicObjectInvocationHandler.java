@@ -185,8 +185,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (val == null) return null;
 
         Class<?> returnType = method.getReturnType();
-
-        return maybeConvertValue(val, returnType);
+        Type genericReturnType = method.getGenericReturnType();
+        return maybeConvertValue(val, returnType, genericReturnType);
     }
 
     private Object getValueForCustomKey(Method method) {
@@ -202,13 +202,13 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     @SuppressWarnings("unchecked")
-    private Object maybeConvertValue(Object val, Class<?> returnType) {
+    private Object maybeConvertValue(Object val, Class<?> returnType, Type genericReturnType) {
         if (Primitives.isPrimitive(returnType)) return Primitives.maybeDownconvert(returnType, val);
 
         if (DynamicObject.class.isAssignableFrom(returnType)) return DynamicObject.wrap(val, (Class<T>) returnType);
 
-        if (Set.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_SET);
-        if (List.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_VECTOR);
+        if (Set.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_SET, genericReturnType);
+        if (List.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_VECTOR, genericReturnType);
         if (Map.class.isAssignableFrom(returnType)) return Reification.wrapMapElements(val);
 
         return val;

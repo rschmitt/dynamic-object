@@ -2,6 +2,9 @@ package com.github.rschmitt.dynamicobject;
 
 import clojure.java.api.Clojure;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 
 /*
@@ -10,12 +13,14 @@ import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
  */
 class Reification {
     @SuppressWarnings("unchecked")
-    static Object wrapElements(Object coll, Object empty) {
+    static Object wrapElements(Object coll, Object empty, Type genericReturnType) {
+        Class<?> typeParameter = (Class<?>) ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
         long count = (int) COUNT.invoke(coll);
         Object ret = TRANSIENT.invoke(empty);
         Object head = FIRST.invoke(coll);
         coll = REST.invoke(coll);
         for (int i = 0; i < count; i++) {
+            head = Primitives.maybeDownconvert(typeParameter, head);
             CONJ_BANG.invoke(ret, maybeWrapElement(head));
             head = FIRST.invoke(coll);
             coll = REST.invoke(coll);

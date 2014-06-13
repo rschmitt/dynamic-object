@@ -28,6 +28,7 @@ class Primitives {
     }
 
     static Object maybeDownconvert(Class type, Object val) {
+        if (val == null) return null;
         if (type.equals(int.class) || type.equals(Integer.class)) return ((Long) val).intValue();
         if (type.equals(float.class) || type.equals(Float.class)) return ((Double) val).floatValue();
         if (type.equals(short.class) || type.equals(Short.class)) return ((Long) val).shortValue();
