@@ -75,6 +75,7 @@ public class DiffTest {
         Diffable b = deserialize("#D{:list [1 2 3]}", Diffable.class);
 
         Diffable c = a.union(b);
+        List<Integer> list = c.list();
 
         assertEquals(null, c.list().get(0));
         assertEquals(null, c.list().get(1));

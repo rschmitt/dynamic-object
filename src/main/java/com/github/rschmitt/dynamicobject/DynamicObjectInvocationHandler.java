@@ -7,9 +7,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +38,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (isBuilderMethod(method)) {
             if (isMetadataBuilder(method))
                 return assocMeta(methodName, args[0]);
-            Object val = maybeUpconvert(args[0]);
+            Object val = Primitives.maybeUpconvert(args[0]);
             val = Erasure.unwrapCollectionElements(val, List.class, EMPTY_VECTOR);
             val = Erasure.unwrapCollectionElements(val, Set.class, EMPTY_SET);
             val = Erasure.unwrapMapElements(val);
@@ -127,14 +125,6 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return method.getName();
     }
 
-    private static Object maybeUpconvert(Object val) {
-        if (val instanceof Float) return Double.parseDouble(String.valueOf(val));
-        else if (val instanceof Short) return (long) ((short) val);
-        else if (val instanceof Byte) return (long) ((byte) val);
-        else if (val instanceof Integer) return (long) ((int) val);
-        return val;
-    }
-
     private T assoc(String key, Object value) {
         Object keyword = cachedRead(":" + key);
         if (value instanceof DynamicObject)
@@ -187,7 +177,6 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 .invokeWithArguments(args);
     }
 
-    @SuppressWarnings("unchecked")
     private Object getValueFor(Method method) {
         String methodName = method.getName();
         Object keywordKey = cachedRead(":" + methodName);
@@ -196,18 +185,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (val == null) return null;
 
         Class<?> returnType = method.getReturnType();
-        if (returnType.equals(int.class) || returnType.equals(Integer.class)) return ((Long) val).intValue();
-        if (returnType.equals(float.class) || returnType.equals(Float.class)) return ((Double) val).floatValue();
-        if (returnType.equals(short.class) || returnType.equals(Short.class)) return ((Long) val).shortValue();
-        if (returnType.equals(byte.class) || returnType.equals(Byte.class)) return ((Long) val).byteValue();
 
-        if (DynamicObject.class.isAssignableFrom(returnType)) return DynamicObject.wrap(val, (Class<T>) returnType);
-
-        if (Set.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_SET);
-        if (List.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_VECTOR);
-        if (Map.class.isAssignableFrom(returnType)) return Reification.wrapMapElements(val);
-
-        return val;
+        return maybeConvertValue(val, returnType);
     }
 
     private Object getValueForCustomKey(Method method) {
@@ -220,5 +199,18 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             }
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object maybeConvertValue(Object val, Class<?> returnType) {
+        if (Primitives.isPrimitive(returnType)) return Primitives.maybeDownconvert(returnType, val);
+
+        if (DynamicObject.class.isAssignableFrom(returnType)) return DynamicObject.wrap(val, (Class<T>) returnType);
+
+        if (Set.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_SET);
+        if (List.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_VECTOR);
+        if (Map.class.isAssignableFrom(returnType)) return Reification.wrapMapElements(val);
+
+        return val;
     }
 }
