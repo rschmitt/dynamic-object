@@ -11,10 +11,11 @@ import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 class Reification {
     @SuppressWarnings("unchecked")
     static Object wrapElements(Object coll, Object empty) {
+        long count = (int) COUNT.invoke(coll);
         Object ret = TRANSIENT.invoke(empty);
         Object head = FIRST.invoke(coll);
         coll = REST.invoke(coll);
-        while (head != null) {
+        for (int i = 0; i < count; i++) {
             CONJ_BANG.invoke(ret, maybeWrapElement(head));
             head = FIRST.invoke(coll);
             coll = REST.invoke(coll);
