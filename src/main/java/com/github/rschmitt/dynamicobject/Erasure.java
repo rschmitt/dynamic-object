@@ -15,8 +15,11 @@ class Erasure {
             Iterable<?> iterable = (Iterable<?>) val;
             Object ret = empty;
             ret = TRANSIENT.invoke(ret);
-            for (Object o : iterable)
-                CONJ_BANG.invoke(ret, unwrapAndAnnotate(o));
+            for (Object o : iterable) {
+                o = Primitives.maybeUpconvert(o);
+                o = unwrapAndAnnotate(o);
+                CONJ_BANG.invoke(ret, o);
+            }
             return PERSISTENT.invoke(ret);
         }
         return val;
