@@ -42,6 +42,14 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     T union(T other);
 
     /**
+     * Recursively compares this instance with {@code other}, similar to {@link #union}, but returning the fields that
+     * are unique to {@code this}. Uses the same recursion strategy as {@code union}.
+     *
+     * Equivalent to: {@code (nth (clojure.data/diff this other) 0)}
+     */
+    T subtract(T other);
+
+    /**
      * Serialize the given object to Edn. Any {@code EdnTranslator}s that have been registered through
      * {@link DynamicObject#registerType} will be invoked as needed.
      */

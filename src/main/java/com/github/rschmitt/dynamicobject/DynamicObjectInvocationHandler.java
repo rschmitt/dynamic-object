@@ -69,6 +69,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 return merge((DynamicObject<T>) args[0]);
             case "union":
                 return union((DynamicObject<T>) args[0]);
+            case "subtract":
+                return subtract((DynamicObject<T>) args[0]);
             case "equals":
                 Object other = args[0];
                 if (other instanceof DynamicObject)
@@ -83,8 +85,16 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private Object union(DynamicObject<T> arg) {
+        return diff(arg, 2);
+    }
+
+    private Object subtract(DynamicObject<T> arg) {
+        return diff(arg, 0);
+    }
+
+    private Object diff(DynamicObject<T> arg, int idx) {
         Object array = DIFF.invoke(map, arg.getMap());
-        Object union = NTH.invoke(array, 2);
+        Object union = NTH.invoke(array, idx);
         if (union == null) union = EMPTY_MAP;
         union = Erasure.withTypeMetadata(union, type);
         return DynamicObject.wrap(union, type);

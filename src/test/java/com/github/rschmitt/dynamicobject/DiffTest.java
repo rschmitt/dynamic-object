@@ -80,6 +80,21 @@ public class DiffTest {
         assertEquals(null,               c.list().get(1));
         assertEquals(Integer.valueOf(3), c.list().get(2));
     }
+
+    @Test
+    public void subtraction() {
+        Diffable a = deserialize("#D{:a \"same\", :b \"different\", :set #{1 2 3}, :list [1 2 1]}", Diffable.class);
+        Diffable b = deserialize("#D{:a \"same\", :b \"?????????\", :set #{1 2 3}, :list [1 2 3]}", Diffable.class);
+
+        Diffable diff = a.subtract(b);
+
+        assertNull(diff.a());
+        assertNull(diff.set());
+        assertEquals("different", diff.b());
+        assertNull(diff.list().get(0));
+        assertNull(diff.list().get(1));
+        assertEquals(Integer.valueOf(1), diff.list().get(2));
+    }
 }
 
 interface Diffable extends DynamicObject<Diffable> {
