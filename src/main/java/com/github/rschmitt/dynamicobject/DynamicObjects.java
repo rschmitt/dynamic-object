@@ -12,7 +12,7 @@ import static java.lang.String.format;
 public class DynamicObjects {
     private static volatile Object readers = EMPTY_MAP;
     private static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<Class<?>, EdnTranslator<?>> translatorCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
 
     static <T extends DynamicObject<T>> String serialize(T o) {
         Class<T> type = o.getType();
@@ -49,16 +49,17 @@ public class DynamicObjects {
     }
 
     static synchronized <T> void registerType(Class<T> type, EdnTranslator<T> translator) {
-        translatorCache.put(type, translator);
-        readers = ASSOC.invoke(readers, cachedRead(translator.getTag()), translator);
+        EdnTranslatorAdapter<T> adapter = new EdnTranslatorAdapter<>(translator);
+        translatorCache.put(type, adapter);
+        readers = ASSOC.invoke(readers, cachedRead(translator.getTag()), adapter);
         defineMultimethod(type.getCanonicalName(), "DynamicObjects/invokeWriter", translator.getTag());
     }
 
     @SuppressWarnings("unchecked")
     static synchronized <T> void deregisterType(Class<T> type) {
-        EdnTranslator<T> translator = (EdnTranslator<T>) translatorCache.get(type);
-        readers = DISSOC.invoke(readers, cachedRead(translator.getTag()));
-        REMOVE_METHOD.invoke(PRINT_METHOD, translator);
+        EdnTranslatorAdapter<T> adapter = (EdnTranslatorAdapter<T>) translatorCache.get(type);
+        readers = DISSOC.invoke(readers, cachedRead(adapter.getTag()));
+        REMOVE_METHOD.invoke(PRINT_METHOD, adapter);
         translatorCache.remove(type);
     }
 
@@ -83,7 +84,7 @@ public class DynamicObjects {
 
     @SuppressWarnings("unused")
     public static Object invokeWriter(Object obj, Writer writer, String tag) {
-        EdnTranslator translator = (EdnTranslator<?>) GET.invoke(readers, cachedRead(tag));
+        EdnTranslatorAdapter translator = (EdnTranslatorAdapter<?>) GET.invoke(readers, cachedRead(tag));
         return translator.invoke(obj, writer);
     }
 

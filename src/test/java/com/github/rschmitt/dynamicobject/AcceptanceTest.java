@@ -110,7 +110,7 @@ class Path {
     }
 }
 
-class PathTranslator extends EdnTranslator<Path> {
+class PathTranslator implements EdnTranslator<Path> {
     @Override
     public Path read(Object obj) {
         String str = (String) obj;

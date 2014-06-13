@@ -41,7 +41,7 @@ Album album = DynamicObject.deserialize(edn, Album.class);
     * dynamic-object has no dependencies, other than Clojure itself.
     * dynamic-object is implemented entirely with Java's built-in reflection capabilities. There is no bytecode manipulation, no annotation processing, no AOP weaving.
     * dynamic-object calls into Clojure exclusively through Clojure 1.6's public Java API, and does not depend on the implementation details of the current version of Clojure.
-* **Easy to work with.** The dynamic-object API has a very small surface area, consisting of a single-digit number of methods and annotations, as well as a single abstract base class. Using dynamic-object productively does not require any new tools: there is no Vim plugin, no Emacs minor mode, no Eclipse update site, no Gradle plugin, no special test runner. dynamic-object works for you, not the other way around.
+* **Easy to work with.** The dynamic-object API has a very small surface area, consisting of a single-digit number of methods, two annotations, and two interfaces. Using dynamic-object productively does not require any new tools: there is no Vim plugin, no Emacs minor mode, no Eclipse update site, no Gradle plugin, no special test runner. dynamic-object works for you, not the other way around.
 
 ## Serialization and Deserialization
 

@@ -46,7 +46,7 @@ interface DumbClassHolder extends DynamicObject<DumbClassHolder> {
 }
 
 // This is a translation class that functions as an Edn reader/writer for its associated POJO.
-class DumbClassTranslator extends EdnTranslator<DumbClass> {
+class DumbClassTranslator implements EdnTranslator<DumbClass> {
     @Override
     public DumbClass read(Object obj) {
         DumbClassProxy proxy = DynamicObject.wrap(obj, DumbClassProxy.class);
