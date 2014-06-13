@@ -209,7 +209,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
         if (Set.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_SET, genericReturnType);
         if (List.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_VECTOR, genericReturnType);
-        if (Map.class.isAssignableFrom(returnType)) return Reification.wrapMapElements(val);
+        if (Map.class.isAssignableFrom(returnType)) return Reification.wrapMapElements(val, genericReturnType);
 
         return val;
     }

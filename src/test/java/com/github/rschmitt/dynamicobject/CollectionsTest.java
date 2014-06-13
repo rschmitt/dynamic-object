@@ -2,10 +2,7 @@ package com.github.rschmitt.dynamicobject;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
@@ -68,6 +65,18 @@ public class CollectionsTest {
         assertEquals(builtList, deserialized.ints());
         assertEquals(builtList, built.ints());
     }
+
+    @Test
+    public void mapOfIntegersToIntegers() {
+        MapSchema deserialized = deserialize("{:ints {1 2, 3 4}}", MapSchema.class);
+        Map<Integer, Integer> builtMap = new HashMap<>();
+        builtMap.put(1, 2);
+        builtMap.put(3, 4);
+        MapSchema built = newInstance(MapSchema.class).ints(builtMap);
+
+        assertEquals(builtMap, deserialized.ints());
+        assertEquals(builtMap, built.ints());
+    }
 }
 
 interface ListSchema extends DynamicObject<ListSchema> {
@@ -83,4 +92,7 @@ interface SetSchema extends DynamicObject<SetSchema> {
 
 interface MapSchema extends DynamicObject<MapSchema> {
     Map<String, String> dictionary();
+    Map<Integer, Integer> ints();
+
+    MapSchema ints(Map<Integer, Integer> ints);
 }

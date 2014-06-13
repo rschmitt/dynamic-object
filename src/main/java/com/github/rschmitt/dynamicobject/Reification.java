@@ -28,7 +28,10 @@ class Reification {
         return PERSISTENT.invoke(ret);
     }
 
-    static Object wrapMapElements(Object unwrappedMap) {
+    static Object wrapMapElements(Object unwrappedMap, Type genericReturnType) {
+        Type[] actualTypeArguments = ((ParameterizedType) genericReturnType).getActualTypeArguments();
+        Class<?> keyType = (Class<?>) actualTypeArguments[0];
+        Class<?> valType = (Class<?>) actualTypeArguments[1];
         Object ret = Clojure.read("{}");
         ret = TRANSIENT.invoke(ret);
         Object head = FIRST.invoke(unwrappedMap);
@@ -38,6 +41,8 @@ class Reification {
             Object val = VAL.invoke(head);
             key = maybeWrapElement(key);
             val = maybeWrapElement(val);
+            key = Primitives.maybeDownconvert(keyType, key);
+            val = Primitives.maybeDownconvert(valType, val);
             ASSOC_BANG.invoke(ret, key, val);
 
             head = FIRST.invoke(unwrappedMap);

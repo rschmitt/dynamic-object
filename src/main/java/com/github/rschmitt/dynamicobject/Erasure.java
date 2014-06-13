@@ -52,6 +52,8 @@ class Erasure {
                 Object val = entry.getValue();
                 key = unwrapAndAnnotate(key);
                 val = unwrapAndAnnotate(val);
+                key = Primitives.maybeUpconvert(key);
+                val = Primitives.maybeUpconvert(val);
                 ASSOC_BANG.invoke(ret, key, val);
             }
             return PERSISTENT.invoke(ret);
