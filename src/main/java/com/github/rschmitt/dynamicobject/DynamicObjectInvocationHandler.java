@@ -69,6 +69,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 return w.toString();
             case "merge":
                 return merge((DynamicObject<T>) args[0]);
+            case "union":
+                return union((DynamicObject<T>) args[0]);
             case "equals":
                 Object other = args[0];
                 if (other instanceof DynamicObject)
@@ -80,6 +82,14 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                     return getMetadataFor(methodName);
                 return getAndCacheValueFor(method);
         }
+    }
+
+    private Object union(DynamicObject<T> arg) {
+        Object array = DIFF.invoke(map, arg.getMap());
+        Object union = NTH.invoke(array, 2);
+        if (union == null) union = EMPTY_MAP;
+        union = Erasure.withTypeMetadata(union, type);
+        return DynamicObject.wrap(union, type);
     }
 
     private T merge(DynamicObject<T> other) {

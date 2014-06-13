@@ -33,6 +33,15 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     T merge(T other);
 
     /**
+     * Recursively compares this instance with {@code other}, returning a new instance containing all of the common
+     * elements of both {@code this} and {@code other}. Maps and lists are compared recursively; everything else,
+     * including sets, strings, and POJOs, is treated atomically.
+     *
+     * Equivalent to: {@code (nth (clojure.data/diff this other) 2)}
+     */
+    T union(T other);
+
+    /**
      * Serialize the given object to Edn. Any {@code EdnTranslator}s that have been registered through
      * {@link DynamicObject#registerType} will be invoked as needed.
      */

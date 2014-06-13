@@ -11,6 +11,7 @@ class ClojureStuff {
     static final Object READERS = Clojure.read(":readers");
 
     static final IFn GET = Clojure.var("clojure.core", "get");
+    static final IFn NTH = Clojure.var("clojure.core", "nth");
     static final IFn NAME = Clojure.var("clojure.core", "name");
     static final IFn FIRST = Clojure.var("clojure.core", "first");
     static final IFn REST = Clojure.var("clojure.core", "rest");
@@ -34,12 +35,15 @@ class ClojureStuff {
     static final Object PRINT_METHOD = DEREF.invoke(Clojure.var("clojure.core", "print-method"));
     static final IFn CACHED_READ = (IFn) MEMOIZE.invoke(Clojure.var("clojure.edn", "read-string"));
     static final IFn PPRINT;
+    static final IFn DIFF;
 
     static {
         IFn require = Clojure.var("clojure.core", "require");
         require.invoke(Clojure.read("clojure.pprint"));
+        require.invoke(Clojure.read("clojure.data"));
 
         PPRINT = Clojure.var("clojure.pprint/pprint");
+        DIFF = Clojure.var("clojure.data/diff");
     }
 
     static Object cachedRead(String edn) {
