@@ -1,7 +1,5 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.java.api.Clojure;
-
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -32,7 +30,7 @@ class Reification {
         Type[] actualTypeArguments = ((ParameterizedType) genericReturnType).getActualTypeArguments();
         Class<?> keyType = (Class<?>) actualTypeArguments[0];
         Class<?> valType = (Class<?>) actualTypeArguments[1];
-        Object ret = Clojure.read("{}");
+        Object ret = EMPTY_MAP;
         ret = TRANSIENT.invoke(ret);
         Object head = FIRST.invoke(unwrappedMap);
         unwrappedMap = REST.invoke(unwrappedMap);
