@@ -12,6 +12,8 @@ class ClojureStuff {
 
     static final IFn ASSOC = Clojure.var("clojure.core", "assoc");
     static final IFn ASSOC_BANG = Clojure.var("clojure.core", "assoc!");
+    static final IFn BIGINT = Clojure.var("clojure.core", "bigint");
+    static final IFn BIGINTEGER = Clojure.var("clojure.core", "biginteger");
     static final IFn CONJ_BANG = Clojure.var("clojure.core", "conj!");
     static final IFn COUNT = Clojure.var("clojure.core", "count");
     static final IFn DEREF = Clojure.var("clojure.core", "deref");

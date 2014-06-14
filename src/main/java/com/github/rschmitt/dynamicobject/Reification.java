@@ -18,7 +18,7 @@ class Reification {
         Object head = FIRST.invoke(coll);
         coll = REST.invoke(coll);
         for (int i = 0; i < count; i++) {
-            head = Primitives.maybeDownconvert(typeParameter, head);
+            head = Numerics.maybeDownconvert(typeParameter, head);
             CONJ_BANG.invoke(ret, maybeWrapElement(head));
             head = FIRST.invoke(coll);
             coll = REST.invoke(coll);
@@ -39,8 +39,8 @@ class Reification {
             Object val = VAL.invoke(head);
             key = maybeWrapElement(key);
             val = maybeWrapElement(val);
-            key = Primitives.maybeDownconvert(keyType, key);
-            val = Primitives.maybeDownconvert(valType, val);
+            key = Numerics.maybeDownconvert(keyType, key);
+            val = Numerics.maybeDownconvert(valType, val);
             ASSOC_BANG.invoke(ret, key, val);
 
             head = FIRST.invoke(unwrappedMap);

@@ -38,7 +38,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (isBuilderMethod(method)) {
             if (Reflection.isMetadataBuilder(method))
                 return assocMeta(methodName, args[0]);
-            Object val = Primitives.maybeUpconvert(args[0]);
+            Object val = Numerics.maybeUpconvert(args[0]);
             val = Erasure.unwrapCollectionElements(val, List.class, EMPTY_VECTOR);
             val = Erasure.unwrapCollectionElements(val, Set.class, EMPTY_SET);
             val = Erasure.unwrapMapElements(val);
@@ -251,7 +251,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     @SuppressWarnings("unchecked")
     private Object maybeConvertValue(Object val, Class<?> returnType, Type genericReturnType) {
-        if (Primitives.isPrimitive(returnType)) return Primitives.maybeDownconvert(returnType, val);
+        if (Numerics.isNumeric(returnType)) return Numerics.maybeDownconvert(returnType, val);
 
         if (DynamicObject.class.isAssignableFrom(returnType)) return DynamicObject.wrap(val, (Class<T>) returnType);
 

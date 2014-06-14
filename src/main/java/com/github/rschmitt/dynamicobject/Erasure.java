@@ -16,7 +16,7 @@ class Erasure {
             Object ret = empty;
             ret = TRANSIENT.invoke(ret);
             for (Object o : iterable) {
-                o = Primitives.maybeUpconvert(o);
+                o = Numerics.maybeUpconvert(o);
                 o = unwrapAndAnnotate(o);
                 CONJ_BANG.invoke(ret, o);
             }
@@ -64,8 +64,8 @@ class Erasure {
                 Object val = entry.getValue();
                 key = unwrapAndAnnotate(key);
                 val = unwrapAndAnnotate(val);
-                key = Primitives.maybeUpconvert(key);
-                val = Primitives.maybeUpconvert(val);
+                key = Numerics.maybeUpconvert(key);
+                val = Numerics.maybeUpconvert(val);
                 ASSOC_BANG.invoke(ret, key, val);
             }
             return PERSISTENT.invoke(ret);
