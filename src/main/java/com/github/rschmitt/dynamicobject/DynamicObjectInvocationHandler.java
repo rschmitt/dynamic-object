@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
     private static final Object DEFAULT = new Object();
@@ -129,38 +128,15 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                         mismatchedFields.put(field, actualType);
                     if (val instanceof DynamicObject)
                         ((DynamicObject) val).validate();
+                    else if (val instanceof List || val instanceof Set)
+                        Validation.validateCollection((Collection<?>) val, field.getGenericReturnType());
                 }
             } catch (ClassCastException cce) {
                 mismatchedFields.put(field, getRawValueFor(field).getClass());
             }
         }
         if (!missingFields.isEmpty() || !mismatchedFields.isEmpty())
-            throw new IllegalStateException(getValidationErrorMessage(missingFields, mismatchedFields));
-    }
-
-    private static String getValidationErrorMessage(Collection<Method> missingFields, Map<Method, Class<?>> mismatchedFields) {
-        StringBuilder ret = new StringBuilder();
-        if (!missingFields.isEmpty()) {
-            ret.append("The following @Required fields were missing: ");
-            List<String> fieldNames = missingFields.stream().map(Method::getName).collect(toList());
-            for (int i = 0; i < fieldNames.size(); i++) {
-                ret.append(fieldNames.get(i));
-                if (i != fieldNames.size() - 1)
-                    ret.append(", ");
-            }
-            ret.append("\n");
-        }
-        if (!mismatchedFields.isEmpty()) {
-            ret.append("The following fields had the wrong type:\n");
-            for (Map.Entry<Method, Class<?>> methodClassEntry : mismatchedFields.entrySet()) {
-                Method method = methodClassEntry.getKey();
-                String name = method.getName();
-                String expected = method.getReturnType().getSimpleName();
-                String actual = methodClassEntry.getValue().getSimpleName();
-                ret.append(format("\t%s (expected %s, got %s)%n", name, expected, actual));
-            }
-        }
-        return ret.toString();
+            throw new IllegalStateException(Validation.getValidationErrorMessage(missingFields, mismatchedFields));
     }
 
     @SuppressWarnings("unchecked")
