@@ -22,12 +22,12 @@ class Reflection {
         return ret;
     }
 
-    private static boolean isMetadataGetter(Method method) {
-        return hasAnnotation(method, Meta.class);
+    private static boolean isMetadataGetter(Method getter) {
+        return hasAnnotation(getter, Meta.class);
     }
 
-    private static boolean isRequired(Method method) {
-        return hasAnnotation(method, Required.class);
+    static boolean isRequired(Method getter) {
+        return hasAnnotation(getter, Required.class);
     }
 
     private static boolean hasAnnotation(Method method, Class ann) {

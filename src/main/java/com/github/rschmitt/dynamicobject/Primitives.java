@@ -1,17 +1,16 @@
 package com.github.rschmitt.dynamicobject;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /*
  * This class deals with the primitive numeric types that need to be converted to and from long and double.
  */
 class Primitives {
-    private static final Set<Class> numericTypes;
+    private static final Set<Class<?>> numericTypes;
+    private static final Map<Class<?>, Class<?>> unboxedToBoxed;
 
     static {
-        Set<Class> types = new HashSet<>();
+        Set<Class<?>> types = new HashSet<>();
         types.add(int.class);
         types.add(Integer.class);
         types.add(float.class);
@@ -21,6 +20,21 @@ class Primitives {
         types.add(byte.class);
         types.add(Byte.class);
         numericTypes = Collections.unmodifiableSet(types);
+
+        Map<Class<?>, Class<?>> mapping = new HashMap<>();
+        mapping.put(boolean.class, Boolean.class);
+        mapping.put(char.class, Character.class);
+        mapping.put(byte.class, Byte.class);
+        mapping.put(short.class, Short.class);
+        mapping.put(int.class, Integer.class);
+        mapping.put(long.class, Long.class);
+        mapping.put(float.class, Float.class);
+        mapping.put(double.class, Double.class);
+        unboxedToBoxed = mapping;
+    }
+
+    static Class<?> box(Class<?> type) {
+        return unboxedToBoxed.getOrDefault(type, type);
     }
 
     static boolean isPrimitive(Class type) {

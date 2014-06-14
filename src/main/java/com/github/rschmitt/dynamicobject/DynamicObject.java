@@ -50,7 +50,8 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     T subtract(T other);
 
     /**
-     * Validate that all fields annotated with @Required are non-null.
+     * Validate that all fields annotated with @Required are non-null, and that all present fields are of the correct
+     * type.
      */
     void validate();
 

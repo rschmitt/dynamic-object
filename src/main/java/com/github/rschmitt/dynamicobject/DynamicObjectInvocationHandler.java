@@ -10,9 +10,10 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
     private static final Object DEFAULT = new Object();
@@ -113,15 +114,53 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private void validate() {
-        Collection<Method> requiredFields = Reflection.requiredFields(type);
+        Collection<Method> fields = Reflection.fieldGetters(type);
         Collection<Method> missingFields = new LinkedHashSet<>();
-        for (Method field : requiredFields) {
-            Object val = getAndCacheValueFor(field);
-            if (val == null)
-                missingFields.add(field);
+        Map<Method, Class<?>> mismatchedFields = new HashMap<>();
+        for (Method field : fields) {
+            try {
+                Object val = getAndCacheValueFor(field);
+                if (Reflection.isRequired(field) && val == null)
+                    missingFields.add(field);
+                if (val != null) {
+                    Class<?> expectedType = Primitives.box(field.getReturnType());
+                    Class<?> actualType = val.getClass();
+                    if (!expectedType.isAssignableFrom(actualType))
+                        mismatchedFields.put(field, actualType);
+                    if (val instanceof DynamicObject)
+                        ((DynamicObject) val).validate();
+                }
+            } catch (ClassCastException cce) {
+                mismatchedFields.put(field, getRawValueFor(field).getClass());
+            }
         }
-        if (!missingFields.isEmpty())
-            throw new IllegalStateException("The following @Required fields were missing: " + missingFields.toString());
+        if (!missingFields.isEmpty() || !mismatchedFields.isEmpty())
+            throw new IllegalStateException(getValidationErrorMessage(missingFields, mismatchedFields));
+    }
+
+    private static String getValidationErrorMessage(Collection<Method> missingFields, Map<Method, Class<?>> mismatchedFields) {
+        StringBuilder ret = new StringBuilder();
+        if (!missingFields.isEmpty()) {
+            ret.append("The following @Required fields were missing: ");
+            List<String> fieldNames = missingFields.stream().map(Method::getName).collect(toList());
+            for (int i = 0; i < fieldNames.size(); i++) {
+                ret.append(fieldNames.get(i));
+                if (i != fieldNames.size() - 1)
+                    ret.append(", ");
+            }
+            ret.append("\n");
+        }
+        if (!mismatchedFields.isEmpty()) {
+            ret.append("The following fields had the wrong type:\n");
+            for (Map.Entry<Method, Class<?>> methodClassEntry : mismatchedFields.entrySet()) {
+                Method method = methodClassEntry.getKey();
+                String name = method.getName();
+                String expected = method.getReturnType().getSimpleName();
+                String actual = methodClassEntry.getValue().getSimpleName();
+                ret.append(format("\t%s (expected %s, got %s)%n", name, expected, actual));
+            }
+        }
+        return ret.toString();
     }
 
     @SuppressWarnings("unchecked")
@@ -202,15 +241,19 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private Object getValueFor(Method method) {
+        Object val = getRawValueFor(method);
+        if (val == null) return null;
+        Class<?> returnType = method.getReturnType();
+        Type genericReturnType = method.getGenericReturnType();
+        return maybeConvertValue(val, returnType, genericReturnType);
+    }
+
+    private Object getRawValueFor(Method method) {
         String methodName = method.getName();
         Object keywordKey = cachedRead(":" + methodName);
         Object val = GET.invoke(map, keywordKey);
         if (val == null) val = getValueForCustomKey(method);
-        if (val == null) return null;
-
-        Class<?> returnType = method.getReturnType();
-        Type genericReturnType = method.getGenericReturnType();
-        return maybeConvertValue(val, returnType, genericReturnType);
+        return val;
     }
 
     private Object getValueForCustomKey(Method method) {
