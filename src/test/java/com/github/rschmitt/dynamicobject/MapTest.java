@@ -1,12 +1,14 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.lang.*;
+import clojure.lang.EdnReader;
+import clojure.lang.PersistentHashMap;
 import org.junit.Test;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static java.lang.String.format;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class MapTest {
     static final String SIMPLE_EDN = "{:str \"expected value\", :i 4, :d 3.14}";

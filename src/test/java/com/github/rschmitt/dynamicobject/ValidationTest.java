@@ -1,6 +1,8 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.lang.reflect.Type;
 import java.math.BigInteger;
@@ -9,9 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.READ_STRING;
-import static com.github.rschmitt.dynamicobject.DynamicObject.deregisterTag;
-import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
-import static com.github.rschmitt.dynamicobject.DynamicObject.registerTag;
+import static com.github.rschmitt.dynamicobject.DynamicObject.*;
 
 public class ValidationTest {
     @BeforeClass

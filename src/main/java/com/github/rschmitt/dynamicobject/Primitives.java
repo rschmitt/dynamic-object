@@ -1,6 +1,7 @@
 package com.github.rschmitt.dynamicobject;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /*
  * This class deals with the primitive types that need to be boxed and unboxed.

@@ -1,7 +1,11 @@
 package com.github.rschmitt.dynamicobject;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.BIGINT;
 import static com.github.rschmitt.dynamicobject.ClojureStuff.BIGINTEGER;
