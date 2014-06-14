@@ -4,10 +4,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -21,15 +18,18 @@ class Validation {
             assert typeArgs.size() == 1;
 
             Type typeArg = typeArgs.get(0);
-            if (typeArg instanceof WildcardType)
-                throw new UnsupportedOperationException("Wildcard return types are not supported");
-            else if (typeArg instanceof ParameterizedType)
-                throw new UnsupportedOperationException("Nested type parameters are not supported");
-            else if (typeArg instanceof Class)
-                val.forEach(element -> checkElement((Class<?>) typeArg, element));
-            else
-                throw new UnsupportedOperationException("Unknown generic type argument type: " + typeArg.getClass().getCanonicalName());
+            checkTypeVariable(typeArg);
+            val.forEach(element -> checkElement((Class<?>) typeArg, element));
         }
+    }
+
+    private static void checkTypeVariable(Type typeArg) {
+        if (typeArg instanceof WildcardType)
+            throw new UnsupportedOperationException("Wildcard return types are not supported");
+        else if (typeArg instanceof ParameterizedType)
+            throw new UnsupportedOperationException("Nested type parameters are not supported");
+        else if (!(typeArg instanceof Class))
+            throw new UnsupportedOperationException("Unknown generic type argument type: " + typeArg.getClass().getCanonicalName());
     }
 
     private static void checkElement(Class<?> elementType, Object element) {
@@ -42,6 +42,24 @@ class Validation {
                         element.getClass().getTypeName()));
             if (element instanceof DynamicObject)
                 ((DynamicObject) element).validate();
+        }
+    }
+
+    static void validateMap(Map<?, ?> val, Type genericReturnType) {
+        if (genericReturnType instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) genericReturnType;
+            List<Type> typeArgs = Arrays.asList(parameterizedType.getActualTypeArguments());
+            assert typeArgs.size() == 2;
+
+            typeArgs.forEach(Validation::checkTypeVariable);
+            Class<?> keyClass = (Class<?>) typeArgs.get(0);
+            Class<?> valClass = (Class<?>) typeArgs.get(1);
+
+            Set<?> keys = val.keySet();
+            Collection<?> values = val.values();
+
+            keys.forEach(element -> checkElement(keyClass, element));
+            values.forEach(element -> checkElement(valClass, element));
         }
     }
 

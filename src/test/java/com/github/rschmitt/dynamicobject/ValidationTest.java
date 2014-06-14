@@ -5,6 +5,7 @@ import org.junit.*;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.READ_STRING;
@@ -187,6 +188,55 @@ public class ValidationTest {
         Type expectedType = CompoundSets.class.getMethod("setOfSetOfStrings").getGenericReturnType();
         Validation.validateCollection(set, expectedType);
     }
+
+    @Test
+    public void rawMap() throws Exception {
+        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\", 3 4}");
+        Type expectedType = CompoundMaps.class.getMethod("rawMap").getGenericReturnType();
+        Validation.validateMap(map, expectedType);
+    }
+
+    @Test
+    public void mapOfStrings() throws Exception {
+        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\", \"str3\" nil}");
+        Type expectedType = CompoundMaps.class.getMethod("strings").getGenericReturnType();
+        Validation.validateMap(map, expectedType);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void invalidMapKeys() throws Exception {
+        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\", 3 \"str4\"}");
+        Type expectedType = CompoundMaps.class.getMethod("strings").getGenericReturnType();
+        Validation.validateMap(map, expectedType);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void invalidMapValues() throws Exception {
+        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\", \"str3\" 4}");
+        Type expectedType = CompoundMaps.class.getMethod("strings").getGenericReturnType();
+        Validation.validateMap(map, expectedType);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void wildcardKey() throws Exception {
+        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\"}");
+        Type expectedType = CompoundMaps.class.getMethod("wildcardKey").getGenericReturnType();
+        Validation.validateMap(map, expectedType);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void wildcardValue() throws Exception {
+        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\"}");
+        Type expectedType = CompoundMaps.class.getMethod("wildcardValue").getGenericReturnType();
+        Validation.validateMap(map, expectedType);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void nestedMap() throws Exception {
+        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" {\"str2\" \"str3\"}}");
+        Type expectedType = CompoundMaps.class.getMethod("nestedGenericMaps").getGenericReturnType();
+        Validation.validateMap(map, expectedType);
+    }
 }
 
 interface RequiredFields extends DynamicObject<RequiredFields> {
@@ -227,4 +277,12 @@ interface CompoundSets extends DynamicObject<CompoundSets> {
     Set rawSet();
     Set<?> wildcardSet();
     Set<Set<String>> setOfSetOfStrings();
+}
+
+interface CompoundMaps extends DynamicObject<CompoundMaps> {
+    Map<String, String> strings();
+    Map rawMap();
+    Map<?, String> wildcardKey();
+    Map<String, ?> wildcardValue();
+    Map<String, Map<String, String>> nestedGenericMaps();
 }
