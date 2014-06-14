@@ -160,6 +160,13 @@ public class ValidationTest {
         Validation.validateCollection(set, expectedType);
     }
 
+    @Test
+    public void setOfInts() throws Exception {
+        Set<?> set = (Set<?>) READ_STRING.invoke("#{1 2 3 4}");
+        Type expectedType = CompoundSets.class.getMethod("ints").getGenericReturnType();
+        Validation.validateCollection(set, expectedType);
+    }
+
     @Test(expected = IllegalStateException.class)
     public void invalidSetOfStrings() throws Exception {
         Set<?> set = (Set<?>) READ_STRING.invoke("#{\"str1\", \"str2\", 3}");

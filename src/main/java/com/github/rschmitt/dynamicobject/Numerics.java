@@ -1,9 +1,7 @@
 package com.github.rschmitt.dynamicobject;
 
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.BIGINT;
 import static com.github.rschmitt.dynamicobject.ClojureStuff.BIGINTEGER;
@@ -13,6 +11,7 @@ import static com.github.rschmitt.dynamicobject.ClojureStuff.BIGINTEGER;
  */
 public class Numerics {
     private static final Set<Class<?>> numericTypes;
+    private static final Map<Class<?>, Class<?>> numericConversions;
     private static final Class<?> BigInt = BIGINT.invoke(0).getClass();
 
     static {
@@ -27,10 +26,22 @@ public class Numerics {
         types.add(Byte.class);
         types.add(BigInteger.class);
         numericTypes = Collections.unmodifiableSet(types);
+
+        Map<Class<?>, Class<?>> conversions = new HashMap<>();
+        conversions.put(Byte.class, Long.class);
+        conversions.put(Short.class, Long.class);
+        conversions.put(Integer.class, Long.class);
+        conversions.put(Float.class, Double.class);
+        conversions.put(BigInteger.class, BigInt);
+        numericConversions = conversions;
     }
 
     static boolean isNumeric(Class<?> type) {
         return numericTypes.contains(type);
+    }
+
+    static Class<?> canonicalNumericType(Class<?> type) {
+        return numericConversions.getOrDefault(type, type);
     }
 
     static Object maybeDownconvert(Class type, Object val) {

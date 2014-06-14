@@ -32,11 +32,13 @@ class Validation {
         }
     }
 
-    private static void checkElement(Class<?> expectedElementType, Object element) {
+    private static void checkElement(Class<?> elementType, Object element) {
         if (element != null) {
-            if (!expectedElementType.isAssignableFrom(element.getClass()))
+            Class<?> actualType = element.getClass();
+            Class<?> expectedType = Numerics.canonicalNumericType(elementType);
+            if (!expectedType.isAssignableFrom(actualType))
                 throw new IllegalStateException(format("Expected collection element of type %s, got %s",
-                        expectedElementType.getTypeName(),
+                        elementType.getTypeName(),
                         element.getClass().getTypeName()));
             if (element instanceof DynamicObject)
                 ((DynamicObject) element).validate();
