@@ -8,10 +8,9 @@ import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 
@@ -71,6 +70,9 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 return union((DynamicObject<T>) args[0]);
             case "subtract":
                 return subtract((DynamicObject<T>) args[0]);
+            case "validate":
+                validate();
+                return null;
             case "equals":
                 Object other = args[0];
                 if (other instanceof DynamicObject)
@@ -108,6 +110,18 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         };
         Object mergedMap = MERGE_WITH.invoke(ignoreNulls, map, other.getMap());
         return DynamicObject.wrap(mergedMap, type);
+    }
+
+    private void validate() {
+        Collection<Method> requiredFields = Reflection.requiredFields(type);
+        Collection<Method> missingFields = new LinkedHashSet<>();
+        for (Method field : requiredFields) {
+            Object val = getAndCacheValueFor(field);
+            if (val == null)
+                missingFields.add(field);
+        }
+        if (!missingFields.isEmpty())
+            throw new IllegalStateException("The following @Required fields were missing: " + missingFields.toString());
     }
 
     @SuppressWarnings("unchecked")

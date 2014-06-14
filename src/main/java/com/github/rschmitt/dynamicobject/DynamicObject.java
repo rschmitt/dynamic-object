@@ -50,6 +50,11 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     T subtract(T other);
 
     /**
+     * Validate that all fields annotated with @Required are non-null.
+     */
+    void validate();
+
+    /**
      * Serialize the given object to Edn. Any {@code EdnTranslator}s that have been registered through
      * {@link DynamicObject#registerType} will be invoked as needed.
      */
