@@ -10,28 +10,28 @@ import static org.junit.Assert.*;
 public class ReflectionTest {
     @Test
     public void fieldGetters() throws Exception {
-        Collection<Method> methods = Reflection.fieldGetters(Type.class);
+        Collection<Method> methods = Reflection.fieldGetters(VariousMethods.class);
 
         assertEquals(2, methods.size());
-        assertTrue(methods.contains(Type.class.getMethod("num")));
-        assertTrue(methods.contains(Type.class.getMethod("customKey")));
+        assertTrue(methods.contains(VariousMethods.class.getMethod("num")));
+        assertTrue(methods.contains(VariousMethods.class.getMethod("customKey")));
     }
 
     @Test
     public void requiredFields() throws Exception {
-        Collection<Method> methods = Reflection.requiredFields(Type.class);
+        Collection<Method> methods = Reflection.requiredFields(VariousMethods.class);
 
         assertEquals(1, methods.size());
-        assertTrue(methods.contains(Type.class.getMethod("num")));
+        assertTrue(methods.contains(VariousMethods.class.getMethod("num")));
     }
 }
 
-interface Type extends DynamicObject<Type> {
+interface VariousMethods extends DynamicObject<VariousMethods> {
     @Required int num();
     @Key(":custom-key") String customKey();
     @Meta String someMetadata();
 
-    Type num(int num);
+    VariousMethods num(int num);
 
     default void customMethod() {
 
