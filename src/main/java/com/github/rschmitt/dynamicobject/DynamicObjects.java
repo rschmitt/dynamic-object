@@ -31,6 +31,10 @@ public class DynamicObjects {
 
     @SuppressWarnings("unchecked")
     static <T extends DynamicObject<T>> T wrap(Object map, Class<T> type) {
+        Class<?> typeMetadata = Erasure.getTypeMetadata(map);
+        if (typeMetadata != null && !type.equals(typeMetadata))
+            throw new ClassCastException(String.format("Attempted to wrap a map tagged as %s in type %s",
+                    typeMetadata.getSimpleName(), type.getSimpleName()));
         try {
             Constructor<MethodHandles.Lookup> lookupConstructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
             lookupConstructor.setAccessible(true);
@@ -44,15 +48,14 @@ public class DynamicObjects {
     }
 
     static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
-        Object metadata = ASSOC.invoke(EMPTY_MAP, TYPE, cachedRead(":" + type.getCanonicalName()));
-        return wrap(WITH_META.invoke(EMPTY_MAP, metadata), type);
+        return wrap(Erasure.withTypeMetadata(EMPTY_MAP, type), type);
     }
 
     static synchronized <T> void registerType(Class<T> type, EdnTranslator<T> translator) {
         EdnTranslatorAdapter<T> adapter = new EdnTranslatorAdapter<>(translator);
         translatorCache.put(type, adapter);
         readers = ASSOC.invoke(readers, cachedRead(translator.getTag()), adapter);
-        defineMultimethod(type.getCanonicalName(), "DynamicObjects/invokeWriter", translator.getTag());
+        defineMultimethod(type.getTypeName(), "DynamicObjects/invokeWriter", translator.getTag());
     }
 
     @SuppressWarnings("unchecked")
@@ -66,7 +69,7 @@ public class DynamicObjects {
     static synchronized <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
         recordTagCache.put(type, tag);
         readers = ASSOC.invoke(readers, cachedRead(tag), new RecordReader<>(type));
-        defineMultimethod(":" + type.getCanonicalName(), "RecordPrinter/printRecord", tag);
+        defineMultimethod(":" + type.getTypeName(), "RecordPrinter/printRecord", tag);
     }
 
     static synchronized <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
@@ -74,7 +77,7 @@ public class DynamicObjects {
         readers = DISSOC.invoke(readers, cachedRead(tag));
         recordTagCache.remove(type);
 
-        Object dispatchVal = cachedRead(":" + type.getCanonicalName());
+        Object dispatchVal = cachedRead(":" + type.getTypeName());
         REMOVE_METHOD.invoke(PRINT_METHOD, dispatchVal);
     }
 

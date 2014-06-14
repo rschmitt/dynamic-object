@@ -22,7 +22,9 @@ class Reflection {
         return ret;
     }
 
-    private static boolean isMetadataGetter(Method getter) {
+    static boolean isMetadataGetter(Method getter) {
+        if (getter.getParameterCount() != 0)
+            return false;
         return hasAnnotation(getter, Meta.class);
     }
 
@@ -35,6 +37,16 @@ class Reflection {
         for (Annotation annotation : annotations)
             if (annotation.annotationType().equals(ann))
                 return true;
+        return false;
+    }
+
+    static boolean isMetadataBuilder(Method method) {
+        if (method.getParameterCount() != 1)
+            return false;
+        for (Annotation[] annotations : method.getParameterAnnotations())
+            for (Annotation annotation : annotations)
+                if (annotation.annotationType().equals(Meta.class))
+                    return true;
         return false;
     }
 }

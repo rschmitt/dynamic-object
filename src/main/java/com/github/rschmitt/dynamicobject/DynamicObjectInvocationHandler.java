@@ -36,7 +36,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         String methodName = method.getName();
 
         if (isBuilderMethod(method)) {
-            if (isMetadataBuilder(method))
+            if (Reflection.isMetadataBuilder(method))
                 return assocMeta(methodName, args[0]);
             Object val = Primitives.maybeUpconvert(args[0]);
             val = Erasure.unwrapCollectionElements(val, List.class, EMPTY_VECTOR);
@@ -81,7 +81,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 else
                     return method.invoke(map, args);
             default:
-                if (isMetadataGetter(method))
+                if (Reflection.isMetadataGetter(method))
                     return getMetadataFor(methodName);
                 return getAndCacheValueFor(method);
         }
@@ -207,28 +207,9 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return method.getReturnType().equals(type) && method.getParameterCount() == 1;
     }
 
-    private static boolean isMetadataBuilder(Method method) {
-        if (method.getParameterCount() != 1)
-            return false;
-        for (Annotation[] annotations : method.getParameterAnnotations())
-            for (Annotation annotation : annotations)
-                if (annotation.annotationType().equals(Meta.class))
-                    return true;
-        return false;
-    }
-
     private Object getMetadataFor(String key) {
         Object meta = META.invoke(map);
         return GET.invoke(meta, key);
-    }
-
-    private static boolean isMetadataGetter(Method method) {
-        if (method.getParameterCount() != 0)
-            return false;
-        for (Annotation annotation : method.getAnnotations())
-            if (annotation.annotationType().equals(Meta.class))
-                return true;
-        return false;
     }
 
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
