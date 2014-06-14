@@ -33,6 +33,7 @@ Album album = DynamicObject.deserialize(edn, Album.class);
 * **Serialization.** Thanks to Clojure and the Edn data language, serialization is simple, reliable, extensible, and language-agnostic.
 * **Immutability.** Because `DynamicObjects` are built out of [Clojure's data structures](http://clojure.org/data_structures), they are not just immutable and thread-safe, but also [persistent](http://en.wikipedia.org/wiki/Persistent_data_structure), which makes copying and modification cheap.
 * **Composability.** `DynamicObjects` compose correctly. Different types can be aggregated without losing serializability, equality semantics, or any of the other benefits of Clojure data ([example](https://github.com/rschmitt/dynamic-object/blob/master/src/test/java/com/github/rschmitt/dynamicobject/AcceptanceTest.java)).
+* **Schema validation.** dynamic-object offers basic schema validation à la carte. The `validate` method will verify that all of an instance's fields are of the correct type, and that any fields annotated with `@Required` are not null.
 * **Copy-on-write support.** dynamic-object supports builder methods, which are similar to Lombok [`@Wither`](http://projectlombok.org/features/experimental/Wither.html) methods: they are used to create a clone of an instance that has a single field changed. They are backed by Clojure's `assoc` function, which is extremely performant, thanks to Clojure's sophisticated immutable data structures.
 * **Transparent support for collections.** A `DynamicObject` can contain standard Java collections--namely `List`, `Set`, and `Map` from `java.util`. Collections can even contain `DynamicObject` instances.
 * **Structural recursion.** There are no artificial or arbitrary limits on nesting or recursion. The test suite includes an example of a serializable [`LinkedList`](https://github.com/rschmitt/dynamic-object/blob/master/src/test/java/com/github/rschmitt/dynamicobject/RecursionTest.java) implemented with `DynamicObject`.
@@ -41,7 +42,7 @@ Album album = DynamicObject.deserialize(edn, Album.class);
     * dynamic-object has no dependencies, other than Clojure itself.
     * dynamic-object is implemented entirely with Java's built-in reflection capabilities. There is no bytecode manipulation, no annotation processing, no AOP weaving.
     * dynamic-object calls into Clojure exclusively through Clojure 1.6's public Java API, and does not depend on the implementation details of the current version of Clojure.
-* **Easy to work with.** The dynamic-object API has a very small surface area, consisting of a single-digit number of methods, two annotations, and two interfaces. Using dynamic-object productively does not require any new tools: there is no Vim plugin, no Emacs minor mode, no Eclipse update site, no Gradle plugin, no special test runner. dynamic-object works for you, not the other way around.
+* **Easy to work with.** The dynamic-object API has a very small surface area, consisting of a single-digit number of methods, three annotations, and two interfaces. Using dynamic-object productively does not require any new tools: there is no Vim plugin, no Emacs minor mode, no Eclipse update site, no Gradle plugin, no special test runner. dynamic-object works for you, not the other way around.
 
 ## Serialization and Deserialization
 
@@ -76,7 +77,6 @@ public void invokeBuilderMethod() {
 
 dynamic-object is currently in beta, and the API is still subject to change. There are a number of outstanding design questions and implementation tasks, such as:
 
-* **Schema validation.** dynamic-object should provide basic validation functionality, such as checking that all mandatory fields are present and all types are correct. However, this should be exposed as a separate instance method call, and not complected with deserialization, as it would be in most object-mapping frameworks.
 * **Instance initialization.** Currently, `DynamicObjects` created through calls to `newInstance` are completely blank; all fields are missing by default, rather than explicitly null. This is different from the behavior of `defrecord`, which will initialize all fields to `nil` if an empty map is passed to the constructor, and which will also initialize missing fields to `nil` upon deserialization.
 * **Arbitrary precision numbers.** These are actually required by the Edn format specification, and should be exposed accordingly as `BigInteger` (for the `N`-suffixed numbers) and `BigDecimal` (for the `M`-suffixed numbers). Currently only `BigDecimal` is supported.
 * **Symbols.** The Edn format specification also calls out symbols, which "are used to represent identifiers, and should map to something other than strings, if possible." How to expose symbols to Java code, or whether to do so at all, is a problem that is going to require some [hammock time](http://www.youtube.com/watch?v=f84n5oFoZBc).
