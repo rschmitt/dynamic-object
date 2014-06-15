@@ -55,7 +55,10 @@ class DumbClassTranslator implements EdnTranslator<DumbClass> {
 
     @Override
     public String write(DumbClass obj) {
-        return format("{:version %d, :str \"%s\"}", obj.getVersion(), obj.getStr());
+        DumbClassProxy proxy = DynamicObject.newInstance(DumbClassProxy.class);
+        proxy = proxy.str(obj.getStr());
+        proxy = proxy.version(obj.getVersion());
+        return DynamicObject.serialize(proxy);
     }
 
     @Override
@@ -66,6 +69,9 @@ class DumbClassTranslator implements EdnTranslator<DumbClass> {
     interface DumbClassProxy extends DynamicObject<DumbClassProxy> {
         long version();
         String str();
+
+        DumbClassProxy version(long version);
+        DumbClassProxy str(String str);
     }
 }
 
