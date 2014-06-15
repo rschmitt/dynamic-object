@@ -27,7 +27,7 @@ public class DiffTest {
         Diffable a = deserialize("#D{:a \"a\", :b \"b\"}", Diffable.class);
         Diffable b = deserialize("#D{:a \"a\", :b \"b\", :c \"c\"}", Diffable.class);
 
-        Diffable c = a.union(b);
+        Diffable c = a.intersect(b);
 
         assertEquals(c, a);
         assertNotEquals(c, b);
@@ -39,7 +39,7 @@ public class DiffTest {
         Diffable a = deserialize("#D{:a \"a\"}", Diffable.class);
         Diffable b = deserialize("#D{:b \"b\"}", Diffable.class);
 
-        Diffable c = a.union(b);
+        Diffable c = a.intersect(b);
 
         assertNull(c.a());
         assertNull(c.b());
@@ -51,7 +51,7 @@ public class DiffTest {
         Diffable a = deserialize("#D{:d #D{:a \"inner\"},                 :a \"a\", :b \"?\"}", Diffable.class);
         Diffable b = deserialize("#D{:d #D{:a \"inner\", :b \"ignored\"}, :a \"a\", :b \"!\"}", Diffable.class);
 
-        Diffable c = a.union(b);
+        Diffable c = a.intersect(b);
 
         assertEquals("a", c.a());
         assertNull(c.b());
@@ -64,7 +64,7 @@ public class DiffTest {
         Diffable a = deserialize("#D{:s #{1 2 3}}", Diffable.class);
         Diffable b = deserialize("#D{:s #{1 2 3 4}}", Diffable.class);
 
-        Diffable c = a.union(b);
+        Diffable c = a.intersect(b);
 
         assertEquals(null, c.set());
     }
@@ -74,7 +74,7 @@ public class DiffTest {
         Diffable a = deserialize("#D{:list [5 4 3]}", Diffable.class);
         Diffable b = deserialize("#D{:list [1 2 3]}", Diffable.class);
 
-        Diffable c = a.union(b);
+        Diffable c = a.intersect(b);
 
         assertEquals(null,               c.list().get(0));
         assertEquals(null,               c.list().get(1));

@@ -27,7 +27,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     /**
      * Return a copy of this instance with {@code other}'s fields merged in (nulls don't count). If a given field is
      * present in both instances, the fields in {@code other} will take precedence.
-     *
+     * <p/>
      * Equivalent to: {@code (merge-with (fn [a b] (if (nil? b) a b)) this other)}
      */
     T merge(T other);
@@ -36,15 +36,15 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * Recursively compares this instance with {@code other}, returning a new instance containing all of the common
      * elements of both {@code this} and {@code other}. Maps and lists are compared recursively; everything else,
      * including sets, strings, and POJOs, is treated atomically.
-     *
+     * <p/>
      * Equivalent to: {@code (nth (clojure.data/diff this other) 2)}
      */
-    T union(T other);
+    T intersect(T other);
 
     /**
-     * Recursively compares this instance with {@code other}, similar to {@link #union}, but returning the fields that
-     * are unique to {@code this}. Uses the same recursion strategy as {@code union}.
-     *
+     * Recursively compares this instance with {@code other}, similar to {@link #intersect}, but returning the fields that
+     * are unique to {@code this}. Uses the same recursion strategy as {@code intersect}.
+     * <p/>
      * Equivalent to: {@code (nth (clojure.data/diff this other) 0)}
      */
     T subtract(T other);

@@ -73,7 +73,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 return w.toString();
             case "merge":
                 return merge((DynamicObject<T>) args[0]);
-            case "union":
+            case "intersect":
                 return union((DynamicObject<T>) args[0]);
             case "subtract":
                 return subtract((DynamicObject<T>) args[0]);
