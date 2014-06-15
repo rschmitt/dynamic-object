@@ -44,11 +44,102 @@ Album album = DynamicObject.deserialize(edn, Album.class);
     * dynamic-object calls into Clojure exclusively through Clojure 1.6's public Java API, and does not depend on the implementation details of the current version of Clojure.
 * **Easy to work with.** The dynamic-object API has a very small surface area, consisting of a single-digit number of methods, three annotations, and two interfaces. Using dynamic-object productively does not require any new tools: there is no Vim plugin, no Emacs minor mode, no Eclipse update site, no Gradle plugin, no special test runner. dynamic-object works for you, not the other way around.
 
-## Serialization and Deserialization
+## Some More Examples
 
-dynamic-object is designed with an emphasis on preserving Clojure's excellent support for transparent serialization and deserialization. Data is serialized to [Edn](https://github.com/edn-format/edn), Clojure's native data language. In addition to Edn's built-in data types (sets, maps, vectors, `#inst`, `#uuid`, and so forth), there is full support for reader tags, Edn's extension mechanism. This makes it possible to include any Java value class in a `DynamicObject` without compromising serializability or requiring any modifications to the class. This is done through the `EdnTranslator` mechanism; see the [`TaggedReaderTest`](https://github.com/rschmitt/dynamic-object/blob/master/src/test/java/com/github/rschmitt/dynamicobject/TaggedReaderTest.java) or the [`AcceptanceTest`](https://github.com/rschmitt/dynamic-object/blob/master/src/test/java/com/github/rschmitt/dynamicobject/AcceptanceTest.java) for examples.
+### Serialization and Deserialization
 
-## Persistent Modification
+dynamic-object is designed with an emphasis on preserving Clojure's excellent support for transparent serialization and deserialization. Data is serialized to [Edn](https://github.com/edn-format/edn), Clojure's native data language. In addition to Edn's built-in data types (sets, maps, vectors, `#inst`, `#uuid`, and so forth), there is full support for reader tags, Edn's extension mechanism. This makes it possible to include any Java value class in a `DynamicObject` without compromising serializability or requiring any modifications to the class. This is done through the `EdnTranslator` mechanism.
+
+For instance, suppose we have a legacy POJO:
+
+```java
+class DumbClass {
+  private final long version;
+  private final String str;
+
+  // Constructor, getters, equals, hashCode, and toString omitted
+}
+```
+
+We can plan to represent instances of this class in Edn as a map: `{:version 1, :str "a string"}`. (This choice is somewhat arbitrary; for instance, we could also use a tagged string.) We implement this translation through the `EdnTranslator` interface:
+
+```java
+class DumbClassTranslator implements EdnTranslator<DumbClass> {
+  @Override
+  public DumbClass read(Object obj) {
+    DumbClassProxy proxy = DynamicObject.wrap(obj, DumbClassProxy.class);
+    return new DumbClass(proxy.version(), proxy.str());
+  }
+
+  @Override
+  public String write(DumbClass obj) {
+    DumbClassProxy proxy = DynamicObject.newInstance(DumbClassProxy.class);
+    proxy = proxy.str(obj.getStr());
+    proxy = proxy.version(obj.getVersion());
+    return DynamicObject.serialize(proxy);
+  }
+
+  @Override
+  public String getTag() {
+    return "MyDumbClass";
+  }
+
+  interface DumbClassProxy extends DynamicObject<DumbClassProxy> {
+    long version();
+    String str();
+
+    DumbClassProxy version(long version);
+    DumbClassProxy str(String str);
+  }
+}
+```
+
+The Edn reader gives us the map that was tagged; we can wrap this map in an intermediate `DynamicObject` to use as a kind of deserialization proxy. This makes it unnecessary to call Clojure directly when reading, or to manually build an Edn string when writing.
+
+The last step is to register the translator:
+
+```java
+DynamicObject.registerType(DumbClass.class, new DumbClassTranslator());
+```
+
+The POJO type is now fully interoperable with `DynamicObject` and Edn serialization:
+
+```java
+DumbClassHolder holder = DynamicObject.deserialize("{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}", DumbClassHolder.class);
+assertEquals(new DumbClass(1, "str"), holder.dumb().get(0));
+```
+
+### Schema Validation
+
+Traditional object mappers pretend to transparently put static types on the wire. As a consequence, it is difficult to get them to accept any data that does not exactly match the object type they are expecting to see. For instance, if they see an unknown field, they will likely discard it, or they might just throw an exception, causing deserialization to fail altogether. The problem is usually not obvious right away; generally, it only becomes obvious once the software is running in production and needs to accommodate changes.
+
+dynamic-object takes a completely different approach in which deserialization and validation are decoupled into two separate phases, each of which is independently available to the user. Any well-formed Edn data can be deserialized into any given `DynamicObject` type, and all of the data that was present on the wire will be preserved in its entirety in memory. Validation of the data can then proceed as a separate step. (Note that validation can also be performed on objects that were created using builders, rather than deserialized. This can be a way to ensure that none of the `@Required` fields were overlooked during construction.)
+
+Validation checks that all `@Required` fields are present (they must not be null), and that all of the types are correct. Successful validation is a guarantee that any getter method can be invoked without resulting in a `ClassCastException`. For example, consider the following type:
+
+```java
+interface Validated extends DynamicObject<Validated> {
+  @Required int x();
+  @Required int y();
+  String str();
+}
+```
+
+After deserializing instances of this type, we can use validation to ensure that they are correct. The `validate()` method will throw an exception if an instance doesn't validate. The exception message will give a detailed description of what went wrong:
+
+```java
+DynamicObject.deserialize("{}", Validated.class).validate();
+//  Exception in thread "main" java.lang.IllegalStateException: The following @Required fields were missing: x, y
+
+DynamicObject.deserialize("{:x 1, :y 2, :str 3}", Validated.class).validate();
+//  Exception in thread "main" java.lang.IllegalStateException: The following fields had the wrong type:
+//    str (expected String, got Long)
+
+DynamicObject.deserialize("{:x 1, :y 2, :str \"hello\"}", Validated.class).validate();
+//  Success!
+```
+
+### Persistent Modification
 
 dynamic-object makes it easy to leverage Clojure's immutable persistent data structures, which use structural sharing to enable cheap copying and "modification." A `DynamicObject` can declare builder methods, which are backed by [`assoc`](http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/assoc). For example:
 
@@ -65,6 +156,43 @@ public void invokeBuilderMethod() {
 }
 
 ```
+
+### Metadata
+
+dynamic-object allows direct access to Clojure's metadata facilities with the `@Meta` annotation. This allows information to be annotated in arbitrary ways without this information being part of the data itself. For example, if you're using dynamic-object to communicate across processes using a distributed queue like [SQS](http://aws.amazon.com/sqs/), metadata is a great place to stash information about the messages themselves, such as the [message receipt handle](http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/ImportantIdentifiers.html):
+
+```java
+interface WorkerJob extends DynamicObject<WorkerJob> {
+  UUID jobId();
+  String inputLocation();
+  // and so forth
+  @Meta long messageAgeInSeconds(); // Use this for visibility purposes (e.g. are we falling behind?)
+  @Meta String messageReceiptHandle(); // Use this later to delete the message once the job is done
+}
+```
+
+Remember that metadata is never serialized, and is ignored for purposes of equality.
+
+### Custom Keys
+
+dynamic-object does not have an elaborate system of conventions to map Java method names to Clojure map keys. By default, the name of the getter method is exactly the name of the keyword. `str()` maps to `:str`, and `myString()` maps to `:myString`, not `:my-string`. This default can be overridden with the `@Key` annotation:
+
+```java
+String camelCase(); // corresponds to the :camelCase field
+@Key(":kebab-case") String kebabCase(); // corresponds to the :kebab-case field, as opposed to the default :kebabCase
+```
+
+This is particularly useful for Clojure interop, where kebab-case, rather than Java's camelCase, is idiomatic.
+
+## Guidelines
+
+* Always register a reader tag for any `DynamicObject` that will be serialized. This reader tag should be namespaced with some appropriate prefix (e.g. a Java package name), as all unprefixed reader tags are reserved for future use by the Edn specification.
+* Always include a version number in data that will be serialized. This way, older consumers can check the version number and decline any messages that they are not capable of handling properly.
+* Annotate required fields with `@Required` and call `validate()` to ensure that all required fields are present.
+* Do not use [`Optional`](http://docs.oracle.com/javase/8/docs/api/java/util/Optional.html). All fields that are not annotated with `@Required` are implicitly optional. Using `Optional` will complicate serialization and Clojure interop without adding much null safety.
+* Correspondingly, unboxed primitive fields should always be marked `@Required`, as they cannot be effectively checked for null. Optional fields should always use the boxed type.
+* It is okay to submit a mutable collection such as a `java.util.ArrayList` to a `DynamicObject` builder method. Internally, all collection elements are copied to an immutable Clojure collection.
+* Similarly, all collection getter methods return an immutable persistent collection.
 
 ## Constraints and Limitations
 
