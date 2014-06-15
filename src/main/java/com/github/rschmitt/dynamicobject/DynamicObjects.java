@@ -31,7 +31,7 @@ public class DynamicObjects {
 
     @SuppressWarnings("unchecked")
     static <T extends DynamicObject<T>> T wrap(Object map, Class<T> type) {
-        Class<?> typeMetadata = Erasure.getTypeMetadata(map);
+        Class<?> typeMetadata = Metadata.getTypeMetadata(map);
         if (typeMetadata != null && !type.equals(typeMetadata))
             throw new ClassCastException(String.format("Attempted to wrap a map tagged as %s in type %s",
                     typeMetadata.getSimpleName(), type.getSimpleName()));
@@ -48,7 +48,7 @@ public class DynamicObjects {
     }
 
     static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
-        return wrap(Erasure.withTypeMetadata(EMPTY_MAP, type), type);
+        return wrap(Metadata.withTypeMetadata(EMPTY_MAP, type), type);
     }
 
     static synchronized <T> void registerType(Class<T> type, EdnTranslator<T> translator) {

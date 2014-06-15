@@ -14,6 +14,6 @@ public final class RecordReader<T extends DynamicObject<T>> extends AFn {
      */
     @Override
     public Object invoke(Object mapWithMeta) {
-        return Erasure.withTypeMetadata(mapWithMeta, type);
+        return Metadata.withTypeMetadata(mapWithMeta, type);
     }
 }

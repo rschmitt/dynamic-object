@@ -44,12 +44,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (isBuilderMethod(method)) {
             if (Reflection.isMetadataBuilder(method))
                 return assocMeta(methodName, args[0]);
-            Object val = Numerics.maybeUpconvert(args[0]);
-            val = Erasure.unwrapCollectionElements(val, List.class, EMPTY_VECTOR);
-            val = Erasure.unwrapCollectionElements(val, Set.class, EMPTY_SET);
-            val = Erasure.unwrapMapElements(val);
             String key = getBuilderKey(method);
-            return assoc(key, val);
+            return assoc(key, Conversions.javaToClojure(args[0]));
         }
 
         if (method.isDefault())
@@ -105,7 +101,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         Object array = DIFF.invoke(map, arg.getMap());
         Object union = NTH.invoke(array, idx);
         if (union == null) union = EMPTY_MAP;
-        union = Erasure.withTypeMetadata(union, type);
+        union = Metadata.withTypeMetadata(union, type);
         return DynamicObject.wrap(union, type);
     }
 
@@ -207,9 +203,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private Object getValueFor(Method method) {
         Object val = getRawValueFor(method);
         if (val == null) return null;
-        Class<?> returnType = method.getReturnType();
         Type genericReturnType = method.getGenericReturnType();
-        return maybeConvertValue(val, returnType, genericReturnType);
+        return Conversions.clojureToJava(val, genericReturnType);
     }
 
     private Object getRawValueFor(Method method) {
@@ -230,18 +225,5 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             }
         }
         return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Object maybeConvertValue(Object val, Class<?> returnType, Type genericReturnType) {
-        if (Numerics.isNumeric(returnType)) return Numerics.maybeDownconvert(returnType, val);
-
-        if (DynamicObject.class.isAssignableFrom(returnType)) return DynamicObject.wrap(val, (Class<T>) returnType);
-
-        if (Set.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_SET, genericReturnType);
-        if (List.class.isAssignableFrom(returnType)) return Reification.wrapElements(val, EMPTY_VECTOR, genericReturnType);
-        if (Map.class.isAssignableFrom(returnType)) return Reification.wrapMapElements(val, genericReturnType);
-
-        return val;
     }
 }
