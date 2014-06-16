@@ -23,9 +23,7 @@ class Reflection {
     }
 
     static boolean isMetadataGetter(Method getter) {
-        if (getter.getParameterCount() != 0)
-            return false;
-        return hasAnnotation(getter, Meta.class);
+        return getter.getParameterCount() == 0 && hasAnnotation(getter, Meta.class);
     }
 
     static boolean isRequired(Method getter) {
@@ -43,10 +41,37 @@ class Reflection {
     static boolean isMetadataBuilder(Method method) {
         if (method.getParameterCount() != 1)
             return false;
-        for (Annotation[] annotations : method.getParameterAnnotations())
-            for (Annotation annotation : annotations)
-                if (annotation.annotationType().equals(Meta.class))
-                    return true;
-        return false;
+        Method correspondingGetter = getCorrespondingGetter(method);
+        return hasAnnotation(correspondingGetter, Meta.class);
+    }
+
+    static String getKeyNameForGetter(Method method) {
+        Key annotation = getMethodAnnotation(method, Key.class);
+        if (annotation == null)
+            return method.getName();
+        else
+            return annotation.value();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getMethodAnnotation(Method method, Class<T> annotationType) {
+        for (Annotation annotation : method.getAnnotations())
+            if (annotation.annotationType().equals(annotationType))
+                return (T) annotation;
+        return null;
+    }
+
+    static String getKeyNameForBuilder(Method method) {
+        return getKeyNameForGetter(getCorrespondingGetter(method));
+    }
+
+    private static Method getCorrespondingGetter(Method builderMethod) {
+        try {
+            Class<?> type = builderMethod.getDeclaringClass();
+            Method correspondingGetter = type.getMethod(builderMethod.getName());
+            return correspondingGetter;
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalStateException("Builder methods must have a corresponding getter method.", ex);
+        }
     }
 }

@@ -1,11 +1,9 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.java.api.Clojure;
 import clojure.lang.AFn;
 
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
@@ -44,7 +42,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (isBuilderMethod(method)) {
             if (Reflection.isMetadataBuilder(method))
                 return assocMeta(methodName, args[0]);
-            String key = getBuilderKey(method);
+            String key = Reflection.getKeyNameForBuilder(method);
             return assoc(key, Conversions.javaToClojure(args[0]));
         }
 
@@ -155,23 +153,10 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return value;
     }
 
-    private static String getBuilderKey(Method method) {
-        for (Annotation[] annotations : method.getParameterAnnotations())
-            for (Annotation annotation : annotations)
-                if (annotation.annotationType().equals(Key.class)) {
-                    String key = ((Key) annotation).value();
-                    if (key.charAt(0) == ':')
-                        key = key.substring(1);
-                    return key;
-                }
-        return method.getName();
-    }
-
     private T assoc(String key, Object value) {
-        Object keyword = cachedRead(":" + key);
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
-        return DynamicObject.wrap(ASSOC.invoke(map, keyword, value), type);
+        return DynamicObject.wrap(ASSOC.invoke(map, getMapKey(key), value), type);
     }
 
     private Object assocMeta(String key, Object value) {
@@ -208,22 +193,14 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private Object getRawValueFor(Method method) {
-        String methodName = method.getName();
-        Object keywordKey = cachedRead(":" + methodName);
-        Object val = GET.invoke(map, keywordKey);
-        if (val == null) val = getValueForCustomKey(method);
-        return val;
+        String keyName = Reflection.getKeyNameForGetter(method);
+        Object keywordKey = getMapKey(keyName);
+        return GET.invoke(map, keywordKey);
     }
 
-    private Object getValueForCustomKey(Method method) {
-        for (Annotation annotation : method.getAnnotations()) {
-            if (annotation.annotationType().equals(Key.class)) {
-                String key = ((Key) annotation).value();
-                if (key.charAt(0) != ':')
-                    key = ":" + key;
-                return GET.invoke(map, Clojure.read(key));
-            }
-        }
-        return null;
+    private static Object getMapKey(String keyName) {
+        if (keyName.charAt(0) == ':')
+            keyName = keyName.substring(1);
+        return cachedRead(":" + keyName);
     }
 }

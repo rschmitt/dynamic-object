@@ -36,8 +36,8 @@ interface KeywordInterface extends DynamicObject<KeywordInterface> {
     @Key("a-sample-int") int aSampleInt();
     @Key(":another-sample-int") int anotherSampleInt();
 
-    KeywordInterface aSampleInt(@Key("a-sample-int") int aSampleInt);
-    KeywordInterface anotherSampleInt(@Key(":another-sample-int") int anotherSampleInt);
+    KeywordInterface aSampleInt(int aSampleInt);
+    KeywordInterface anotherSampleInt(int anotherSampleInt);
 }
 
 interface Null extends DynamicObject<Null> {

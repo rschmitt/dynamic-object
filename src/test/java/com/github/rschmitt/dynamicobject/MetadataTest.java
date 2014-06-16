@@ -35,5 +35,5 @@ public class MetadataTest {
 
 interface AnnotatedData extends DynamicObject<AnnotatedData> {
     @Meta String source();
-    AnnotatedData source(@Meta String meta);
+    AnnotatedData source(String meta);
 }
