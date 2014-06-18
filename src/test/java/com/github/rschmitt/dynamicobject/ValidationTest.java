@@ -1,6 +1,7 @@
 package com.github.rschmitt.dynamicobject;
 
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -32,105 +33,102 @@ public class ValidationTest {
         deregisterTag(ListContainer.class);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
+    public void validationSuccessful() {
+        validationSuccess("#R{:x 1, :y 2}", RequiredFields.class);
+        validationSuccess("#R{:x 1, :y 2, :z 3}", RequiredFields.class);
+        validationSuccess("#O{:inner #I{:x 4}}", Outer.class);
+        validationSuccess("#LC{:inner [#I{:x 1} #I{:x 2}]}", ListContainer.class);
+    }
+
+    @Test
     public void requiredFieldsMissing() {
-        deserialize("#R{:z 19}", RequiredFields.class).validate();
-    }
+        validationFailure("#R{}", RequiredFields.class);
+        validationFailure("#R{:z 19}", RequiredFields.class);
+        validationFailure("#R{:x nil, :y 1}", RequiredFields.class);
+        validationFailure("#R{:x 1, :y nil}", RequiredFields.class);
+        validationFailure("#R{:x nil, :y nil}", RequiredFields.class);
 
-    @Test(expected = IllegalStateException.class)
-    public void requiredFieldsNull() {
-        deserialize("#R{:x nil, :y nil}", RequiredFields.class).validate();
-    }
-
-    @Test
-    public void requiredFieldsPresent() {
-        deserialize("#R{:x 1, :y 2}", RequiredFields.class).validate();
-    }
-
-    @Test
-    public void allFieldsPresent() {
-        deserialize("#R{:x 1, :y 2, :z 3}", RequiredFields.class).validate();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void requiredFieldHasWrongType() {
-        deserialize("#M{:required-string 4}", Mismatch.class).validate();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void optionalFieldHasWrongType() {
-        deserialize("#M{:required-string \"str\", :optional-string 4}", Mismatch.class).validate();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void optionalNumericFieldHasWrongType() {
-        deserialize("#R{:x \"strings!\", :y \"moar strings!\"}", RequiredFields.class).validate();
+        validationFailure("#O{:inner #I{}}", Outer.class);
+        validationFailure("#LC{:inner [#I{:x nil}, #I{:x nil}]}", ListContainer.class);
+        validationFailure("#LC{:inner [#I{}, #I{}]}", ListContainer.class);
     }
 
     @Test
-    public void nestedInstanceIsOk() {
-        deserialize("#O{:inner #I{:x 4}}", Outer.class).validate();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void nestedInstanceIsMissingRequiredField() {
-        deserialize("#O{:inner #I{}}", Outer.class).validate();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void nestedInstanceContainsTypeMismatch() {
-        deserialize("#O{:inner #I{:x \"strings!\"}}", Outer.class).validate();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void nestedInstanceIsWrongType() {
-        deserialize("#O{:inner 4}", Outer.class).validate();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void listHasWrongElementType() {
-        deserialize("#LC{:list [\"string!\" \"another string!\"]}", ListContainer.class).validate();
+    public void typeMismatches() {
+        validationFailure("#M{:required-string \"str\", :optional-string 4}", Mismatch.class);
+        validationFailure("#R{:x \"strings!\", :y \"moar strings!\"}", RequiredFields.class);
+        validationFailure("#M{:required-string 4}", Mismatch.class);
+        validationFailure("#O{:inner #I{:x \"strings!\"}}", Outer.class);
+        validationFailure("#O{:inner 4}", Outer.class);
+        validationFailure("#LC{:list [\"string!\" \"another string!\"]}", ListContainer.class);
+        validationFailure("#LC{:list #{\"string!\" \"another string!\"}}", ListContainer.class);
+        validationFailure("#LC{:inner [#I{:x 1}, #I{:x \"str\"}]}", ListContainer.class);
     }
 
     @Test
-    public void listOfDynamicObjects() throws Exception {
-        deserialize("#LC{:inner [#I{:x 1}, #I{:x 2}]}", ListContainer.class).validate();
-    }
+    public void nestedCollections() throws Exception {
+        validationSuccess("{:rawList [\"str1\" \"str2\" 3]}", CompoundLists.class);
+        validationSuccess("{:strings [\"str1\" \"str2\" nil \"str4\"]}", CompoundLists.class);
 
-    @Test(expected = IllegalStateException.class)
-    public void listOfDynamicObjectsWithNullFields() throws Exception {
-        deserialize("#LC{:inner [#I{:x nil}, #I{:x nil}]}", ListContainer.class).validate();
-    }
+        validationSuccess("{:listOfListOfStrings [[\"str1\"] [\"str2\"]]}", CompoundLists.class);
+        validationFailure("{:listOfListOfStrings #{[\"str1\"] [\"str2\"]}}", CompoundLists.class);
+        validationFailure("{:listOfListOfStrings [#{\"str1\"} #{\"str2\"}]}", CompoundLists.class);
+        validationFailure("{:listOfListOfStrings [[\"str1\"] [\"str2\"] 3]}", CompoundLists.class);
+        validationFailure("{:listOfListOfStrings [[\"str1\"] [\"str2\"] [3]]}", CompoundLists.class);
 
-    @Test(expected = IllegalStateException.class)
-    public void listOfDynamicObjectsWithMissingFields() throws Exception {
-        deserialize("#LC{:inner [#I{}, #I{}]}", ListContainer.class).validate();
-    }
+        validationSuccess("{:ints #{1 4 3 2}}", CompoundSets.class);
+        validationSuccess("{:rawSet #{\"str1\" \"str2\" 3}}", CompoundSets.class);
+        validationSuccess("{:strings #{nil \"str1\" \"str2\" \"str4\"}}", CompoundSets.class);
+        validationSuccess("{:setOfSetOfStrings nil}", CompoundSets.class);
+        validationSuccess("{:setOfSetOfStrings #{nil}}", CompoundSets.class);
+        validationSuccess("{:setOfSetOfStrings #{#{}}}", CompoundSets.class);
+        validationSuccess("{:setOfSetOfStrings #{#{}}}", CompoundSets.class);
+        validationSuccess("{:setOfSetOfStrings #{#{\"str2\"} #{\"str1\"}}}", CompoundSets.class);
+        validationSuccess("{:setOfSetOfStrings #{#{\"str2\"} #{\"str1\"}}}", CompoundSets.class);
+        validationFailure("{:setOfSetOfStrings #{[\"str1\"] [\"str2\"]}}", CompoundSets.class);
+        validationFailure("{:setOfSetOfStrings #{#{\"str1\"} #{\"str2\"} 3}}", CompoundSets.class);
+        validationFailure("{:setOfSetOfStrings #{#{\"str1\"} #{\"str2\"} #{3}}}", CompoundSets.class);
 
-    @Test(expected = IllegalStateException.class)
-    public void listOfDynamicObjectsWithTypeErrors() throws Exception {
-        deserialize("#LC{:inner [#I{:x 1}, #I{:x \"str\"}]}", ListContainer.class).validate();
-    }
+        validationFailure("{:strings {\"k\" \\newline}}", CompoundMaps.class);
+        validationFailure("{:strings {1 nil}}", CompoundMaps.class);
+        validationFailure("{:strings {1 {\"k\" \"v\"}}}", CompoundMaps.class);
+        validationFailure("{:strings {\"str1\" \"str2\", \"str3\" 4}}", CompoundMaps.class);
+        validationSuccess("{:strings nil}", CompoundMaps.class);
+        validationSuccess("{:strings {}}", CompoundMaps.class);
+        validationSuccess("{:strings {\"a\" \"b\", \"c\" \"d\", \"e\" nil}}", CompoundMaps.class);
 
-    @Test
-    public void rawList() throws Exception {
-        List<?> list = (List<?>) READ_STRING.invoke("[\"str1\", \"str2\", 3]");
-        Type expectedType = CompoundLists.class.getMethod("rawList").getGenericReturnType();
-        Validation.validateCollection(list, expectedType);
-    }
+        validationSuccess("{:rawMap nil}", CompoundMaps.class);
+        validationSuccess("{:rawMap {}}", CompoundMaps.class);
+        validationSuccess("{:rawMap {\\newline nil}}", CompoundMaps.class);
+        validationSuccess("{:rawMap {\"str1\" \"str2\", 3 4}}", CompoundMaps.class);
+        validationSuccess("{:nestedGenericMaps {\"str1\" {\"str2\" \"str3\"}}}", CompoundMaps.class);
+        validationSuccess("{:nestedGenericMaps {\"str1\" {\"str2\" nil}}}", CompoundMaps.class);
+        validationSuccess("{:nestedGenericMaps {\"str1\" {nil \"str3\"}}}", CompoundMaps.class);
+        validationSuccess("{:nestedGenericMaps {\"str1\" {}}}", CompoundMaps.class);
 
-    @Test
-    public void listOfStrings() throws Exception {
-        List<?> list = (List<?>) READ_STRING.invoke("[\"str1\", \"str2\", nil, \"str4\"]");
-        Type expectedType = CompoundLists.class.getMethod("strings").getGenericReturnType();
-        Validation.validateCollection(list, expectedType);
-    }
+        validationSuccess("{:nestedGenericMaps nil}", CompoundMaps.class);
+        validationFailure("{:nestedGenericMaps {1 nil}}", CompoundMaps.class);
+        validationFailure("{:nestedGenericMaps [\"not\" \"a\" \"map\"]}", CompoundMaps.class);
+        validationFailure("{:nestedGenericMaps {\"key\" [\"not\" \"a\" \"map\"]}}", CompoundMaps.class);
+        validationFailure("{:nestedGenericMaps {\"key\" {\"k\" 4}}}", CompoundMaps.class);
+        validationFailure("{:nestedGenericMaps {\"key\" {4 \"v\"}}}", CompoundMaps.class);
+        validationFailure("{:nestedGenericMaps {1 {\"k\" \"v\"}}}", CompoundMaps.class);
+        validationFailure("{:nestedGenericMaps {\"key\" {\"k\" #{\"v\"}}}}", CompoundMaps.class);
 
-    @Test(expected = IllegalStateException.class)
-    public void invalidListOfStrings() throws Exception {
-        List<?> list = (List<?>) READ_STRING.invoke("[\"str1\", \"str2\", 3]");
-        Type expectedType = CompoundLists.class.getMethod("strings").getGenericReturnType();
-        Validation.validateCollection(list, expectedType);
+        validationSuccess("{:nestedNumericMaps {1 nil}}", CompoundMaps.class);
+        validationSuccess("{:nestedNumericMaps {1 {}}}", CompoundMaps.class);
+        validationSuccess("{:nestedNumericMaps {1 {2 nil}}}", CompoundMaps.class);
+        validationSuccess("{:nestedNumericMaps {1 {2 3.3}}}", CompoundMaps.class);
+        validationFailure("{:nestedNumericMaps [1 2 3]}", CompoundMaps.class);
+        validationFailure("{:nestedNumericMaps {1 [2 3 4]}}", CompoundMaps.class);
+        validationFailure("{:nestedNumericMaps {\"k\" {2 3}}}", CompoundMaps.class);
+        validationFailure("{:nestedNumericMaps {1 {\"k\" 3}}}", CompoundMaps.class);
+        validationFailure("{:nestedNumericMaps {1 {2 \"v\"}}}", CompoundMaps.class);
+        validationFailure("{:nestedNumericMaps {1 {\"k\" \"v\"}}}", CompoundMaps.class);
+        validationFailure("{:nestedNumericMaps {1 {2 #{3}}}}", CompoundMaps.class);
+        validationFailure("{:nestedNumericMaps {1 {#{2} 3}}}", CompoundMaps.class);
+        validationFailure("{:nestedNumericMaps {#{1} {2 3}}}", CompoundMaps.class);
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -141,80 +139,10 @@ public class ValidationTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void nestedList() throws Exception {
-        List<?> list = (List<?>) READ_STRING.invoke("[[\"str1\"], [\"str2\"]]");
-        Type expectedType = CompoundLists.class.getMethod("listOfListOfStrings").getGenericReturnType();
-        Validation.validateCollection(list, expectedType);
-    }
-
-    @Test
-    public void rawSet() throws Exception {
-        Set<?> set = (Set<?>) READ_STRING.invoke("#{\"str1\", \"str2\", 3}");
-        Type expectedType = CompoundSets.class.getMethod("rawSet").getGenericReturnType();
-        Validation.validateCollection(set, expectedType);
-    }
-
-    @Test
-    public void setOfStrings() throws Exception {
-        Set<?> set = (Set<?>) READ_STRING.invoke("#{\"str1\", \"str2\", nil, \"str4\"}");
-        Type expectedType = CompoundSets.class.getMethod("strings").getGenericReturnType();
-        Validation.validateCollection(set, expectedType);
-    }
-
-    @Test
-    public void setOfInts() throws Exception {
-        Set<?> set = (Set<?>) READ_STRING.invoke("#{1 2 3 4}");
-        Type expectedType = CompoundSets.class.getMethod("ints").getGenericReturnType();
-        Validation.validateCollection(set, expectedType);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void invalidSetOfStrings() throws Exception {
-        Set<?> set = (Set<?>) READ_STRING.invoke("#{\"str1\", \"str2\", 3}");
-        Type expectedType = CompoundSets.class.getMethod("strings").getGenericReturnType();
-        Validation.validateCollection(set, expectedType);
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
     public void wildcardSet() throws Exception {
         Set<?> set = (Set<?>) READ_STRING.invoke("#{\"str1\", \"str2\", 3}");
         Type expectedType = CompoundSets.class.getMethod("wildcardSet").getGenericReturnType();
         Validation.validateCollection(set, expectedType);
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void nestedSet() throws Exception {
-        Set<?> set = (Set<?>) READ_STRING.invoke("#{#{\"str1\"}, #{\"str2\"}}");
-        Type expectedType = CompoundSets.class.getMethod("setOfSetOfStrings").getGenericReturnType();
-        Validation.validateCollection(set, expectedType);
-    }
-
-    @Test
-    public void rawMap() throws Exception {
-        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\", 3 4}");
-        Type expectedType = CompoundMaps.class.getMethod("rawMap").getGenericReturnType();
-        Validation.validateMap(map, expectedType);
-    }
-
-    @Test
-    public void mapOfStrings() throws Exception {
-        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\", \"str3\" nil}");
-        Type expectedType = CompoundMaps.class.getMethod("strings").getGenericReturnType();
-        Validation.validateMap(map, expectedType);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void invalidMapKeys() throws Exception {
-        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\", 3 \"str4\"}");
-        Type expectedType = CompoundMaps.class.getMethod("strings").getGenericReturnType();
-        Validation.validateMap(map, expectedType);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void invalidMapValues() throws Exception {
-        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\", \"str3\" 4}");
-        Type expectedType = CompoundMaps.class.getMethod("strings").getGenericReturnType();
-        Validation.validateMap(map, expectedType);
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -226,22 +154,29 @@ public class ValidationTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void wildcardValue() throws Exception {
-        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\"}");
-        Type expectedType = CompoundMaps.class.getMethod("wildcardValue").getGenericReturnType();
-        Validation.validateMap(map, expectedType);
+        deserialize("{:wildcardValue {\"str1\" \"str2\"}}", CompoundMaps.class).validate();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void nestedMap() throws Exception {
-        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" {\"str2\" \"str3\"}}");
-        Type expectedType = CompoundMaps.class.getMethod("nestedGenericMaps").getGenericReturnType();
-        Validation.validateMap(map, expectedType);
+    private static <T extends DynamicObject<T>> void validationFailure(String edn, Class<T> type) {
+        try {
+            deserialize(edn, type).validate();
+            Assert.fail("Expected IllegalStateException");
+        } catch (IllegalStateException ex) {
+            System.out.println(String.format("%s => %s", edn, ex.getMessage()));
+        }
+    }
+
+    private static <T extends DynamicObject<T>> void validationSuccess(String edn, Class<T> type) {
+        T instance = deserialize(edn, type);
+        instance.validate();
+        Assert.assertEquals(edn, serialize(instance));
     }
 }
 
 interface RequiredFields extends DynamicObject<RequiredFields> {
     @Required int x();
     @Required int y();
+
     int z();
 }
 
@@ -285,4 +220,5 @@ interface CompoundMaps extends DynamicObject<CompoundMaps> {
     Map<?, String> wildcardKey();
     Map<String, ?> wildcardValue();
     Map<String, Map<String, String>> nestedGenericMaps();
+    Map<Integer, Map<Integer, Float>> nestedNumericMaps();
 }

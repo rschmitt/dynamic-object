@@ -16,6 +16,11 @@ import static java.util.stream.Collectors.toList;
 class Validation {
     @SuppressWarnings("unchecked")
     static void validateCollection(Collection<?> val, Type genericReturnType) {
+        if (val == null) return;
+        Class<?> baseCollectionType = getRawType(genericReturnType);
+        if (!baseCollectionType.isAssignableFrom(val.getClass()))
+            throw new IllegalStateException(format("Wrong collection type: expected %s, got %s",
+                    baseCollectionType.getSimpleName(), val.getClass().getSimpleName()));
         if (genericReturnType instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) genericReturnType;
             List<Type> typeArgs = Arrays.asList(parameterizedType.getActualTypeArguments());
@@ -23,7 +28,7 @@ class Validation {
 
             Type typeArg = typeArgs.get(0);
             checkTypeVariable(typeArg);
-            val.forEach(element -> checkElement((Class<?>) typeArg, element));
+            val.forEach(element -> checkElement(typeArg, element));
         }
     }
 
@@ -31,39 +36,56 @@ class Validation {
         if (typeArg instanceof WildcardType)
             throw new UnsupportedOperationException("Wildcard return types are not supported");
         else if (typeArg instanceof ParameterizedType)
-            throw new UnsupportedOperationException("Nested type parameters are not supported");
-        else if (!(typeArg instanceof Class))
+            return;
+        else if (typeArg instanceof Class)
+            return;
+        else
             throw new UnsupportedOperationException("Unknown generic type argument type: " + typeArg.getClass().getCanonicalName());
     }
 
-    private static void checkElement(Class<?> elementType, Object element) {
+    private static void checkElement(Type elementType, Object element) {
+        if (elementType instanceof Class)
+            checkAtomicElement((Class<?>) elementType, element);
+        else
+            checkNestedElement(elementType, element);
+    }
+
+    private static void checkAtomicElement(Class<?> elementType, Object element) {
         if (element != null) {
             Class<?> actualType = element.getClass();
-            Class<?> expectedType = Numerics.canonicalNumericType(elementType);
+            Class<?> expectedType = elementType;
             if (!expectedType.isAssignableFrom(actualType))
                 throw new IllegalStateException(format("Expected collection element of type %s, got %s",
-                        elementType.getTypeName(),
-                        element.getClass().getTypeName()));
+                        expectedType.getCanonicalName(),
+                        actualType.getCanonicalName()));
             if (element instanceof DynamicObject)
                 ((DynamicObject) element).validate();
         }
     }
 
-    static void validateMap(Map<?, ?> val, Type genericReturnType) {
+    private static void checkNestedElement(Type elementType, Object element) {
+        Class<?> rawType = getRawType(elementType);
+        if (List.class.isAssignableFrom(rawType) || Set.class.isAssignableFrom(rawType))
+            validateCollection((Collection<?>) element, elementType);
+        else if (Map.class.isAssignableFrom(rawType))
+            validateMap((Map<?, ?>) element, elementType);
+        else
+            throw new UnsupportedOperationException("Unsupported base type " + rawType.getCanonicalName());
+    }
+
+    static void validateMap(Map<?, ?> map, Type genericReturnType) {
+        if (map == null) return;
         if (genericReturnType instanceof ParameterizedType) {
             ParameterizedType parameterizedType = (ParameterizedType) genericReturnType;
             List<Type> typeArgs = Arrays.asList(parameterizedType.getActualTypeArguments());
             assert typeArgs.size() == 2;
 
             typeArgs.forEach(Validation::checkTypeVariable);
-            Class<?> keyClass = (Class<?>) typeArgs.get(0);
-            Class<?> valClass = (Class<?>) typeArgs.get(1);
+            Type keyType = typeArgs.get(0);
+            Type valType = typeArgs.get(1);
 
-            Set<?> keys = val.keySet();
-            Collection<?> values = val.values();
-
-            keys.forEach(element -> checkElement(keyClass, element));
-            values.forEach(element -> checkElement(valClass, element));
+            map.keySet().forEach(k -> checkElement(keyType, k));
+            map.values().forEach(v -> checkElement(valType, v));
         }
     }
 
@@ -90,5 +112,15 @@ class Validation {
             }
         }
         return ret.toString();
+    }
+
+    private static Class<?> getRawType(Type genericType) {
+        if (genericType instanceof Class)
+            return (Class<?>) genericType;
+        else if (genericType instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) genericType;
+            return (Class<?>) parameterizedType.getRawType();
+        } else
+            throw new UnsupportedOperationException();
     }
 }

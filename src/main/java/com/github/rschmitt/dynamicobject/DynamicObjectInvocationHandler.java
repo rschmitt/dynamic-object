@@ -131,8 +131,10 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                         ((DynamicObject) val).validate();
                     else if (val instanceof List || val instanceof Set)
                         Validation.validateCollection((Collection<?>) val, field.getGenericReturnType());
+                    else if (val instanceof Map)
+                        Validation.validateMap((Map<?, ?>) val, field.getGenericReturnType());
                 }
-            } catch (ClassCastException cce) {
+            } catch (ClassCastException | AssertionError cce) {
                 mismatchedFields.put(field, getRawValueFor(field).getClass());
             }
         }

@@ -99,14 +99,19 @@ class Conversions {
             assert typeArgs.size() == 1;
             return clojureToJava(element, typeArgs.get(0));
         } else
-            throw new UnsupportedOperationException();
+            return clojureToJava(element, Object.class);
     }
 
     private static Object convertMapToJavaTypes(Map<?, ?> unwrappedMap, Type genericReturnType) {
-        Type[] actualTypeArguments = ((ParameterizedType) genericReturnType).getActualTypeArguments();
-        assert actualTypeArguments.length == 2;
-        Type keyType = actualTypeArguments[0];
-        Type valType = actualTypeArguments[1];
+        Type keyType, valType;
+        if (genericReturnType instanceof ParameterizedType) {
+            Type[] actualTypeArguments = ((ParameterizedType) genericReturnType).getActualTypeArguments();
+            assert actualTypeArguments.length == 2;
+            keyType = actualTypeArguments[0];
+            valType = actualTypeArguments[1];
+        } else {
+            keyType = valType = Object.class;
+        }
         Object ret = TRANSIENT.invoke(EMPTY_MAP);
         unwrappedMap.forEach((k, v) -> ASSOC_BANG.invoke(ret, clojureToJava(k, keyType), clojureToJava(v, valType)));
         return PERSISTENT.invoke(ret);
