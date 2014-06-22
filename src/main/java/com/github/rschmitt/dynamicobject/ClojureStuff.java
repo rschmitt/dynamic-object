@@ -15,13 +15,10 @@ class ClojureStuff {
     static final IFn BIGINT = Clojure.var("clojure.core", "bigint");
     static final IFn BIGINTEGER = Clojure.var("clojure.core", "biginteger");
     static final IFn CONJ_BANG = Clojure.var("clojure.core", "conj!");
-    static final IFn COUNT = Clojure.var("clojure.core", "count");
     static final IFn DEREF = Clojure.var("clojure.core", "deref");
     static final IFn DISSOC = Clojure.var("clojure.core", "dissoc");
     static final IFn EVAL = Clojure.var("clojure.core", "eval");
-    static final IFn FIRST = Clojure.var("clojure.core", "first");
     static final IFn GET = Clojure.var("clojure.core", "get");
-    static final IFn KEY = Clojure.var("clojure.core", "key");
     static final IFn MEMOIZE = Clojure.var("clojure.core", "memoize");
     static final IFn MERGE_WITH = Clojure.var("clojure.core", "merge-with");
     static final IFn META = Clojure.var("clojure.core", "meta");
@@ -31,7 +28,6 @@ class ClojureStuff {
     static final IFn PRINT_STRING = Clojure.var("clojure.core", "pr-str");
     static final IFn READ_STRING = Clojure.var("clojure.edn", "read-string");
     static final IFn REMOVE_METHOD = Clojure.var("clojure.core", "remove-method");
-    static final IFn REST = Clojure.var("clojure.core", "rest");
     static final IFn TRANSIENT = Clojure.var("clojure.core", "transient");
     static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
     static final IFn VARY_META = Clojure.var("clojure.core", "vary-meta");
