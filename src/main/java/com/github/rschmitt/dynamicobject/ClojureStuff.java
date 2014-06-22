@@ -33,8 +33,8 @@ class ClojureStuff {
     static final IFn REMOVE_METHOD = Clojure.var("clojure.core", "remove-method");
     static final IFn REST = Clojure.var("clojure.core", "rest");
     static final IFn TRANSIENT = Clojure.var("clojure.core", "transient");
-    static final IFn VAL = Clojure.var("clojure.core", "val");
     static final IFn WITH_META = Clojure.var("clojure.core", "with-meta");
+    static final IFn VARY_META = Clojure.var("clojure.core", "vary-meta");
 
     static final Object PRINT_METHOD = DEREF.invoke(Clojure.var("clojure.core", "print-method"));
     static final IFn CACHED_READ = (IFn) MEMOIZE.invoke(Clojure.var("clojure.edn", "read-string"));

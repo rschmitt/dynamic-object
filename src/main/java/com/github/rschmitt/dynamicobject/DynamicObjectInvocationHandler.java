@@ -162,11 +162,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private Object assocMeta(String key, Object value) {
-        Object meta = META.invoke(map);
-        if (meta == null)
-            meta = EMPTY_MAP;
-        meta = ASSOC.invoke(meta, key, value);
-        return DynamicObject.wrap(WITH_META.invoke(map, meta), type);
+        return DynamicObject.wrap(VARY_META.invoke(map, ASSOC, key, value), type);
     }
 
     private boolean isBuilderMethod(Method method) {

@@ -16,9 +16,6 @@ public class Metadata {
     }
 
     static Object withTypeMetadata(Object obj, Class<?> type) {
-        Object meta = META.invoke(obj);
-        if (meta == null) meta = EMPTY_MAP;
-        Object newMeta = ASSOC.invoke(meta, TYPE, cachedRead(":" + type.getTypeName()));
-        return WITH_META.invoke(obj, newMeta);
+        return VARY_META.invoke(obj, ASSOC, TYPE, cachedRead(":" + type.getTypeName()));
     }
 }
