@@ -2,6 +2,10 @@
 
 dynamic-object is a library that makes Clojure's powerful data modeling capabilities available to Java developers in an idiomatic way with minimal boilerplate. It reflects the belief that [values](http://www.infoq.com/presentations/Value-Values) should be immutable, cheap to specify, powerful to work with, and easy to convey to other processes.
 
+Get it from [Maven](http://search.maven.org/#artifactdetails|com.github.rschmitt|dynamic-object|0.1|jar):
+
+`com.github.rschmitt:dynamic-object:0.1`
+
 ## A Simple Example
 
 Consider a Clojure map that describes an album:
@@ -34,10 +38,11 @@ Album album = DynamicObject.deserialize(edn, Album.class);
 * **Immutability.** Because `DynamicObjects` are built out of [Clojure's data structures](http://clojure.org/data_structures), they are not just immutable and thread-safe, but also [persistent](http://en.wikipedia.org/wiki/Persistent_data_structure), which makes copying and modification cheap.
 * **Composability.** `DynamicObjects` compose correctly. Different types can be aggregated without losing serializability, equality semantics, or any of the other benefits of Clojure data ([example](https://github.com/rschmitt/dynamic-object/blob/master/src/test/java/com/github/rschmitt/dynamicobject/AcceptanceTest.java)).
 * **Schema validation.** dynamic-object offers basic schema validation à la carte. The `validate` method will verify that all of an instance's fields are of the correct type, and that any fields annotated with `@Required` are not null.
+* **Clojure metadata.** Fields that are annotated with `@Meta` are stored internally as [Clojure metadata](http://clojure.org/metadata). These fields allow data to be annotated in arbitrary ways without actually changing the structure or semantics of the data itself. Metadata does not affect equality: two objects that differ only in metadata are considered equal.
+* **User-defined methods.** A `DynamicObject` type can declare arbitrary user-defined methods directly on the interface.
 * **Copy-on-write support.** dynamic-object supports builder methods, which are similar to Lombok [`@Wither`](http://projectlombok.org/features/experimental/Wither.html) methods: they are used to create a clone of an instance that has a single field changed. They are backed by Clojure's `assoc` function, which is extremely performant, thanks to Clojure's sophisticated immutable data structures.
 * **Transparent support for collections.** A `DynamicObject` can contain standard Java collections--namely `List`, `Set`, and `Map` from `java.util`. Collections can even contain `DynamicObject` instances.
 * **Structural recursion.** There are no artificial or arbitrary limits on nesting or recursion. The test suite includes an example of a serializable [`LinkedList`](https://github.com/rschmitt/dynamic-object/blob/master/src/test/java/com/github/rschmitt/dynamicobject/RecursionTest.java) implemented with `DynamicObject`.
-* **Clojure metadata.** Fields that are annotated with `@Meta` are stored internally as [Clojure metadata](http://clojure.org/metadata). These fields allow data to be annotated in arbitrary ways without actually changing the structure or semantics of the data itself. Metadata does not affect equality: two objects that differ only in metadata are considered equal.
 * **A straightforward implementation.**
     * dynamic-object has no dependencies, other than Clojure itself.
     * dynamic-object is implemented entirely with Java's built-in reflection capabilities. There is no bytecode manipulation, no annotation processing, no AOP weaving.
@@ -168,10 +173,32 @@ interface WorkerJob extends DynamicObject<WorkerJob> {
   // and so forth
   @Meta long messageAgeInSeconds(); // Use this for visibility purposes (e.g. are we falling behind?)
   @Meta String messageReceiptHandle(); // Use this later to delete the message once the job is done
+
+  // The metadata fields can be set using builder methods:
+  long messageAgeInSeconds(long seconds);
+  String messageReceiptHandle(String handle);
+  // Note that no redundant @Meta annotation is required on builders
 }
 ```
 
 Remember that metadata is never serialized, and is ignored for purposes of equality.
+
+### User-defined Methods
+
+Thanks to Java 8's [default methods](http://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html), it is straightforward to declare custom methods on a `DynamicObject`, even though all `DynamicObject` types are interfaces. For example, we could extend the above `Album` example with an `AlbumCollection` type:
+
+```java
+public interface AlbumCollection extends DynamicObject<AlbumCollection> {
+  Set<Album> albums();
+
+  default int totalTracksInCollection() {
+    return albums().stream()
+                   .map(album -> album.tracks())
+                   .reduce((x, y) -> x + y)
+                   .get();
+  }
+}
+```
 
 ### Custom Keys
 
@@ -190,9 +217,10 @@ This is particularly useful for Clojure interop, where kebab-case, rather than J
 * Always include a version number in data that will be serialized. This way, older consumers can check the version number and decline any messages that they are not capable of handling properly.
 * Annotate required fields with `@Required` and call `validate()` to ensure that all required fields are present.
 * Do not use [`Optional`](http://docs.oracle.com/javase/8/docs/api/java/util/Optional.html). All fields that are not annotated with `@Required` are implicitly optional. Using `Optional` will complicate serialization and Clojure interop without adding much null safety.
-* Correspondingly, unboxed primitive fields should always be marked `@Required`, as they cannot be effectively checked for null. Optional fields should always use the boxed type.
+** Correspondingly, unboxed primitive fields should always be marked `@Required`, as they cannot be effectively checked for null. Optional fields should always use the boxed type.
 * It is okay to submit a mutable collection such as a `java.util.ArrayList` to a `DynamicObject` builder method. Internally, all collection elements are copied to an immutable Clojure collection.
-* Similarly, all collection getter methods return an immutable persistent collection.
+** Similarly, all collection getter methods return an immutable persistent collection. Attempts to mutate these collections will result in an `UnsupportedOperationException`.
+* Do not abuse user-defined methods. A [pure function](http://en.wikipedia.org/wiki/Pure_function) is often a good candidate for a custom method; anything else should be viewed with suspicion.
 
 ## Constraints and Limitations
 
@@ -201,7 +229,7 @@ This is particularly useful for Clojure interop, where kebab-case, rather than J
 * There is currently no way to distinguish between an explicit null value and a missing entry. It is not at all clear that exposing this distinction would be a good idea.
 * Since unboxed primitives cannot be null, any attempt to dereference an unboxed primitive field whose underlying value is null or missing will result in a `NullPointerException`.
 
-## Todos
+## TODOs
 
 dynamic-object is currently in beta, and the API is still subject to change. There are a number of outstanding design questions and implementation tasks, such as:
 
@@ -214,7 +242,7 @@ dynamic-object is currently in beta, and the API is still subject to change. The
 
 dynamic-object should work out-of-the-box with [IntelliJ 13](http://www.jetbrains.com/idea/download/). The Community Edition is sufficient. You'll need [JDK8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed and configured as an SDK within IntelliJ. You will also need the Gradle plugin for dependency resolution; this is generally included by default.
 
-You can also invoke Gradle directly with `./gradlew build`.
+You can also run the build from the command line using `./gradlew build` (for Gradle) or `mvn package` (for Maven).
 
 ## Influences and Similar Ideas
 
