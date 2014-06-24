@@ -26,6 +26,7 @@ class ClojureStuff {
     static final IFn NTH = Clojure.var("clojure.core", "nth");
     static final IFn PERSISTENT = Clojure.var("clojure.core", "persistent!");
     static final IFn PRINT_STRING = Clojure.var("clojure.core", "pr-str");
+    static final IFn READ = Clojure.var("clojure.edn", "read");
     static final IFn READ_STRING = Clojure.var("clojure.edn", "read-string");
     static final IFn REMOVE_METHOD = Clojure.var("clojure.core", "remove-method");
     static final IFn TRANSIENT = Clojure.var("clojure.core", "transient");

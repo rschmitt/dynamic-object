@@ -1,9 +1,12 @@
 package com.github.rschmitt.dynamicobject;
 
+import java.io.PushbackReader;
+import java.io.StringReader;
 import java.io.Writer;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Proxy;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
@@ -21,12 +24,42 @@ public class DynamicObjects {
         return (String) PRINT_STRING.invoke(o.getMap());
     }
 
-    @SuppressWarnings("unchecked")
     static <T extends DynamicObject<T>> T deserialize(String edn, Class<T> type) {
-        Object obj = READ_STRING.invoke(getReadersAsOptions(), edn);
-        if (obj instanceof DynamicObject)
-            return (T) obj;
+        return deserialize(new PushbackReader(new StringReader(edn)), type);
+    }
+
+    @SuppressWarnings("unchecked")
+    static <T extends DynamicObject<T>> T deserialize(PushbackReader streamReader, Class<T> type) {
+        Object obj = READ.invoke(getReadersAsOptions(), streamReader);
         return wrap(obj, type);
+    }
+
+    static <T extends DynamicObject<T>> Iterator<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
+        return new Iterator<T>() {
+            private T stash = null;
+
+            @Override
+            public boolean hasNext() {
+                if (stash != null)
+                    return true;
+                try {
+                    stash = next();
+                    return true;
+                } catch (RuntimeException ex) {
+                    return false;
+                }
+            }
+
+            @Override
+            public T next() {
+                if (stash != null) {
+                    T ret = stash;
+                    stash = null;
+                    return ret;
+                }
+                return deserialize(streamReader, type);
+            }
+        };
     }
 
     @SuppressWarnings("unchecked")

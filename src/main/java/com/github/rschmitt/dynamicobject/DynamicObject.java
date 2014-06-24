@@ -1,5 +1,8 @@
 package com.github.rschmitt.dynamicobject;
 
+import java.io.PushbackReader;
+import java.util.Iterator;
+
 public interface DynamicObject<T extends DynamicObject<T>> {
     /**
      * @return the underlying Clojure map backing this instance. Downcasting the return value of this method to any
@@ -71,6 +74,13 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      */
     public static <T extends DynamicObject<T>> T deserialize(String edn, Class<T> type) {
         return DynamicObjects.deserialize(edn, type);
+    }
+
+    /**
+     * Lazily deserialize a stream of top-level Edn elements as the given DynamicObject type.
+     */
+    public static <T extends DynamicObject<T>> Iterator<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
+        return DynamicObjects.deserializeStream(streamReader, type);
     }
 
     /**
