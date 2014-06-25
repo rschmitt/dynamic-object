@@ -39,15 +39,15 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
 
+        if (method.isDefault())
+            return invokeDefaultMethod(proxy, method, args);
+
         if (isBuilderMethod(method)) {
             if (Reflection.isMetadataBuilder(method))
                 return assocMeta(methodName, args[0]);
             String key = Reflection.getKeyNameForBuilder(method);
             return assoc(key, Conversions.javaToClojure(args[0]));
         }
-
-        if (method.isDefault())
-            return invokeDefaultMethod(proxy, method, args);
 
         switch (methodName) {
             case "getMap":

@@ -16,6 +16,12 @@ public class CustomMethodTest {
         CustomMethod obj = DynamicObject.newInstance(CustomMethod.class).str("a string");
         assertEquals("a string", obj.callIntoGetter());
     }
+
+    @Test
+    public void invokeCustomWither() {
+        CustomMethod obj = DynamicObject.newInstance(CustomMethod.class).customWither(4);
+        assertEquals("4", obj.callIntoGetter());
+    }
 }
 
 interface CustomMethod extends DynamicObject<CustomMethod> {
@@ -29,5 +35,9 @@ interface CustomMethod extends DynamicObject<CustomMethod> {
 
     default String callIntoGetter() {
         return str();
+    }
+
+    default CustomMethod customWither(int x) {
+        return str(String.valueOf(x));
     }
 }
