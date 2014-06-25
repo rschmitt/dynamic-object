@@ -4,7 +4,7 @@ dynamic-object is a library that makes Clojure's powerful data modeling capabili
 
 Get it from [Maven](http://search.maven.org/#artifactdetails|com.github.rschmitt|dynamic-object|0.1|jar):
 
-`com.github.rschmitt:dynamic-object:0.1`
+`com.github.rschmitt:dynamic-object:0.2`
 
 ## A Simple Example
 
