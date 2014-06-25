@@ -2,7 +2,6 @@ package com.github.rschmitt.dynamicobject;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +10,7 @@ import java.util.stream.Collectors;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -58,12 +58,8 @@ public class CollectionsTest {
     @Test
     public void listOfIntegers() {
         ListSchema deserialized = deserialize("{:ints [nil 2 nil 4 nil]}", ListSchema.class);
-        List<Integer> builtList = new ArrayList<>();
-        builtList.add(null);
-        builtList.add(2);
-        builtList.add(null);
-        builtList.add(4);
-        builtList.add(null);
+        List<Integer> builtList = asList(null, 2, null, 4, null);
+
         ListSchema built = newInstance(ListSchema.class).ints(builtList);
 
         assertEquals(builtList, deserialized.ints());
