@@ -13,6 +13,7 @@ import java.util.Set;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.READ_STRING;
 import static com.github.rschmitt.dynamicobject.DynamicObject.*;
+import static org.junit.Assert.assertNull;
 
 public class ValidationTest {
     @BeforeClass
@@ -32,6 +33,16 @@ public class ValidationTest {
         deregisterTag(Outer.class);
         deregisterTag(ListContainer.class);
     }
+
+    @Test
+    public void nullValidation() {
+        NoRequiredFields noRequiredFields = newInstance(NoRequiredFields.class);
+        assertNull(noRequiredFields.s());
+        assertNull(noRequiredFields.s(null).s());
+        assertNull(noRequiredFields.validate().s());
+        assertNull(noRequiredFields.s(null).validate().s());
+    }
+
 
     @Test
     public void validationSuccessful() {
@@ -170,6 +181,11 @@ public class ValidationTest {
         T instance = deserialize(edn, type).validate();
         Assert.assertEquals(edn, serialize(instance));
     }
+}
+
+interface NoRequiredFields extends DynamicObject<NoRequiredFields> {
+    String s();
+    NoRequiredFields s(String s);
 }
 
 interface RequiredFields extends DynamicObject<RequiredFields> {

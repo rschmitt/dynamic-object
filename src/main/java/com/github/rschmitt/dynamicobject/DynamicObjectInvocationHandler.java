@@ -145,8 +145,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     @SuppressWarnings("unchecked")
     private Object getAndCacheValueFor(Method method) {
         Object cachedValue = valueCache.getOrDefault(method, DEFAULT);
-        if (cachedValue != DEFAULT) return cachedValue;
         if (cachedValue == NULL) return null;
+        if (cachedValue != DEFAULT) return cachedValue;
         Object value = getValueFor(method);
         if (value == null)
             valueCache.putIfAbsent(method, NULL);
