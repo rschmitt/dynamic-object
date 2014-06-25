@@ -167,8 +167,7 @@ public class ValidationTest {
     }
 
     private static <T extends DynamicObject<T>> void validationSuccess(String edn, Class<T> type) {
-        T instance = deserialize(edn, type);
-        instance.validate();
+        T instance = deserialize(edn, type).validate();
         Assert.assertEquals(edn, serialize(instance));
     }
 }

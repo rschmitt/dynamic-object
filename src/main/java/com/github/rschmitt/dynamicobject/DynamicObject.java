@@ -54,9 +54,10 @@ public interface DynamicObject<T extends DynamicObject<T>> {
 
     /**
      * Validate that all fields annotated with @Required are non-null, and that all present fields are of the correct
-     * type.
+     * type. Returns the validated instance unchanged, which allows the validate method to be called at the end of a
+     * fluent builder chain.
      */
-    void validate();
+    T validate();
 
     /**
      * Serialize the given object to Edn. Any {@code EdnTranslator}s that have been registered through

@@ -73,7 +73,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 return subtract((DynamicObject<T>) args[0]);
             case "validate":
                 validate();
-                return null;
+                return proxy;
             case "equals":
                 Object other = args[0];
                 if (other instanceof DynamicObject)
