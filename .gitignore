@@ -2,6 +2,7 @@
 /build
 /target
 /out
+/coverage-error.log
 /.idea/*
 !/.idea/modules.xml
 !/.idea/gradle.xml
