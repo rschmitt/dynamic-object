@@ -62,7 +62,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * Serialize the given object to Edn. Any {@code EdnTranslator}s that have been registered through
      * {@link DynamicObject#registerType} will be invoked as needed.
      */
-    public static <T extends DynamicObject<T>> String serialize(T o) {
+    public static String serialize(Object o) {
         return DynamicObjects.serialize(o);
     }
 

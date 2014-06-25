@@ -17,11 +17,12 @@ public class DynamicObjects {
     private static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
 
-    static <T extends DynamicObject<T>> String serialize(T o) {
-        Class<T> type = o.getType();
-        if (translatorCache.containsKey(type))
-            return (String) PRINT_STRING.invoke(o);
-        return (String) PRINT_STRING.invoke(o.getMap());
+    static String serialize(Object obj) {
+        if (translatorCache.containsKey(obj.getClass()))
+            return (String) PRINT_STRING.invoke(obj);
+        if (obj instanceof DynamicObject)
+            return (String) PRINT_STRING.invoke(((DynamicObject) obj).getMap());
+        throw new UnsupportedOperationException("Unable to serialize type " + obj.getClass().getComponentType());
     }
 
     static <T extends DynamicObject<T>> T deserialize(String edn, Class<T> type) {

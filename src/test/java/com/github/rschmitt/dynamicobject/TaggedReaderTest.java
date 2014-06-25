@@ -33,6 +33,15 @@ public class TaggedReaderTest {
     }
 
     @Test
+    public void serializeRegisteredType() {
+        DumbClass dumbClass = new DumbClass(24, "twenty-four");
+
+        String serialized = DynamicObject.serialize(dumbClass);
+
+        assertEquals("#MyDumbClass{:version 24, :str \"twenty-four\"}", serialized);
+    }
+
+    @Test
     public void prettyPrint() {
         DumbClassHolder holder = DynamicObject.deserialize(EDN, DumbClassHolder.class);
         String expectedFormattedString = format("{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}%n");
