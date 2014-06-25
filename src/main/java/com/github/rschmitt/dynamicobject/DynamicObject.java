@@ -68,12 +68,12 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     }
 
     /**
-     * Deserializes a DynamicObject from a String.
+     * Deserializes a DynamicObject or registered type from a String.
      *
      * @param edn  The Edn representation of the object.
      * @param type The type of class to deserialize. Must be an interface that extends DynamicObject.
      */
-    public static <T extends DynamicObject<T>> T deserialize(String edn, Class<T> type) {
+    public static <T> T deserialize(String edn, Class<T> type) {
         return DynamicObjects.deserialize(edn, type);
     }
 

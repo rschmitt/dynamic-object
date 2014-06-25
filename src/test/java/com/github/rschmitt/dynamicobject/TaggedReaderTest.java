@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
@@ -40,6 +41,15 @@ public class TaggedReaderTest {
         String serialized = serialize(dumbClass);
 
         assertEquals("#MyDumbClass{:version 24, :str \"twenty-four\"}", serialized);
+    }
+
+    @Test
+    public void deserializeRegisteredType() {
+        String edn = "#MyDumbClass{:version 24, :str \"twenty-four\"}";
+
+        DumbClass instance = deserialize(edn, DumbClass.class);
+
+        assertEquals(new DumbClass(24, "twenty-four"), instance);
     }
 
     @Test

@@ -23,14 +23,16 @@ public class DynamicObjects {
         return (String) PRINT_STRING.invoke(obj);
     }
 
-    static <T extends DynamicObject<T>> T deserialize(String edn, Class<T> type) {
+    static <T> T deserialize(String edn, Class<T> type) {
         return deserialize(new PushbackReader(new StringReader(edn)), type);
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends DynamicObject<T>> T deserialize(PushbackReader streamReader, Class<T> type) {
+    static <T> T deserialize(PushbackReader streamReader, Class<T> type) {
         Object obj = READ.invoke(getReadersAsOptions(), streamReader);
-        return wrap(obj, type);
+        if (DynamicObject.class.isAssignableFrom(type))
+            return wrap(obj, type);
+        return (T) obj;
     }
 
     static <T extends DynamicObject<T>> Iterator<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
@@ -62,7 +64,7 @@ public class DynamicObjects {
     }
 
     @SuppressWarnings("unchecked")
-    static <T extends DynamicObject<T>> T wrap(Object map, Class<T> type) {
+    static <T> T wrap(Object map, Class<T> type) {
         Class<?> typeMetadata = Metadata.getTypeMetadata(map);
         if (typeMetadata != null && !type.equals(typeMetadata))
             throw new ClassCastException(String.format("Attempted to wrap a map tagged as %s in type %s",
@@ -73,7 +75,7 @@ public class DynamicObjects {
 
             return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                     new Class<?>[]{type},
-                    new DynamicObjectInvocationHandler<>(map, type, lookupConstructor));
+                    new DynamicObjectInvocationHandler(map, type, lookupConstructor));
         } catch (ReflectiveOperationException ex) {
             throw new RuntimeException(ex);
         }
