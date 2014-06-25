@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
 
@@ -26,7 +27,7 @@ public class TaggedReaderTest {
     public void roundTrip() {
         DumbClassHolder holder = DynamicObject.deserialize(EDN, DumbClassHolder.class);
 
-        String serialized = DynamicObject.serialize(holder);
+        String serialized = serialize(holder);
 
         assertEquals(EDN, serialized);
         assertEquals(new DumbClass(1, "str"), holder.dumb().get(0));
@@ -36,7 +37,7 @@ public class TaggedReaderTest {
     public void serializeRegisteredType() {
         DumbClass dumbClass = new DumbClass(24, "twenty-four");
 
-        String serialized = DynamicObject.serialize(dumbClass);
+        String serialized = serialize(dumbClass);
 
         assertEquals("#MyDumbClass{:version 24, :str \"twenty-four\"}", serialized);
     }
@@ -46,6 +47,14 @@ public class TaggedReaderTest {
         DumbClassHolder holder = DynamicObject.deserialize(EDN, DumbClassHolder.class);
         String expectedFormattedString = format("{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}%n");
         assertEquals(expectedFormattedString, holder.toFormattedString());
+    }
+
+    @Test
+    public void serializeBuiltinType() {
+        assertEquals("true", serialize(true));
+        assertEquals("false", serialize(false));
+        assertEquals("25", serialize(25));
+        assertEquals("\"asdf\"", serialize("asdf"));
     }
 }
 
@@ -67,7 +76,7 @@ class DumbClassTranslator implements EdnTranslator<DumbClass> {
         DumbClassProxy proxy = DynamicObject.newInstance(DumbClassProxy.class);
         proxy = proxy.str(obj.getStr());
         proxy = proxy.version(obj.getVersion());
-        return DynamicObject.serialize(proxy);
+        return serialize(proxy);
     }
 
     @Override

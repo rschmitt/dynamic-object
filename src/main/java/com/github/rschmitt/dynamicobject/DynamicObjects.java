@@ -18,11 +18,9 @@ public class DynamicObjects {
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
 
     static String serialize(Object obj) {
-        if (translatorCache.containsKey(obj.getClass()))
-            return (String) PRINT_STRING.invoke(obj);
         if (obj instanceof DynamicObject)
             return (String) PRINT_STRING.invoke(((DynamicObject) obj).getMap());
-        throw new UnsupportedOperationException("Unable to serialize type " + obj.getClass().getComponentType());
+        return (String) PRINT_STRING.invoke(obj);
     }
 
     static <T extends DynamicObject<T>> T deserialize(String edn, Class<T> type) {
