@@ -2,8 +2,10 @@ package com.github.rschmitt.dynamicobject;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +26,8 @@ class Conversions {
         Object val = Numerics.maybeUpconvert(obj);
         if (val instanceof DynamicObject)
             return unwrapAndAnnotateDynamicObject((DynamicObject<?>) obj);
+        else if (val instanceof Instant)
+            return java.util.Date.from((Instant) val);
         else if (val instanceof List)
             return convertCollectionToClojureTypes((Collection<?>) val, EMPTY_VECTOR);
         else if (val instanceof Set)
@@ -72,6 +76,8 @@ class Conversions {
             Class<?> returnType = (Class<?>) genericReturnType;
             if (Numerics.isNumeric(returnType))
                 return Numerics.maybeDownconvert(returnType, obj);
+            if (Instant.class.equals(returnType))
+                return ((Date) obj).toInstant();
             if (DynamicObject.class.isAssignableFrom(returnType))
                 return DynamicObject.wrap(obj, (Class<? extends DynamicObject>) returnType);
         }
