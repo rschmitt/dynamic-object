@@ -217,9 +217,9 @@ This is particularly useful for Clojure interop, where kebab-case, rather than J
 * Always include a version number in data that will be serialized. This way, older consumers can check the version number and decline any messages that they are not capable of handling properly.
 * Annotate required fields with `@Required` and call `validate()` to ensure that all required fields are present.
 * Do not use [`Optional`](http://docs.oracle.com/javase/8/docs/api/java/util/Optional.html). All fields that are not annotated with `@Required` are implicitly optional. Using `Optional` will complicate serialization and Clojure interop without adding much null safety.
-** Correspondingly, unboxed primitive fields should always be marked `@Required`, as they cannot be effectively checked for null. Optional fields should always use the boxed type.
+  * Correspondingly, unboxed primitive fields should always be marked `@Required`, as they cannot be effectively checked for null. Optional fields should always use the boxed type.
 * It is okay to submit a mutable collection such as a `java.util.ArrayList` to a `DynamicObject` builder method. Internally, all collection elements are copied to an immutable Clojure collection.
-** Similarly, all collection getter methods return an immutable persistent collection. Attempts to mutate these collections will result in an `UnsupportedOperationException`.
+  * Similarly, all collection getter methods return an immutable persistent collection. Attempts to mutate these collections will result in an `UnsupportedOperationException`.
 * Do not abuse user-defined methods. A [pure function](http://en.wikipedia.org/wiki/Pure_function) is often a good candidate for a custom method; anything else should be viewed with suspicion.
 
 ## Constraints and Limitations
