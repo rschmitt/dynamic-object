@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
+import static java.lang.String.format;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
     private static final Object DEFAULT = new Object();
@@ -83,7 +84,10 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             default:
                 if (Reflection.isMetadataGetter(method))
                     return getMetadataFor(methodName);
-                return getAndCacheValueFor(method);
+                Object value = getAndCacheValueFor(method);
+                if (value == null && Reflection.isRequired(method))
+                    throw new NullPointerException(format("Required field %s was null", methodName));
+                return value;
         }
     }
 

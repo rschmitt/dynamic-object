@@ -168,6 +168,12 @@ public class ValidationTest {
         deserialize("{:wildcardValue {\"str1\" \"str2\"}}", CompoundMaps.class).validate();
     }
 
+    @Test(expected = NullPointerException.class)
+    public void nullRequiredFieldThrowsException() {
+        RequiredBoxedFields instance = deserialize("{}", RequiredBoxedFields.class);
+        instance.x();
+    }
+
     private static <T extends DynamicObject<T>> void validationFailure(String edn, Class<T> type) {
         try {
             deserialize(edn, type).validate();
@@ -193,6 +199,10 @@ interface RequiredFields extends DynamicObject<RequiredFields> {
     @Required int y();
 
     int z();
+}
+
+interface RequiredBoxedFields extends DynamicObject<RequiredBoxedFields> {
+    @Required Integer x();
 }
 
 interface Mismatch extends DynamicObject<Mismatch> {
