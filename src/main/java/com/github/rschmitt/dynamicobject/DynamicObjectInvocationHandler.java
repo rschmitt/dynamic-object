@@ -38,40 +38,26 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     @Override
     @SuppressWarnings("unchecked")
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        String methodName = method.getName();
-
         if (method.isDefault())
             return invokeDefaultMethod(proxy, method, args);
 
-        if (isBuilderMethod(method)) {
-            if (Reflection.isMetadataBuilder(method))
-                return assocMeta(methodName, args[0]);
-            String key = Reflection.getKeyNameForBuilder(method);
-            return assoc(key, Conversions.javaToClojure(args[0]));
-        }
+        if (isBuilderMethod(method))
+            return invokeBuilderMethod(method, args);
 
+        String methodName = method.getName();
         switch (methodName) {
-            case "getMap":
-                return map;
-            case "getType":
-                return type;
-            case "toString":
-                return map.toString();
-            case "hashCode":
-                return map.hashCode();
-            case "prettyPrint":
-                PPRINT.invoke(map);
-                return null;
+            case "getMap": return map;
+            case "getType": return type;
+            case "toString": return map.toString();
+            case "hashCode": return map.hashCode();
+            case "prettyPrint": return PPRINT.invoke(map);
             case "toFormattedString":
                 Writer w = new StringWriter();
                 PPRINT.invoke(map, w);
                 return w.toString();
-            case "merge":
-                return merge((DynamicObject<T>) args[0]);
-            case "intersect":
-                return union((DynamicObject<T>) args[0]);
-            case "subtract":
-                return subtract((DynamicObject<T>) args[0]);
+            case "merge": return merge((DynamicObject<T>) args[0]);
+            case "intersect": return intersect((DynamicObject<T>) args[0]);
+            case "subtract": return subtract((DynamicObject<T>) args[0]);
             case "validate":
                 validate();
                 return proxy;
@@ -82,16 +68,28 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 else
                     return method.invoke(map, args);
             default:
-                if (Reflection.isMetadataGetter(method))
-                    return getMetadataFor(methodName);
-                Object value = getAndCacheValueFor(method);
-                if (value == null && Reflection.isRequired(method))
-                    throw new NullPointerException(format("Required field %s was null", methodName));
-                return value;
+                return invokeGetterMethod(method);
         }
     }
 
-    private Object union(DynamicObject<T> arg) {
+    private Object invokeBuilderMethod(Method method, Object[] args) {
+        if (Reflection.isMetadataBuilder(method))
+            return assocMeta(method.getName(), args[0]);
+        String key = Reflection.getKeyNameForBuilder(method);
+        return assoc(key, Conversions.javaToClojure(args[0]));
+    }
+
+    private Object invokeGetterMethod(Method method) {
+        String methodName = method.getName();
+        if (Reflection.isMetadataGetter(method))
+            return getMetadataFor(methodName);
+        Object value = getAndCacheValueFor(method);
+        if (value == null && Reflection.isRequired(method))
+            throw new NullPointerException(format("Required field %s was null", methodName));
+        return value;
+    }
+
+    private Object intersect(DynamicObject<T> arg) {
         return diff(arg, 2);
     }
 
