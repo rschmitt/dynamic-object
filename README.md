@@ -175,8 +175,8 @@ interface WorkerJob extends DynamicObject<WorkerJob> {
   @Meta String messageReceiptHandle(); // Use this later to delete the message once the job is done
 
   // The metadata fields can be set using builder methods:
-  long messageAgeInSeconds(long seconds);
-  String messageReceiptHandle(String handle);
+  WorkerJob messageAgeInSeconds(long seconds);
+  WorkerJob messageReceiptHandle(String handle);
   // Note that no redundant @Meta annotation is required on builders
 }
 ```
