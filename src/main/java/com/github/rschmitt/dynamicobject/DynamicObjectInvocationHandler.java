@@ -26,13 +26,11 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     private final Object map;
     private final Class<T> type;
-    private final Constructor<MethodHandles.Lookup> lookupConstructor;
     private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
 
-    DynamicObjectInvocationHandler(Object map, Class<T> type, Constructor<MethodHandles.Lookup> lookupConstructor) {
+    DynamicObjectInvocationHandler(Object map, Class<T> type) {
         this.map = map;
         this.type = type;
-        this.lookupConstructor = lookupConstructor;
     }
 
     @Override
@@ -178,6 +176,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
         Class<?> declaringClass = method.getDeclaringClass();
+        Constructor<MethodHandles.Lookup> lookupConstructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
+        lookupConstructor.setAccessible(true);
         int TRUSTED = -1;
         return lookupConstructor.newInstance(declaringClass, TRUSTED)
                 .unreflectSpecial(method, declaringClass)

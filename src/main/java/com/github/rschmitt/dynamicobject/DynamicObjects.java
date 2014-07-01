@@ -3,8 +3,6 @@ package com.github.rschmitt.dynamicobject;
 import java.io.PushbackReader;
 import java.io.StringReader;
 import java.io.Writer;
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Proxy;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
@@ -69,16 +67,9 @@ public class DynamicObjects {
         if (typeMetadata != null && !type.equals(typeMetadata))
             throw new ClassCastException(String.format("Attempted to wrap a map tagged as %s in type %s",
                     typeMetadata.getSimpleName(), type.getSimpleName()));
-        try {
-            Constructor<MethodHandles.Lookup> lookupConstructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
-            lookupConstructor.setAccessible(true);
-
-            return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                    new Class<?>[]{type},
-                    new DynamicObjectInvocationHandler(map, type, lookupConstructor));
-        } catch (ReflectiveOperationException ex) {
-            throw new RuntimeException(ex);
-        }
+        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
+                new Class<?>[]{type},
+                new DynamicObjectInvocationHandler(map, type));
     }
 
     static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
