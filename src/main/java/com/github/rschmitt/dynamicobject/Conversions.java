@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
@@ -18,6 +19,7 @@ class Conversions {
      * This is done according to the following rules:
      *  * DynamicObject instances will be replaced with their underlying maps, but with :type metadata attached.
      *  * Boxed and unboxed numerics, as well as BigInteger, will be losslessly converted to Long, Double, or BigInt.
+     *  * Values wrapped in an Optional will be unwrapped and stored as either null or the underlying value.
      *  * Supported collection types (List, Set, Map) will have their elements converted according to these rules. This
      *    also applies to nested collections. For instance, a List<List<Integer>> will effectively be converted to a
      *    List<List<Long>>.
@@ -34,7 +36,13 @@ class Conversions {
             return convertCollectionToClojureTypes((Collection<?>) val, EMPTY_SET);
         else if (val instanceof Map)
             return convertMapToClojureTypes((Map<?, ?>) val);
-        else
+        else if (val instanceof Optional) {
+            Optional<?> opt = (Optional<?>) val;
+            if (opt.isPresent())
+                return javaToClojure(opt.get());
+            else
+                return null;
+        } else
             return val;
     }
 
@@ -62,7 +70,8 @@ class Conversions {
      * follows:
      *  * If the return type is a numeric type, the Clojure numeric will be downconverted to the expected type (e.g.
      *    Long -> Integer).
-     *  * If the return type is a nested DynamicObject, we wrap it as the expected DynamicObject type.
+     *  * If the return type is a nested DynamicObject, we wrap the Clojure value as the expected DynamicObject type.
+     *  * If the return type is an Optional, we convert the value and then wrap it by calling Optional#ofNullable.
      *  * If the return type is a collection type, there are a few possibilities:
      *    * If it is a raw type, no action is taken.
      *    * If it is a wildcard type (e.g. List<?>), an UnsupportedOperationException is thrown.
@@ -72,6 +81,12 @@ class Conversions {
      */
     @SuppressWarnings("unchecked")
     static Object clojureToJava(Object obj, Type genericReturnType) {
+        if (Reflection.getRawType(genericReturnType).equals(Optional.class)) {
+            Type nestedType = Reflection.getTypeArgument(genericReturnType, 0);
+            return Optional.ofNullable(clojureToJava(obj, nestedType));
+        }
+
+        if (obj == null) return null;
         if (genericReturnType instanceof Class) {
             Class<?> returnType = (Class<?>) genericReturnType;
             if (Numerics.isNumeric(returnType))

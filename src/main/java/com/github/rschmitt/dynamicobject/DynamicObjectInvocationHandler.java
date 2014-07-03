@@ -187,7 +187,6 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     private Object getValueFor(Method method) {
         Object val = getRawValueFor(method);
-        if (val == null) return null;
         Type genericReturnType = method.getGenericReturnType();
         return Conversions.clojureToJava(val, genericReturnType);
     }

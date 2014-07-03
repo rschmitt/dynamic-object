@@ -2,6 +2,8 @@ package com.github.rschmitt.dynamicobject;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -73,5 +75,25 @@ class Reflection {
         } catch (NoSuchMethodException ex) {
             throw new IllegalStateException("Builder methods must have a corresponding getter method.", ex);
         }
+    }
+
+    static Class<?> getRawType(Type type) {
+        if (type instanceof Class)
+            return (Class<?>) type;
+        else if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            return (Class<?>) parameterizedType.getRawType();
+        } else
+            throw new UnsupportedOperationException();
+    }
+
+    static Type getTypeArgument(Type type, int idx) {
+        if (type instanceof Class)
+            return Object.class;
+        else if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            return parameterizedType.getActualTypeArguments()[idx];
+        } else
+            throw new UnsupportedOperationException();
     }
 }
