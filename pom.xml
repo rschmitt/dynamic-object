@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.rschmitt</groupId>
   <artifactId>dynamic-object</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>0.4</version>
 
   <url>https://github.com/rschmitt/dynamic-object</url>
   <description>Lightweight data modeling for Java, powered by Clojure.</description>
