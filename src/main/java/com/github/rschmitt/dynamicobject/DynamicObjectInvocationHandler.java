@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -123,16 +124,21 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 if (Reflection.isRequired(field) && val == null)
                     missingFields.add(field);
                 if (val != null) {
-                    Class<?> expectedType = Primitives.box(field.getReturnType());
+                    Type genericReturnType = field.getGenericReturnType();
+                    if (val instanceof Optional && ((Optional) val).isPresent()) {
+                        genericReturnType = Reflection.getTypeArgument(genericReturnType, 0);
+                        val = ((Optional) val).get();
+                    }
+                    Class<?> expectedType = Primitives.box(Reflection.getRawType(genericReturnType));
                     Class<?> actualType = val.getClass();
                     if (!expectedType.isAssignableFrom(actualType))
                         mismatchedFields.put(field, actualType);
                     if (val instanceof DynamicObject)
                         ((DynamicObject) val).validate();
                     else if (val instanceof List || val instanceof Set)
-                        Validation.validateCollection((Collection<?>) val, field.getGenericReturnType());
+                        Validation.validateCollection((Collection<?>) val, genericReturnType);
                     else if (val instanceof Map)
-                        Validation.validateMap((Map<?, ?>) val, field.getGenericReturnType());
+                        Validation.validateMap((Map<?, ?>) val, genericReturnType);
                 }
             } catch (ClassCastException | AssertionError cce) {
                 mismatchedFields.put(field, getRawValueFor(field).getClass());
