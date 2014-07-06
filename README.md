@@ -2,9 +2,9 @@
 
 dynamic-object is a library that makes Clojure's powerful data modeling capabilities available to Java developers in an idiomatic way with minimal boilerplate. It reflects the belief that [values](http://www.infoq.com/presentations/Value-Values) should be immutable, cheap to specify, powerful to work with, and easy to convey to other processes.
 
-Get it from [Maven](http://search.maven.org/#artifactdetails|com.github.rschmitt|dynamic-object|0.3|jar):
+Get it from [Maven](http://search.maven.org/#artifactdetails|com.github.rschmitt|dynamic-object|0.4|jar):
 
-`com.github.rschmitt:dynamic-object:0.3`
+`com.github.rschmitt:dynamic-object:0.4`
 
 ## A Simple Example
 
@@ -216,7 +216,7 @@ This is particularly useful for Clojure interop, where kebab-case, rather than J
 * Always register a reader tag for any `DynamicObject` that will be serialized. This reader tag should be namespaced with some appropriate prefix (e.g. a Java package name), as all unprefixed reader tags are reserved for future use by the Edn specification.
 * Always include a version number in data that will be serialized. This way, older consumers can check the version number and decline any messages that they are not capable of handling properly.
 * Annotate required fields with `@Required` and call `validate()` to ensure that all required fields are present.
-* Do not use [`Optional`](http://docs.oracle.com/javase/8/docs/api/java/util/Optional.html). All fields that are not annotated with `@Required` are implicitly optional. Using `Optional` will complicate serialization and Clojure interop without adding much null safety.
+* Use [`java.util.Optional`](http://docs.oracle.com/javase/8/docs/api/java/util/Optional.html) in your schema with fields that are not `@Required`. Internally, dynamic-object unwraps `Optional` values; they do not affect serialization, and they provide additional null safety by making it obvious (at the actual call site, not just the schema) that a given field might not be present.
   * Correspondingly, unboxed primitive fields should always be marked `@Required`, as they cannot be effectively checked for null. Optional fields should always use the boxed type.
 * It is okay to submit a mutable collection such as a `java.util.ArrayList` to a `DynamicObject` builder method. Internally, all collection elements are copied to an immutable Clojure collection.
   * Similarly, all collection getter methods return an immutable persistent collection. Attempts to mutate these collections will result in an `UnsupportedOperationException`.
