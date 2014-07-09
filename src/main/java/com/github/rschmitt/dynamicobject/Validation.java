@@ -28,32 +28,36 @@ class Validation {
         Map<Method, Class<?>> mismatchedFields = new HashMap<>();
         for (Method field : fields) {
             try {
-                Object val = getter.apply(field);
-                if (Reflection.isRequired(field) && val == null)
-                    missingFields.add(field);
-                if (val != null) {
-                    Type genericReturnType = field.getGenericReturnType();
-                    if (val instanceof Optional && ((Optional) val).isPresent()) {
-                        genericReturnType = Reflection.getTypeArgument(genericReturnType, 0);
-                        val = ((Optional) val).get();
-                    }
-                    Class<?> expectedType = Primitives.box(Reflection.getRawType(genericReturnType));
-                    Class<?> actualType = val.getClass();
-                    if (!expectedType.isAssignableFrom(actualType))
-                        mismatchedFields.put(field, actualType);
-                    if (val instanceof DynamicObject)
-                        ((DynamicObject) val).validate();
-                    else if (val instanceof List || val instanceof Set)
-                        Validation.validateCollection((Collection<?>) val, genericReturnType);
-                    else if (val instanceof Map)
-                        Validation.validateMap((Map<?, ?>) val, genericReturnType);
-                }
+                validateField(getter, missingFields, mismatchedFields, field);
             } catch (ClassCastException | AssertionError cce) {
                 mismatchedFields.put(field, rawGetter.apply(field).getClass());
             }
         }
         if (!missingFields.isEmpty() || !mismatchedFields.isEmpty())
             throw new IllegalStateException(Validation.getValidationErrorMessage(missingFields, mismatchedFields));
+    }
+
+    private static void validateField(Function<Method, Object> getter, Collection<Method> missingFields, Map<Method, Class<?>> mismatchedFields, Method field) {
+        Object val = getter.apply(field);
+        if (Reflection.isRequired(field) && val == null)
+            missingFields.add(field);
+        if (val != null) {
+            Type genericReturnType = field.getGenericReturnType();
+            if (val instanceof Optional && ((Optional) val).isPresent()) {
+                genericReturnType = Reflection.getTypeArgument(genericReturnType, 0);
+                val = ((Optional) val).get();
+            }
+            Class<?> expectedType = Primitives.box(Reflection.getRawType(genericReturnType));
+            Class<?> actualType = val.getClass();
+            if (!expectedType.isAssignableFrom(actualType))
+                mismatchedFields.put(field, actualType);
+            if (val instanceof DynamicObject)
+                ((DynamicObject) val).validate();
+            else if (val instanceof List || val instanceof Set)
+                Validation.validateCollection((Collection<?>) val, genericReturnType);
+            else if (val instanceof Map)
+                Validation.validateMap((Map<?, ?>) val, genericReturnType);
+        }
     }
 
     @SuppressWarnings("unchecked")
