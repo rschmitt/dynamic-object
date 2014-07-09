@@ -9,13 +9,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
@@ -58,7 +51,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             case "intersect": return intersect((DynamicObject<T>) args[0]);
             case "subtract": return subtract((DynamicObject<T>) args[0]);
             case "validate":
-                validate();
+                Validation.validateInstance(type, this::getAndCacheValueFor, this::getRawValueFor);
                 return proxy;
             case "equals":
                 Object other = args[0];
@@ -112,40 +105,6 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         };
         Object mergedMap = MERGE_WITH.invoke(ignoreNulls, map, other.getMap());
         return DynamicObject.wrap(mergedMap, type);
-    }
-
-    private void validate() {
-        Collection<Method> fields = Reflection.fieldGetters(type);
-        Collection<Method> missingFields = new LinkedHashSet<>();
-        Map<Method, Class<?>> mismatchedFields = new HashMap<>();
-        for (Method field : fields) {
-            try {
-                Object val = getAndCacheValueFor(field);
-                if (Reflection.isRequired(field) && val == null)
-                    missingFields.add(field);
-                if (val != null) {
-                    Type genericReturnType = field.getGenericReturnType();
-                    if (val instanceof Optional && ((Optional) val).isPresent()) {
-                        genericReturnType = Reflection.getTypeArgument(genericReturnType, 0);
-                        val = ((Optional) val).get();
-                    }
-                    Class<?> expectedType = Primitives.box(Reflection.getRawType(genericReturnType));
-                    Class<?> actualType = val.getClass();
-                    if (!expectedType.isAssignableFrom(actualType))
-                        mismatchedFields.put(field, actualType);
-                    if (val instanceof DynamicObject)
-                        ((DynamicObject) val).validate();
-                    else if (val instanceof List || val instanceof Set)
-                        Validation.validateCollection((Collection<?>) val, genericReturnType);
-                    else if (val instanceof Map)
-                        Validation.validateMap((Map<?, ?>) val, genericReturnType);
-                }
-            } catch (ClassCastException | AssertionError cce) {
-                mismatchedFields.put(field, getRawValueFor(field).getClass());
-            }
-        }
-        if (!missingFields.isEmpty() || !mismatchedFields.isEmpty())
-            throw new IllegalStateException(Validation.getValidationErrorMessage(missingFields, mismatchedFields));
     }
 
     @SuppressWarnings("unchecked")
