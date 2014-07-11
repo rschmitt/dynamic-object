@@ -144,23 +144,17 @@ public class ValidationTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void wildcardList() throws Exception {
-        List<?> list = (List<?>) READ_STRING.invoke("[\"str1\", \"str2\", 3]");
-        Type expectedType = CompoundLists.class.getMethod("wildcardList").getGenericReturnType();
-        Validation.validateCollection(list, expectedType);
+        validationFailure("{:wildcardList [\"str1\", \"str2\", 3]}", CompoundLists.class);
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void wildcardSet() throws Exception {
-        Set<?> set = (Set<?>) READ_STRING.invoke("#{\"str1\", \"str2\", 3}");
-        Type expectedType = CompoundSets.class.getMethod("wildcardSet").getGenericReturnType();
-        Validation.validateCollection(set, expectedType);
+        validationFailure("{:wildcardSet #{\"str1\", \"str2\", 3}}", CompoundSets.class);
     }
 
     @Test(expected = UnsupportedOperationException.class)
     public void wildcardKey() throws Exception {
-        Map<?, ?> map = (Map<?, ?>) READ_STRING.invoke("{\"str1\" \"str2\"}");
-        Type expectedType = CompoundMaps.class.getMethod("wildcardKey").getGenericReturnType();
-        Validation.validateMap(map, expectedType);
+        validationFailure("{:wildcardKey {\"str1\" \"str2\"}}", CompoundMaps.class);
     }
 
     @Test(expected = UnsupportedOperationException.class)
