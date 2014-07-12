@@ -23,13 +23,12 @@ class Validation {
             Function<Method, Object> getter,
             Function<Method, Object> rawGetter
     ) {
-        MethodObject methodObject = new MethodObject();
+        MethodObject<T> methodObject = new MethodObject<>();
         methodObject.validate(type, getter, rawGetter);
         Collection<Method> missingFields = methodObject.missingFields;
         Map<Method, Class<?>> mismatchedFields = methodObject.mismatchedFields;
         if (!missingFields.isEmpty() || !mismatchedFields.isEmpty())
             throw new IllegalStateException(methodObject.getValidationErrorMessage());
-
     }
 
     static class MethodObject<T extends DynamicObject<T>> {
@@ -112,10 +111,9 @@ class Validation {
                 checkNestedElement(elementType, element);
         }
 
-        private void checkAtomicElement(Class<?> elementType, Object element) {
+        private void checkAtomicElement(Class<?> expectedType, Object element) {
             if (element != null) {
                 Class<?> actualType = element.getClass();
-                Class<?> expectedType = elementType;
                 if (!expectedType.isAssignableFrom(actualType))
                     throw new IllegalStateException(format("Expected collection element of type %s, got %s",
                             expectedType.getCanonicalName(),
