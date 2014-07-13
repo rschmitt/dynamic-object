@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static com.github.rschmitt.dynamicobject.ClojureStuff.BIGINT;
-import static com.github.rschmitt.dynamicobject.ClojureStuff.BIGINTEGER;
+import static com.github.rschmitt.dynamicobject.ClojureStuff.Bigint;
+import static com.github.rschmitt.dynamicobject.ClojureStuff.Biginteger;
 
 /*
  * This class deals with the numeric types that need to be converted to and from long/double/clojure.lang.BigInt.
@@ -16,7 +16,7 @@ import static com.github.rschmitt.dynamicobject.ClojureStuff.BIGINTEGER;
 public class Numerics {
     private static final Set<Class<?>> numericTypes;
     private static final Map<Class<?>, Class<?>> numericConversions;
-    private static final Class<?> BigInt = BIGINT.invoke(0).getClass();
+    private static final Class<?> BigInt = Bigint.invoke(0).getClass();
 
     static {
         Set<Class<?>> types = new HashSet<>();
@@ -54,7 +54,7 @@ public class Numerics {
         if (type.equals(float.class) || type.equals(Float.class)) return ((Double) val).floatValue();
         if (type.equals(short.class) || type.equals(Short.class)) return ((Long) val).shortValue();
         if (type.equals(byte.class) || type.equals(Byte.class)) return ((Long) val).byteValue();
-        if (type.equals(BigInt)) return BIGINTEGER.invoke(val);
+        if (type.equals(BigInt)) return Biginteger.invoke(val);
         return val;
     }
 
@@ -63,7 +63,7 @@ public class Numerics {
         else if (val instanceof Short) return (long) ((short) val);
         else if (val instanceof Byte) return (long) ((byte) val);
         else if (val instanceof Integer) return (long) ((int) val);
-        else if (val instanceof BigInteger) return BIGINT.invoke(val);
+        else if (val instanceof BigInteger) return Bigint.invoke(val);
         return val;
     }
 }

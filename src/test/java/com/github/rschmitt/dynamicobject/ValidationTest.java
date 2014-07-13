@@ -5,13 +5,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.github.rschmitt.dynamicobject.ClojureStuff.READ_STRING;
 import static com.github.rschmitt.dynamicobject.DynamicObject.*;
 import static org.junit.Assert.assertNull;
 

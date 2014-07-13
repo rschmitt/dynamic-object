@@ -31,9 +31,9 @@ class Conversions {
         else if (val instanceof Instant)
             return java.util.Date.from((Instant) val);
         else if (val instanceof List)
-            return convertCollectionToClojureTypes((Collection<?>) val, EMPTY_VECTOR);
+            return convertCollectionToClojureTypes((Collection<?>) val, EmptyVector);
         else if (val instanceof Set)
-            return convertCollectionToClojureTypes((Collection<?>) val, EMPTY_SET);
+            return convertCollectionToClojureTypes((Collection<?>) val, EmptySet);
         else if (val instanceof Map)
             return convertMapToClojureTypes((Map<?, ?>) val);
         else if (val instanceof Optional) {
@@ -53,15 +53,15 @@ class Conversions {
     }
 
     private static Object convertCollectionToClojureTypes(Collection<?> val, Object empty) {
-        Object ret = TRANSIENT.invoke(empty);
-        val.forEach(o -> CONJ_BANG.invoke(ret, javaToClojure(o)));
-        return PERSISTENT.invoke(ret);
+        Object ret = Transient.invoke(empty);
+        val.forEach(o -> ConjBang.invoke(ret, javaToClojure(o)));
+        return Persistent.invoke(ret);
     }
 
     private static Object convertMapToClojureTypes(Map<?, ?> map) {
-        Object ret = TRANSIENT.invoke(EMPTY_MAP);
-        map.forEach((k, v) -> ASSOC_BANG.invoke(ret, javaToClojure(k), javaToClojure(v)));
-        return PERSISTENT.invoke(ret);
+        Object ret = Transient.invoke(EmptyMap);
+        map.forEach((k, v) -> AssocBang.invoke(ret, javaToClojure(k), javaToClojure(v)));
+        return Persistent.invoke(ret);
     }
 
     /*
@@ -98,9 +98,9 @@ class Conversions {
         }
 
         if (obj instanceof List)
-            return convertCollectionToJavaTypes((Collection<?>) obj, EMPTY_VECTOR, genericReturnType);
+            return convertCollectionToJavaTypes((Collection<?>) obj, EmptyVector, genericReturnType);
         else if (obj instanceof Set)
-            return convertCollectionToJavaTypes((Collection<?>) obj, EMPTY_SET, genericReturnType);
+            return convertCollectionToJavaTypes((Collection<?>) obj, EmptySet, genericReturnType);
         else if (obj instanceof Map)
             return convertMapToJavaTypes((Map<?, ?>) obj, genericReturnType);
         else
@@ -108,9 +108,9 @@ class Conversions {
     }
 
     private static Object convertCollectionToJavaTypes(Collection<?> coll, Object empty, Type genericReturnType) {
-        Object ret = TRANSIENT.invoke(empty);
-        coll.forEach(o -> CONJ_BANG.invoke(ret, convertCollectionElementToJavaTypes(o, genericReturnType)));
-        return PERSISTENT.invoke(ret);
+        Object ret = Transient.invoke(empty);
+        coll.forEach(o -> ConjBang.invoke(ret, convertCollectionElementToJavaTypes(o, genericReturnType)));
+        return Persistent.invoke(ret);
     }
 
     private static Object convertCollectionElementToJavaTypes(Object element, Type genericCollectionType) {
@@ -133,8 +133,8 @@ class Conversions {
         } else {
             keyType = valType = Object.class;
         }
-        Object ret = TRANSIENT.invoke(EMPTY_MAP);
-        unwrappedMap.forEach((k, v) -> ASSOC_BANG.invoke(ret, clojureToJava(k, keyType), clojureToJava(v, valType)));
-        return PERSISTENT.invoke(ret);
+        Object ret = Transient.invoke(EmptyMap);
+        unwrappedMap.forEach((k, v) -> AssocBang.invoke(ret, clojureToJava(k, keyType), clojureToJava(v, valType)));
+        return Persistent.invoke(ret);
     }
 }

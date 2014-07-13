@@ -11,14 +11,14 @@ import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 import static java.lang.String.format;
 
 public class DynamicObjects {
-    private static volatile Object readers = EMPTY_MAP;
+    private static volatile Object readers = EmptyMap;
     private static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
 
     static String serialize(Object obj) {
         if (obj instanceof DynamicObject)
-            return (String) PRINT_STRING.invoke(((DynamicObject) obj).getMap());
-        return (String) PRINT_STRING.invoke(obj);
+            return (String) PrintString.invoke(((DynamicObject) obj).getMap());
+        return (String) PrintString.invoke(obj);
     }
 
     static <T> T deserialize(String edn, Class<T> type) {
@@ -27,7 +27,7 @@ public class DynamicObjects {
 
     @SuppressWarnings("unchecked")
     static <T> T deserialize(PushbackReader streamReader, Class<T> type) {
-        Object obj = READ.invoke(getReadersAsOptions(), streamReader);
+        Object obj = Read.invoke(getReadersAsOptions(), streamReader);
         if (DynamicObject.class.isAssignableFrom(type))
             return wrap(obj, type);
         return (T) obj;
@@ -73,52 +73,52 @@ public class DynamicObjects {
     }
 
     static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
-        return wrap(Metadata.withTypeMetadata(EMPTY_MAP, type), type);
+        return wrap(Metadata.withTypeMetadata(EmptyMap, type), type);
     }
 
     static synchronized <T> void registerType(Class<T> type, EdnTranslator<T> translator) {
         EdnTranslatorAdapter<T> adapter = new EdnTranslatorAdapter<>(translator);
         translatorCache.put(type, adapter);
-        readers = ASSOC.invoke(readers, cachedRead(translator.getTag()), adapter);
+        readers = Assoc.invoke(readers, cachedRead(translator.getTag()), adapter);
         defineMultimethod(type.getTypeName(), "DynamicObjects/invokeWriter", translator.getTag());
     }
 
     @SuppressWarnings("unchecked")
     static synchronized <T> void deregisterType(Class<T> type) {
         EdnTranslatorAdapter<T> adapter = (EdnTranslatorAdapter<T>) translatorCache.get(type);
-        readers = DISSOC.invoke(readers, cachedRead(adapter.getTag()));
-        REMOVE_METHOD.invoke(PRINT_METHOD, adapter);
+        readers = Dissoc.invoke(readers, cachedRead(adapter.getTag()));
+        RemoveMethod.invoke(PrintMethod, adapter);
         translatorCache.remove(type);
     }
 
     static synchronized <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
         recordTagCache.put(type, tag);
-        readers = ASSOC.invoke(readers, cachedRead(tag), new RecordReader<>(type));
+        readers = Assoc.invoke(readers, cachedRead(tag), new RecordReader<>(type));
         defineMultimethod(":" + type.getTypeName(), "RecordPrinter/printRecord", tag);
     }
 
     static synchronized <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
         String tag = recordTagCache.get(type);
-        readers = DISSOC.invoke(readers, cachedRead(tag));
+        readers = Dissoc.invoke(readers, cachedRead(tag));
         recordTagCache.remove(type);
 
         Object dispatchVal = cachedRead(":" + type.getTypeName());
-        REMOVE_METHOD.invoke(PRINT_METHOD, dispatchVal);
+        RemoveMethod.invoke(PrintMethod, dispatchVal);
     }
 
     private static Object getReadersAsOptions() {
-        return ASSOC.invoke(EMPTY_MAP, READERS, readers);
+        return Assoc.invoke(EmptyMap, Readers, readers);
     }
 
     @SuppressWarnings("unused")
     public static Object invokeWriter(Object obj, Writer writer, String tag) {
-        EdnTranslatorAdapter translator = (EdnTranslatorAdapter<?>) GET.invoke(readers, cachedRead(tag));
+        EdnTranslatorAdapter translator = (EdnTranslatorAdapter<?>) Get.invoke(readers, cachedRead(tag));
         return translator.invoke(obj, writer);
     }
 
     private static void defineMultimethod(String dispatchVal, String method, String arg) {
         String clojureCode = format("(defmethod print-method %s [o, ^java.io.Writer w] (com.github.rschmitt.dynamicobject.%s o w \"%s\"))",
                 dispatchVal, method, arg);
-        EVAL.invoke(READ_STRING.invoke(clojureCode));
+        Eval.invoke(ReadString.invoke(clojureCode));
     }
 }

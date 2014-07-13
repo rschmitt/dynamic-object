@@ -4,18 +4,18 @@ import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 
 public class Metadata {
     static Class<?> getTypeMetadata(Object obj) {
-        Object meta = META.invoke(obj);
+        Object meta = Meta.invoke(obj);
         if (meta == null) return null;
-        Object tag = GET.invoke(meta, TYPE);
+        Object tag = Get.invoke(meta, Type);
         if (tag == null) return null;
         try {
-            return Class.forName((String) NAME.invoke(tag));
+            return Class.forName((String) Name.invoke(tag));
         } catch (ReflectiveOperationException ex) {
             throw new IllegalStateException(ex);
         }
     }
 
     static Object withTypeMetadata(Object obj, Class<?> type) {
-        return VARY_META.invoke(obj, ASSOC, TYPE, cachedRead(":" + type.getTypeName()));
+        return VaryMeta.invoke(obj, Assoc, Type, cachedRead(":" + type.getTypeName()));
     }
 }

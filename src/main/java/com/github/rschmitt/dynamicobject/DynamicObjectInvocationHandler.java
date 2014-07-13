@@ -42,10 +42,10 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             case "getType": return type;
             case "toString": return map.toString();
             case "hashCode": return map.hashCode();
-            case "prettyPrint": return PPRINT.invoke(map);
+            case "prettyPrint": return Pprint.invoke(map);
             case "toFormattedString":
                 Writer w = new StringWriter();
-                PPRINT.invoke(map, w);
+                Pprint.invoke(map, w);
                 return w.toString();
             case "merge": return merge((DynamicObject<T>) args[0]);
             case "intersect": return intersect((DynamicObject<T>) args[0]);
@@ -90,9 +90,9 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private Object diff(DynamicObject<T> arg, int idx) {
-        Object array = DIFF.invoke(map, arg.getMap());
-        Object union = NTH.invoke(array, idx);
-        if (union == null) union = EMPTY_MAP;
+        Object array = Diff.invoke(map, arg.getMap());
+        Object union = Nth.invoke(array, idx);
+        if (union == null) union = EmptyMap;
         union = Metadata.withTypeMetadata(union, type);
         return DynamicObject.wrap(union, type);
     }
@@ -103,7 +103,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
                 return (arg2 == null) ? arg1 : arg2;
             }
         };
-        Object mergedMap = MERGE_WITH.invoke(ignoreNulls, map, other.getMap());
+        Object mergedMap = MergeWith.invoke(ignoreNulls, map, other.getMap());
         return DynamicObject.wrap(mergedMap, type);
     }
 
@@ -123,11 +123,11 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private T assoc(String key, Object value) {
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
-        return DynamicObject.wrap(ASSOC.invoke(map, getMapKey(key), value), type);
+        return DynamicObject.wrap(Assoc.invoke(map, getMapKey(key), value), type);
     }
 
     private Object assocMeta(String key, Object value) {
-        return DynamicObject.wrap(VARY_META.invoke(map, ASSOC, key, value), type);
+        return DynamicObject.wrap(VaryMeta.invoke(map, Assoc, key, value), type);
     }
 
     private boolean isBuilderMethod(Method method) {
@@ -135,8 +135,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private Object getMetadataFor(String key) {
-        Object meta = META.invoke(map);
-        return GET.invoke(meta, key);
+        Object meta = Meta.invoke(map);
+        return Get.invoke(meta, key);
     }
 
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
@@ -159,7 +159,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private Object getRawValueFor(Method method) {
         String keyName = Reflection.getKeyNameForGetter(method);
         Object keywordKey = getMapKey(keyName);
-        return GET.invoke(map, keywordKey);
+        return Get.invoke(map, keywordKey);
     }
 
     private static Object getMapKey(String keyName) {
