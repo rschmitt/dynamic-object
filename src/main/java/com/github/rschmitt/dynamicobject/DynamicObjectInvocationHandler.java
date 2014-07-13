@@ -15,8 +15,8 @@ import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 import static java.lang.String.format;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
-    private static final Object DEFAULT = new Object();
-    private static final Object NULL = new Object();
+    private static final Object Default = new Object();
+    private static final Object Null = new Object();
 
     private final Object map;
     private final Class<T> type;
@@ -109,12 +109,12 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     @SuppressWarnings("unchecked")
     private Object getAndCacheValueFor(Method method) {
-        Object cachedValue = valueCache.getOrDefault(method, DEFAULT);
-        if (cachedValue == NULL) return null;
-        if (cachedValue != DEFAULT) return cachedValue;
+        Object cachedValue = valueCache.getOrDefault(method, Default);
+        if (cachedValue == Null) return null;
+        if (cachedValue != Default) return cachedValue;
         Object value = getValueFor(method);
         if (value == null)
-            valueCache.putIfAbsent(method, NULL);
+            valueCache.putIfAbsent(method, Null);
         else
             valueCache.putIfAbsent(method, value);
         return value;

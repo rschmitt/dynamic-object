@@ -7,32 +7,32 @@ import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static org.junit.Assert.*;
 
 public class PrimitiveTest {
-    private static final String EDN = "{:i 4, :d 3.14, :f 3.14, :lng 1234567890, :shrt 4, :bool true, :c \\newline, :b 127}";
-    private static final Unboxed UNBOXED = deserialize(EDN, Unboxed.class);
-    private static final Boxed BOXED = deserialize(EDN, Boxed.class);
+    private static final String Edn = "{:i 4, :d 3.14, :f 3.14, :lng 1234567890, :shrt 4, :bool true, :c \\newline, :b 127}";
+    private static final Unboxed Unboxed = deserialize(Edn, Unboxed.class);
+    private static final Boxed Boxed = deserialize(Edn, Boxed.class);
 
     @Test
     public void getBoxedFields() {
-        assertTrue(4 == BOXED.shrt());
-        assertTrue(4 == BOXED.i());
-        assertTrue(1234567890L == BOXED.lng());
-        assertEquals(3.14, BOXED.d(), 0.001);
-        assertEquals(3.14, BOXED.f(), 0.001);
-        assertTrue(BOXED.bool());
-        assertTrue('\n' == BOXED.c());
-        assertTrue((byte) 127 == BOXED.b());
+        assertTrue(4 == Boxed.shrt());
+        assertTrue(4 == Boxed.i());
+        assertTrue(1234567890L == Boxed.lng());
+        assertEquals(3.14, Boxed.d(), 0.001);
+        assertEquals(3.14, Boxed.f(), 0.001);
+        assertTrue(Boxed.bool());
+        assertTrue('\n' == Boxed.c());
+        assertTrue((byte) 127 == Boxed.b());
     }
 
     @Test
     public void getUnboxedFields() {
-        assertTrue(4 == UNBOXED.shrt());
-        assertTrue(4 == UNBOXED.i());
-        assertTrue(1234567890L == UNBOXED.lng());
-        assertEquals(3.14, UNBOXED.d(), 0.001);
-        assertEquals(3.14, UNBOXED.f(), 0.001);
-        assertTrue(UNBOXED.bool());
-        assertTrue('\n' == UNBOXED.c());
-        assertTrue(127 == UNBOXED.b());
+        assertTrue(4 == Unboxed.shrt());
+        assertTrue(4 == Unboxed.i());
+        assertTrue(1234567890L == Unboxed.lng());
+        assertEquals(3.14, Unboxed.d(), 0.001);
+        assertEquals(3.14, Unboxed.f(), 0.001);
+        assertTrue(Unboxed.bool());
+        assertTrue('\n' == Unboxed.c());
+        assertTrue(127 == Unboxed.b());
     }
 
     @Test
@@ -47,7 +47,7 @@ public class PrimitiveTest {
                 .c('\n')
                 .b((byte) 127);
 
-        assertEquals(BOXED, boxed);
+        assertEquals(Boxed, boxed);
     }
 
     @Test
@@ -62,7 +62,7 @@ public class PrimitiveTest {
                 .c('\n')
                 .b((byte)127);
 
-        assertEquals(UNBOXED, unboxed);
+        assertEquals(Unboxed, unboxed);
     }
 
     @Test
@@ -94,19 +94,19 @@ public class PrimitiveTest {
 
     @Test
     public void unboxedRoundTrip() {
-        Unboxed unboxed = deserialize(EDN, Unboxed.class);
-        assertEquals(EDN, unboxed.toString());
+        Unboxed unboxed = deserialize(Edn, Unboxed.class);
+        assertEquals(Edn, unboxed.toString());
     }
 
     @Test
     public void boxedRoundTrip() {
-        Boxed boxed = deserialize(EDN, Boxed.class);
-        assertEquals(EDN, boxed.toString());
+        Boxed boxed = deserialize(Edn, Boxed.class);
+        assertEquals(Edn, boxed.toString());
     }
 
     @Test
     public void testEquality() {
-        assertEquals(BOXED, UNBOXED);
+        assertEquals(Boxed, Unboxed);
     }
 
     public interface Unboxed extends DynamicObject<Unboxed> {

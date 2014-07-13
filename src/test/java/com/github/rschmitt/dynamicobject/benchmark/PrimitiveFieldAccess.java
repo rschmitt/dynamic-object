@@ -4,7 +4,7 @@ import com.github.rschmitt.dynamicobject.DynamicObject;
 import org.junit.Test;
 
 public class PrimitiveFieldAccess {
-    private final int ITERATIONS = 500_000;
+    private final int Iterations = 500_000;
 
     @Test
 
@@ -23,7 +23,7 @@ public class PrimitiveFieldAccess {
 
         acc = 0;
         long startTime = System.nanoTime();
-        for (int i = 0; i < ITERATIONS; i++) {
+        for (int i = 0; i < Iterations; i++) {
             acc += intPojo.getI();
         }
         long endTime = System.nanoTime();
@@ -33,7 +33,7 @@ public class PrimitiveFieldAccess {
 
         acc = 0;
         startTime = System.nanoTime();
-        for (int i = 0; i < ITERATIONS; i++) {
+        for (int i = 0; i < Iterations; i++) {
             acc += finalIntPojo.getI();
         }
         endTime = System.nanoTime();
@@ -43,7 +43,7 @@ public class PrimitiveFieldAccess {
 
         acc = 0;
         startTime = System.nanoTime();
-        for (int i = 0; i < ITERATIONS; i++) {
+        for (int i = 0; i < Iterations; i++) {
             acc += intField.i();
         }
         endTime = System.nanoTime();

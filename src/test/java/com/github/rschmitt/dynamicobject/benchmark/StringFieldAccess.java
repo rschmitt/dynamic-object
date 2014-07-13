@@ -4,7 +4,7 @@ import com.github.rschmitt.dynamicobject.DynamicObject;
 import org.junit.Test;
 
 public class StringFieldAccess {
-    private final int ITERATIONS = 500_000;
+    private final int Iterations = 500_000;
 
     @Test
     public void run() {
@@ -21,7 +21,7 @@ public class StringFieldAccess {
 
         acc = 0;
         long startTime = System.nanoTime();
-        for (int i = 0; i < ITERATIONS; i++) {
+        for (int i = 0; i < Iterations; i++) {
             acc += stringPojo.str().length();
         }
         long endTime = System.nanoTime();
@@ -31,7 +31,7 @@ public class StringFieldAccess {
 
         acc = 0;
         startTime = System.nanoTime();
-        for (int i = 0; i < ITERATIONS; i++) {
+        for (int i = 0; i < Iterations; i++) {
             acc += finalStringPojo.str().length();
         }
         endTime = System.nanoTime();
@@ -41,7 +41,7 @@ public class StringFieldAccess {
 
         acc = 0;
         startTime = System.nanoTime();
-        for (int i = 0; i < ITERATIONS; i++) {
+        for (int i = 0; i < Iterations; i++) {
             acc += stringField.str().length();
         }
         endTime = System.nanoTime();

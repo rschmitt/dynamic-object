@@ -9,7 +9,7 @@ import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static org.junit.Assert.assertEquals;
 
 public class MethodHandleTest {
-    private static final UUID RECEIPT_HANDLE = UUID.randomUUID();
+    private static final UUID ReceiptHandle = UUID.randomUUID();
 
     @Test
     public void buildPolymorphically() {
@@ -17,13 +17,13 @@ public class MethodHandleTest {
 
         QueueMessage queueMessage = deserializeAndAttachMetadata(edn, QueueMessage::receiptHandle, QueueMessage.class);
 
-        assertEquals(RECEIPT_HANDLE, queueMessage.receiptHandle());
+        assertEquals(ReceiptHandle, queueMessage.receiptHandle());
         assertEquals("start the reactor", queueMessage.command());
     }
 
     private <T> T deserializeAndAttachMetadata(String edn, BiFunction<T, UUID, T> receiptHandleMetadataBuilder, Class<T> type) {
         T instance = deserialize(edn, type);
-        return receiptHandleMetadataBuilder.apply(instance, RECEIPT_HANDLE);
+        return receiptHandleMetadataBuilder.apply(instance, ReceiptHandle);
     }
 }
 

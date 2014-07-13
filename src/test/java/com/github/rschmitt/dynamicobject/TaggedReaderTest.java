@@ -12,7 +12,7 @@ import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
 
 public class TaggedReaderTest {
-    private static final String EDN = "{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}";
+    private static final String Edn = "{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}";
 
     @Before
     public void setup() {
@@ -26,11 +26,11 @@ public class TaggedReaderTest {
 
     @Test
     public void roundTrip() {
-        DumbClassHolder holder = DynamicObject.deserialize(EDN, DumbClassHolder.class);
+        DumbClassHolder holder = DynamicObject.deserialize(Edn, DumbClassHolder.class);
 
         String serialized = serialize(holder);
 
-        assertEquals(EDN, serialized);
+        assertEquals(Edn, serialized);
         assertEquals(new DumbClass(1, "str"), holder.dumb().get(0));
     }
 
@@ -54,7 +54,7 @@ public class TaggedReaderTest {
 
     @Test
     public void prettyPrint() {
-        DumbClassHolder holder = DynamicObject.deserialize(EDN, DumbClassHolder.class);
+        DumbClassHolder holder = DynamicObject.deserialize(Edn, DumbClassHolder.class);
         String expectedFormattedString = format("{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}%n");
         assertEquals(expectedFormattedString, holder.toFormattedString());
     }

@@ -6,30 +6,30 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class MetadataTest {
-    private static final AnnotatedData ANNOTATED_DATA = DynamicObject.deserialize("{:value \"regular data\"}", AnnotatedData.class);
+    private static final AnnotatedData AnnotatedData = DynamicObject.deserialize("{:value \"regular data\"}", AnnotatedData.class);
 
     @Test
     public void noInitialMetadata() {
-        assertNull(ANNOTATED_DATA.source());
-        assertEquals("{:value \"regular data\"}", DynamicObject.serialize(ANNOTATED_DATA));
+        assertNull(AnnotatedData.source());
+        assertEquals("{:value \"regular data\"}", DynamicObject.serialize(AnnotatedData));
     }
 
     @Test
     public void metadataBuilders() {
-        AnnotatedData annotatedData = ANNOTATED_DATA.source("SQS");
+        AnnotatedData annotatedData = AnnotatedData.source("SQS");
         assertEquals("SQS", annotatedData.source());
     }
 
     @Test
     public void metadataIsNotSerialized() {
-        AnnotatedData annotatedData = ANNOTATED_DATA.source("DynamoDB");
+        AnnotatedData annotatedData = AnnotatedData.source("DynamoDB");
         assertEquals("{:value \"regular data\"}", DynamicObject.serialize(annotatedData));
     }
 
     @Test
     public void metadataIsIgnoredForEquality() {
-        AnnotatedData withMetadata = ANNOTATED_DATA.source("Datomic");
-        assertEquals(ANNOTATED_DATA, withMetadata);
+        AnnotatedData withMetadata = AnnotatedData.source("Datomic");
+        assertEquals(AnnotatedData, withMetadata);
     }
 }
 
