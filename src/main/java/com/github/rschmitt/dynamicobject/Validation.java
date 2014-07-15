@@ -151,16 +151,12 @@ class Validation {
 
         String getValidationErrorMessage() {
             StringBuilder ret = new StringBuilder();
-            if (!missingFields.isEmpty()) {
-                ret.append("The following @Required fields were missing: ");
-                List<String> fieldNames = missingFields.stream().map(Method::getName).collect(toList());
-                for (int i = 0; i < fieldNames.size(); i++) {
-                    ret.append(fieldNames.get(i));
-                    if (i != fieldNames.size() - 1)
-                        ret.append(", ");
-                }
-                ret.append("\n");
-            }
+            describeMissingFields(ret);
+            describeMismatchedFields(ret);
+            return ret.toString();
+        }
+
+        private void describeMismatchedFields(StringBuilder ret) {
             if (!mismatchedFields.isEmpty()) {
                 ret.append("The following fields had the wrong type:\n");
                 for (Map.Entry<Method, Class<?>> methodClassEntry : mismatchedFields.entrySet()) {
@@ -171,7 +167,19 @@ class Validation {
                     ret.append(format("\t%s (expected %s, got %s)%n", name, expected, actual));
                 }
             }
-            return ret.toString();
+        }
+
+        private void describeMissingFields(StringBuilder ret) {
+            if (!missingFields.isEmpty()) {
+                ret.append("The following @Required fields were missing: ");
+                List<String> fieldNames = missingFields.stream().map(Method::getName).collect(toList());
+                for (int i = 0; i < fieldNames.size(); i++) {
+                    ret.append(fieldNames.get(i));
+                    if (i != fieldNames.size() - 1)
+                        ret.append(", ");
+                }
+                ret.append("\n");
+            }
         }
     }
 }
