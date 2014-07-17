@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -173,13 +174,16 @@ class Validation {
             if (!missingFields.isEmpty()) {
                 ret.append("The following @Required fields were missing: ");
                 List<String> fieldNames = missingFields.stream().map(Method::getName).collect(toList());
-                for (int i = 0; i < fieldNames.size(); i++) {
-                    ret.append(fieldNames.get(i));
-                    if (i != fieldNames.size() - 1)
-                        ret.append(", ");
-                }
+                ret.append(join(fieldNames));
                 ret.append("\n");
             }
+        }
+
+        private static String join(List<String> strings) {
+            return strings.stream()
+                    .flatMap(x -> Stream.of(", ", x))
+                    .skip(1)
+                    .reduce((x, y) -> x + y).get();
         }
     }
 }
