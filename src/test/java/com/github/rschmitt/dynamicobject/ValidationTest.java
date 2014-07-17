@@ -137,7 +137,7 @@ public class ValidationTest {
         validationFailure("{:nestedNumericMaps {1 {\"k\" \"v\"}}}", CompoundMaps.class);
         validationFailure("{:nestedNumericMaps {1 {2 #{3}}}}", CompoundMaps.class);
         validationFailure("{:nestedNumericMaps {1 {#{2} 3}}}", CompoundMaps.class);
-        validationFailure("{:nestedNumericMaps {#{1} {2 3}}}", CompoundMaps.class);
+        validationFailure("{:nestedNumericMaps {#{1} {2 3}}}", CompoundMaps.class); // TODO better error message
     }
 
     @Test(expected = UnsupportedOperationException.class)
