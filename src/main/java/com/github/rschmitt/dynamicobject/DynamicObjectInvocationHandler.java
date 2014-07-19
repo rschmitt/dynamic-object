@@ -30,13 +30,17 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     @Override
     @SuppressWarnings("unchecked")
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (method.isDefault())
+        String methodName = method.getName();
+
+        if (method.isDefault()) {
+            if (methodName.equals("validate"))
+                Validation.validateInstance(type, this::getAndCacheValueFor, this::getRawValueFor);
             return invokeDefaultMethod(proxy, method, args);
+        }
 
         if (isBuilderMethod(method))
             return invokeBuilderMethod(method, args);
 
-        String methodName = method.getName();
         switch (methodName) {
             case "getMap": return map;
             case "getType": return type;

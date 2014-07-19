@@ -166,6 +166,13 @@ public class ValidationTest {
         instance.x();
     }
 
+    @Test
+    public void customValidation() {
+        validationSuccess("{:oddsOnly 5, :required 0}", Custom.class);
+        validationFailure("{:oddsOnly 4, :required 0}", Custom.class);
+        validationFailure("{:oddsOnly 5}", Custom.class);
+    }
+
     private static <T extends DynamicObject<T>> void validationFailure(String edn, Class<T> type) {
         try {
             deserialize(edn, type).validate();
@@ -238,4 +245,16 @@ interface CompoundMaps extends DynamicObject<CompoundMaps> {
     Map<String, ?> wildcardValue();
     Map<String, Map<String, String>> nestedGenericMaps();
     Map<Integer, Map<Integer, Float>> nestedNumericMaps();
+}
+
+interface Custom extends DynamicObject<Custom> {
+    @Required int oddsOnly();
+    @Required int required();
+
+    @Override
+    default Custom validate() {
+        if (oddsOnly() % 2 == 0)
+            throw new IllegalStateException("Odd number expected");
+        return this;
+    }
 }
