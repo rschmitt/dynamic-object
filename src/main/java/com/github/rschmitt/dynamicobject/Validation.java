@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -180,10 +180,7 @@ class Validation {
         }
 
         private static String join(List<String> strings) {
-            return strings.stream()
-                    .flatMap(x -> Stream.of(", ", x))
-                    .skip(1)
-                    .reduce((x, y) -> x + y).get();
+            return strings.stream().collect(Collectors.joining(", "));
         }
     }
 }
