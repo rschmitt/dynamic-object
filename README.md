@@ -2,7 +2,7 @@
 
 dynamic-object is a library that makes Clojure's powerful data modeling capabilities available to Java developers in an idiomatic way with minimal boilerplate. It reflects the belief that [values](http://www.infoq.com/presentations/Value-Values) should be immutable, cheap to specify, powerful to work with, and easy to convey to other processes.
 
-Get it from [Maven](http://search.maven.org/#artifactdetails|com.github.rschmitt|dynamic-object|0.4|jar):
+Get it from [Maven](http://search.maven.org/#artifactdetails|com.github.rschmitt|dynamic-object|0.5|jar):
 
 `com.github.rschmitt:dynamic-object:0.4`
 
