@@ -144,6 +144,34 @@ DynamicObject.deserialize("{:x 1, :y 2, :str \"hello\"}", Validated.class).valid
 //  Success!
 ```
 
+It is possible to add custom validation logic to a type by implementing `validate()` as a custom method. For example:
+
+```java
+interface Custom extends DynamicObject<Custom> {
+  @Required int oddsOnly();
+
+  @Override
+  default Custom validate() {
+    if (oddsOnly() % 2 == 0)
+      throw new IllegalStateException("Odd number expected");
+    return this;
+  }
+}
+```
+
+This validation logic will be run in addition to the standard validation checks:
+
+```java
+DynamicObject.deserialize("{:oddsOnly 4}", Custom.class).validate();
+//  Exception in thread "main" java.lang.IllegalStateException: Odd number expected
+
+DynamicObject.deserialize("{:oddsOnly nil}", Custom.class).validate();
+//  Exception in thread "main" java.lang.IllegalStateException: The following @Required fields were missing: oddsOnly
+
+DynamicObject.deserialize("{:oddsOnly 5}", Custom.class).validate();
+//  Success!
+```
+
 ### Persistent Modification
 
 dynamic-object makes it easy to leverage Clojure's immutable persistent data structures, which use structural sharing to enable cheap copying and "modification." A `DynamicObject` can declare builder methods, which are backed by [`assoc`](http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/assoc). For example:
