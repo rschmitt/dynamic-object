@@ -12,6 +12,7 @@ import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
+import static com.github.rschmitt.dynamicobject.ClojureStuff.Meta;
 import static java.lang.String.format;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
@@ -71,7 +72,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private Object invokeBuilderMethod(Method method, Object[] args) {
         if (Reflection.isMetadataBuilder(method))
             return assocMeta(method.getName(), args[0]);
-        String key = Reflection.getKeyNameForBuilder(method);
+        Object key = Reflection.getKeyForBuilder(method);
         return assoc(key, Conversions.javaToClojure(args[0]));
     }
 
@@ -124,10 +125,10 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return value;
     }
 
-    private T assoc(String key, Object value) {
+    private T assoc(Object key, Object value) {
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
-        return DynamicObject.wrap(Assoc.invoke(map, getMapKey(key), value), type);
+        return DynamicObject.wrap(Assoc.invoke(map, key, value), type);
     }
 
     private Object assocMeta(String key, Object value) {
@@ -161,14 +162,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private Object getRawValueFor(Method method) {
-        String keyName = Reflection.getKeyNameForGetter(method);
-        Object keywordKey = getMapKey(keyName);
-        return Get.invoke(map, keywordKey);
-    }
-
-    private static Object getMapKey(String keyName) {
-        if (keyName.charAt(0) == ':')
-            keyName = keyName.substring(1);
-        return cachedRead(":" + keyName);
+        Object key = Reflection.getKeyForGetter(method);
+        return Get.invoke(map, key);
     }
 }

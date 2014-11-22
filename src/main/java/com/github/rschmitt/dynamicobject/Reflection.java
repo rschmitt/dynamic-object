@@ -10,6 +10,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.github.rschmitt.dynamicobject.ClojureStuff.cachedRead;
+
 class Reflection {
     static <T extends DynamicObject<T>> Collection<Method> requiredFields(Class<T> type) {
         Collection<Method> fields = fieldGetters(type);
@@ -47,12 +49,14 @@ class Reflection {
         return hasAnnotation(correspondingGetter, Meta.class);
     }
 
-    static String getKeyNameForGetter(Method method) {
+    static Object getKeyForGetter(Method method) {
         Key annotation = getMethodAnnotation(method, Key.class);
-        if (annotation == null)
-            return method.getName();
-        else
-            return annotation.value();
+        String keyName = method.getName();
+        if (annotation != null)
+            keyName = annotation.value();
+        if (keyName.charAt(0) == ':')
+            keyName = keyName.substring(1);
+        return cachedRead(":" + keyName);
     }
 
     @SuppressWarnings("unchecked")
@@ -63,8 +67,8 @@ class Reflection {
         return null;
     }
 
-    static String getKeyNameForBuilder(Method method) {
-        return getKeyNameForGetter(getCorrespondingGetter(method));
+    static Object getKeyForBuilder(Method method) {
+        return getKeyForGetter(getCorrespondingGetter(method));
     }
 
     private static Method getCorrespondingGetter(Method builderMethod) {
