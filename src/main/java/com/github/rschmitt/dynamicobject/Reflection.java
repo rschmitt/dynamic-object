@@ -52,11 +52,16 @@ class Reflection {
     static Object getKeyForGetter(Method method) {
         Key annotation = getMethodAnnotation(method, Key.class);
         String keyName = method.getName();
-        if (annotation != null)
+        if (annotation == null) {
+            return cachedRead(":" + keyName);
+        } else {
             keyName = annotation.value();
-        if (keyName.charAt(0) == ':')
-            keyName = keyName.substring(1);
-        return cachedRead(":" + keyName);
+            if (keyName.charAt(0) == ':') {
+                return cachedRead(keyName);
+            } else {
+                return keyName;
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
