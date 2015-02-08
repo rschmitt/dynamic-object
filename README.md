@@ -268,9 +268,9 @@ dynamic-object is currently in beta, and the API is still subject to change. The
 
 ## Developing
 
-dynamic-object should work out-of-the-box with [IntelliJ 13](http://www.jetbrains.com/idea/download/). The Community Edition is sufficient. You'll need [JDK8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed and configured as an SDK within IntelliJ. You will also need the Gradle plugin for dependency resolution; this is generally included by default.
+dynamic-object should work out-of-the-box with [IntelliJ 14](http://www.jetbrains.com/idea/download/). The Community Edition is sufficient. You'll need [JDK8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed and configured as an SDK within IntelliJ. You will also need the Maven plugin for dependency resolution; this is generally included by default.
 
-You can also run the build from the command line using `./gradlew build` (for Gradle) or `mvn package` (for Maven).
+You can also run the build from the command line using `mvn package`. To just run the unit tests, use `mvn test`.
 
 ## Influences and Similar Ideas
 
