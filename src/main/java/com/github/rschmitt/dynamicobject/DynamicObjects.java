@@ -5,7 +5,11 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.Proxy;
 import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 import static java.lang.String.format;
@@ -33,7 +37,13 @@ public class DynamicObjects {
         return (T) obj;
     }
 
-    static <T extends DynamicObject<T>> Iterator<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
+    static <T extends DynamicObject<T>> Stream<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
+        Iterator<T> iterator = deserializeStreamToIterator(streamReader, type);
+        Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.IMMUTABLE);
+        return StreamSupport.stream(spliterator, false);
+    }
+
+    private static <T extends DynamicObject<T>> Iterator<T> deserializeStreamToIterator(PushbackReader streamReader, Class<T> type) {
         return new Iterator<T>() {
             private T stash = null;
 

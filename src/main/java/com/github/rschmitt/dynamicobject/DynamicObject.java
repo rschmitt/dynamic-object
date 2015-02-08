@@ -1,8 +1,8 @@
 package com.github.rschmitt.dynamicobject;
 
 import java.io.PushbackReader;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public interface DynamicObject<T extends DynamicObject<T>> {
     /**
@@ -81,7 +81,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     /**
      * Lazily deserialize a stream of top-level Edn elements as the given DynamicObject type.
      */
-    public static <T extends DynamicObject<T>> Iterator<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
+    public static <T extends DynamicObject<T>> Stream<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
         return DynamicObjects.deserializeStream(streamReader, type);
     }
 
