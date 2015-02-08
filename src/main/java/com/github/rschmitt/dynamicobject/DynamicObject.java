@@ -9,7 +9,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * @return the underlying Clojure map backing this instance. Downcasting the return value of this method to any
      * particular Java type (e.g. IPersistentMap) is not guaranteed to work with future versions of Clojure.
      */
-    Map<?, ?> getMap();
+    Map getMap();
 
     /**
      * @return the apparent type of this instance. Note that {@code getClass} will return the class of the interface
