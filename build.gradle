@@ -3,7 +3,7 @@ apply plugin: 'maven'
 
 sourceCompatibility = 1.8
 group = 'com.github.rschmitt'
-version = '0.6-SNAPSHOT'
+version = '1.0.0'
 
 repositories {
     mavenCentral()
