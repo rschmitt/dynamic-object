@@ -27,7 +27,7 @@ class ClojureStuff {
     static final IFn Name = var("clojure.core", "name");
     static final IFn Nth = var("clojure.core", "nth");
     static final IFn Persistent = var("clojure.core", "persistent!");
-    static final IFn PrintString = var("clojure.core", "pr-str");
+    static final IFn PrOn = var("clojure.core", "pr-on");
     static final IFn Read = var("clojure.edn", "read");
     static final IFn ReadString = var("clojure.edn", "read-string");
     static final IFn RemoveMethod = var("clojure.core", "remove-method");

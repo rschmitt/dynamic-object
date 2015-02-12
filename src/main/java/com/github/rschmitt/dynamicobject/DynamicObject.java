@@ -1,6 +1,7 @@
 package com.github.rschmitt.dynamicobject;
 
 import java.io.PushbackReader;
+import java.io.Writer;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -66,6 +67,10 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      */
     static String serialize(Object o) {
         return DynamicObjects.serialize(o);
+    }
+
+    static void serialize(Object o, Writer w) {
+        DynamicObjects.serialize(o, w);
     }
 
     /**

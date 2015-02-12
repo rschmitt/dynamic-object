@@ -2,6 +2,7 @@ package com.github.rschmitt.dynamicobject;
 
 import java.io.PushbackReader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Proxy;
 import java.util.Iterator;
@@ -20,9 +21,16 @@ public class DynamicObjects {
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
 
     static String serialize(Object obj) {
-        if (obj instanceof DynamicObject)
-            return (String) PrintString.invoke(((DynamicObject) obj).getMap());
-        return (String) PrintString.invoke(obj);
+        StringWriter stringWriter = new StringWriter();
+        serialize(obj, stringWriter);
+        return stringWriter.toString();
+    }
+
+    static void serialize(Object object,  Writer writer) {
+        if (object instanceof DynamicObject)
+            PrOn.invoke(((DynamicObject) object).getMap(), writer);
+        else
+            PrOn.invoke(object, writer);
     }
 
     static <T> T deserialize(String edn, Class<T> type) {
