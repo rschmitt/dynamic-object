@@ -54,13 +54,15 @@ class Conversions {
 
     private static Object convertCollectionToClojureTypes(Collection<?> val, Object empty) {
         Object ret = Transient.invoke(empty);
-        val.forEach(o -> ConjBang.invoke(ret, javaToClojure(o)));
+        for (Object o : val)
+            ret = ConjBang.invoke(ret, javaToClojure(o));
         return Persistent.invoke(ret);
     }
 
     private static Object convertMapToClojureTypes(Map<?, ?> map) {
         Object ret = Transient.invoke(EmptyMap);
-        map.forEach((k, v) -> AssocBang.invoke(ret, javaToClojure(k), javaToClojure(v)));
+        for (Map.Entry<?, ?> entry : map.entrySet())
+            ret = AssocBang.invoke(ret, javaToClojure(entry.getKey()), javaToClojure(entry.getValue()));
         return Persistent.invoke(ret);
     }
 
@@ -109,7 +111,8 @@ class Conversions {
 
     private static Object convertCollectionToJavaTypes(Collection<?> coll, Object empty, Type genericReturnType) {
         Object ret = Transient.invoke(empty);
-        coll.forEach(o -> ConjBang.invoke(ret, convertCollectionElementToJavaTypes(o, genericReturnType)));
+        for (Object o : coll)
+            ret = ConjBang.invoke(ret, convertCollectionElementToJavaTypes(o, genericReturnType));
         return Persistent.invoke(ret);
     }
 
@@ -134,7 +137,8 @@ class Conversions {
             keyType = valType = Object.class;
         }
         Object ret = Transient.invoke(EmptyMap);
-        unwrappedMap.forEach((k, v) -> AssocBang.invoke(ret, clojureToJava(k, keyType), clojureToJava(v, valType)));
+        for (Map.Entry<?, ?> entry : unwrappedMap.entrySet())
+            ret = AssocBang.invoke(ret, clojureToJava(entry.getKey(), keyType), clojureToJava(entry.getValue(), valType));
         return Persistent.invoke(ret);
     }
 }
