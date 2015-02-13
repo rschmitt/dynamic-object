@@ -97,7 +97,7 @@ public class CollectionsTest {
     @Test
     public void largeMap() {
         Map<String, String> map = range(0, 10_000).boxed().collect(toMap(n -> string(), n -> string()));
-        
+
         MapSchema mapSchema = newInstance(MapSchema.class).dictionary(map);
 
         assertEquals(map.size(), mapSchema.dictionary().size());
