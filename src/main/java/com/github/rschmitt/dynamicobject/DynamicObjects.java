@@ -1,5 +1,6 @@
 package com.github.rschmitt.dynamicobject;
 
+import java.io.IOException;
 import java.io.PushbackReader;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -31,6 +32,11 @@ public class DynamicObjects {
             PrOn.invoke(((DynamicObject) object).getMap(), writer);
         else
             PrOn.invoke(object, writer);
+        try {
+          writer.flush();
+        } catch (IOException ex) {
+          throw new RuntimeException(ex);
+        }
     }
 
     static <T> T deserialize(String edn, Class<T> type) {
