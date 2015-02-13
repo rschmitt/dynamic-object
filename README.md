@@ -257,15 +257,6 @@ This is particularly useful for Clojure interop, where kebab-case, rather than J
 * There is currently no way to distinguish between an explicit null value and a missing entry. It is not at all clear that exposing this distinction would be a good idea.
 * Since unboxed primitives cannot be null, any attempt to dereference an unboxed primitive field whose underlying value is null or missing will result in a `NullPointerException`.
 
-## TODOs
-
-dynamic-object is currently in beta, and the API is still subject to change. There are a number of outstanding design questions and implementation tasks, such as:
-
-* **Instance initialization.** Currently, `DynamicObjects` created through calls to `newInstance` are completely blank; all fields are missing by default, rather than explicitly null. This is different from the behavior of `defrecord`, which will initialize all fields to `nil` if an empty map is passed to the constructor, and which will also initialize missing fields to `nil` upon deserialization.
-* **Symbols.** The Edn format specification also calls out symbols, which "are used to represent identifiers, and should map to something other than strings, if possible." How to expose symbols to Java code, or whether to do so at all, is a problem that is going to require some [hammock time](http://www.youtube.com/watch?v=f84n5oFoZBc).
-* **[`data.generators`](https://github.com/clojure/data.generators) support.** `DynamicObject` instances could be randomly generated for use as test data, which would facilitate generative testing in the style of [test.check](https://github.com/clojure/test.check) and [QuickCheck](http://www.haskell.org/haskellwiki/Introduction_to_QuickCheck2).
-* **Datomic integration.** Datomic can be used from Java, but doing so requires the use of raw `Collection` types. There are worse things in life, such as ORM libraries, but maybe this situation could be improved upon.
-
 ## Developing
 
 dynamic-object should work out-of-the-box with [IntelliJ 14](http://www.jetbrains.com/idea/download/). The Community Edition is sufficient. You'll need [JDK8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed and configured as an SDK within IntelliJ. You will also need the Maven plugin for dependency resolution; this is generally included by default.
