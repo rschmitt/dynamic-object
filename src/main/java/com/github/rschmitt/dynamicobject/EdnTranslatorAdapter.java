@@ -22,8 +22,8 @@ final class EdnTranslatorAdapter<T> extends AFn {
     public Object invoke(Object arg1, Object arg2) {
         Writer writer = (Writer) arg2;
         try {
-            String output = String.format("#%s%s", ednTranslator.getTag(), ednTranslator.write((T) arg1));
-            writer.write(output);
+            writer.write(String.format("#%s", ednTranslator.getTag()));
+            ednTranslator.write((T) arg1, writer);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
