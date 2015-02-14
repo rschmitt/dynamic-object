@@ -1,5 +1,7 @@
 package com.github.rschmitt.dynamicobject;
 
+import clojure.java.api.Clojure;
+
 import java.io.IOException;
 import java.io.PushbackReader;
 import java.io.StringReader;
@@ -7,6 +9,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Proxy;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,6 +23,7 @@ public class DynamicObjects {
     private static volatile Object readers = EmptyMap;
     private static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
+    private static final Object EOF = Clojure.read(":eof");
 
     static String serialize(Object obj) {
         StringWriter stringWriter = new StringWriter();
@@ -45,7 +49,11 @@ public class DynamicObjects {
 
     @SuppressWarnings("unchecked")
     static <T> T deserialize(PushbackReader streamReader, Class<T> type) {
-        Object obj = Read.invoke(getReadersAsOptions(), streamReader);
+        Object opts = getReadersAsOptions();
+        opts = Assoc.invoke(opts, EOF, EOF);
+        Object obj = Read.invoke(opts, streamReader);
+        if (EOF.equals(obj))
+            throw new NoSuchElementException();
         if (DynamicObject.class.isAssignableFrom(type))
             return wrap(obj, type);
         return (T) obj;
@@ -60,33 +68,40 @@ public class DynamicObjects {
     private static <T extends DynamicObject<T>> Iterator<T> deserializeStreamToIterator(PushbackReader streamReader, Class<T> type) {
         return new Iterator<T>() {
             private T stash = null;
+            private boolean done = false;
 
             @Override
             public boolean hasNext() {
-                if (stash != null)
-                    return true;
-                try {
-                    stash = next();
-                    return true;
-                } catch (RuntimeException ex) {
-                    return false;
-                }
+                populateStash();
+                return !done || stash != null;
             }
 
             @Override
             public T next() {
-                if (stash != null) {
+                if (hasNext()) {
                     T ret = stash;
                     stash = null;
                     return ret;
+                } else
+                    throw new NoSuchElementException();
+            }
+
+            private void populateStash() {
+                if (stash != null || done)
+                    return;
+                try {
+                    stash = deserialize(streamReader, type);
+                } catch (NoSuchElementException ignore) {
+                    done = true;
                 }
-                return deserialize(streamReader, type);
             }
         };
     }
 
     @SuppressWarnings("unchecked")
     static <T> T wrap(Object map, Class<T> type) {
+        if (map == null)
+            throw new NullPointerException("A null reference cannot be used as a DynamicObject");
         Class<?> typeMetadata = Metadata.getTypeMetadata(map);
         if (typeMetadata != null && !type.equals(typeMetadata))
             throw new ClassCastException(String.format("Attempted to wrap a map tagged as %s in type %s",
