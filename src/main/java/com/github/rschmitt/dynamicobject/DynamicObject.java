@@ -140,6 +140,14 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * Specify a default reader, which is a function that will be called when any unknown reader tags are encountered.
      * The function will be passed the reader tag (as a string) and the tagged Edn element, and can return whatever it
      * wants.
+     * <p/>
+     * DynamicObject comes with a built-in default reader for unknown elements, which returns an instance of {@link
+     * com.github.rschmitt.dynamicobject.Unknown}, which simply captures the (tag, element) tuple from the Edn reader.
+     * The {@code Unknown} class is handled specially during serialization so that unknown elements can be serialized
+     * correctly; this allows unknown types to be passed through transparently.
+     * <p/>
+     * To disable the default reader, call {@code DynamicObject.setDefaultReader(null)}. This will cause the reader to
+     * throw an exception if unknown reader tags are encountered.
      */
     static <T> void setDefaultReader(BiFunction<String, Object, T> reader) {
         DynamicObjects.setDefaultReader(reader);

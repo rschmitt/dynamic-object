@@ -24,10 +24,19 @@ import static java.lang.String.format;
 
 public class DynamicObjects {
     private static final AtomicReference<Object> translators = new AtomicReference<>(EmptyMap);
-    private static final AtomicReference<AFn> defaultReader = new AtomicReference<>(null);
+    private static final AtomicReference<AFn> defaultReader = new AtomicReference<>(getUnknownReader());
     private static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
     private static final Object EOF = Clojure.read(":eof");
+
+    private static AFn getUnknownReader() {
+        String clojureCode = format(
+                "(defmethod print-method %s [o, ^java.io.Writer w]" +
+                        "(com.github.rschmitt.dynamicobject.Unknown/serialize o w))",
+                Unknown.class.getTypeName());
+        Eval.invoke(ReadString.invoke(clojureCode));
+        return wrapReaderFunction(Unknown::new);
+    }
 
     static String serialize(Object obj) {
         StringWriter stringWriter = new StringWriter();
@@ -175,12 +184,15 @@ public class DynamicObjects {
             defaultReader.set(null);
             return;
         }
-        AFn wrappedReader = new AFn() {
+        defaultReader.set(wrapReaderFunction(reader));
+    }
+
+    private static <T> AFn wrapReaderFunction(BiFunction<String, Object, T> reader) {
+        return new AFn() {
             @Override
             public Object invoke(Object arg1, Object arg2) {
                 return reader.apply(arg1.toString(), arg2);
             }
         };
-        defaultReader.set(wrappedReader);
     }
 }
