@@ -12,7 +12,7 @@ import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
-import static com.github.rschmitt.dynamicobject.ClojureStuff.Meta;
+import static com.github.rschmitt.dynamicobject.Reflection.*;
 import static java.lang.String.format;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
@@ -70,18 +70,18 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private Object invokeBuilderMethod(Method method, Object[] args) {
-        if (Reflection.isMetadataBuilder(method))
-            return assocMeta(method.getName(), args[0]);
-        Object key = Reflection.getKeyForBuilder(method);
+        Object key = getKeyForBuilder(method);
+        if (isMetadataBuilder(method))
+            return assocMeta(key, args[0]);
         return assoc(key, Conversions.javaToClojure(args[0]));
     }
 
     private Object invokeGetterMethod(Method method) {
         String methodName = method.getName();
-        if (Reflection.isMetadataGetter(method))
-            return getMetadataFor(methodName);
+        if (isMetadataGetter(method))
+            return getMetadataFor(getKeyForGetter(method));
         Object value = getAndCacheValueFor(method);
-        if (value == null && Reflection.isRequired(method))
+        if (value == null && isRequired(method))
             throw new NullPointerException(format("Required field %s was null", methodName));
         return value;
     }
@@ -131,7 +131,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return DynamicObject.wrap(Assoc.invoke(map, key, value), type);
     }
 
-    private Object assocMeta(String key, Object value) {
+    private Object assocMeta(Object key, Object value) {
         return DynamicObject.wrap(VaryMeta.invoke(map, Assoc, key, value), type);
     }
 
@@ -139,7 +139,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return method.getReturnType().equals(type) && method.getParameterCount() == 1;
     }
 
-    private Object getMetadataFor(String key) {
+    private Object getMetadataFor(Object key) {
         Object meta = Meta.invoke(map);
         return Get.invoke(meta, key);
     }

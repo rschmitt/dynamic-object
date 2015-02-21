@@ -22,6 +22,16 @@ public class CustomKeyTest {
         assertEquals("a-sample-value", object.sampleString());
         assertEquals(object, newInstance(StringInterface.class).sampleString("a-sample-value"));
     }
+
+    @Test
+    public void customBuilderSupport() {
+        String edn = "{:element \"a string\"}";
+
+        CustomBuilder expected = deserialize(edn, CustomBuilder.class);
+        CustomBuilder actual = newInstance(CustomBuilder.class).withElement("a string");
+
+        assertEquals(expected, actual);
+    }
 }
 
 interface KeywordInterface extends DynamicObject<KeywordInterface> {
@@ -34,4 +44,9 @@ interface StringInterface extends DynamicObject<StringInterface> {
     @Key("a-sample-string") String sampleString();
 
     StringInterface sampleString(String sampleString);
+}
+
+interface CustomBuilder extends DynamicObject<CustomBuilder> {
+    @Key(":element") String getElement();
+    @Key(":element") CustomBuilder withElement(String element);
 }

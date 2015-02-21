@@ -45,23 +45,27 @@ class Reflection {
     static boolean isMetadataBuilder(Method method) {
         if (method.getParameterCount() != 1)
             return false;
+        if (hasAnnotation(method, Meta.class))
+            return true;
+        if (hasAnnotation(method, Key.class))
+            return false;
         Method correspondingGetter = getCorrespondingGetter(method);
         return hasAnnotation(correspondingGetter, Meta.class);
     }
 
     static Object getKeyForGetter(Method method) {
         Key annotation = getMethodAnnotation(method, Key.class);
-        String keyName = method.getName();
-        if (annotation == null) {
-            return cachedRead(":" + keyName);
-        } else {
-            keyName = annotation.value();
-            if (keyName.charAt(0) == ':') {
-                return cachedRead(keyName);
-            } else {
-                return keyName;
-            }
-        }
+        if (annotation == null)
+            return stringToKey(":" + method.getName());
+        else
+            return stringToKey(annotation.value());
+    }
+
+    private static Object stringToKey(String keyName) {
+        if (keyName.charAt(0) == ':')
+            return cachedRead(keyName);
+        else
+            return keyName;
     }
 
     @SuppressWarnings("unchecked")
@@ -73,7 +77,11 @@ class Reflection {
     }
 
     static Object getKeyForBuilder(Method method) {
-        return getKeyForGetter(getCorrespondingGetter(method));
+        Key annotation = getMethodAnnotation(method, Key.class);
+        if (annotation == null)
+            return getKeyForGetter(getCorrespondingGetter(method));
+        else
+            return stringToKey(annotation.value());
     }
 
     private static Method getCorrespondingGetter(Method builderMethod) {
@@ -82,7 +90,7 @@ class Reflection {
             Method correspondingGetter = type.getMethod(builderMethod.getName());
             return correspondingGetter;
         } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException("Builder methods must have a corresponding getter method.", ex);
+            throw new IllegalStateException("Builder methods must have a corresponding getter method or a @Key annotation.", ex);
         }
     }
 

@@ -21,6 +21,22 @@ public class MetadataTest {
     }
 
     @Test
+    public void buildersWithCustomNames() {
+        AnnotatedData annotatedData = AnnotatedData.withSource("SQS");
+        assertEquals("SQS", annotatedData.source());
+    }
+
+    @Test
+    public void customKeys() {
+        CustomAnnotatedData annotatedData = DynamicObject.newInstance(CustomAnnotatedData.class);
+
+        annotatedData = annotatedData.setSource("Azure");
+
+        assertEquals("{}", DynamicObject.serialize(annotatedData));
+        assertEquals("Azure", annotatedData.getSource());
+    }
+
+    @Test
     public void metadataIsNotSerialized() {
         AnnotatedData annotatedData = AnnotatedData.source("DynamoDB");
         assertEquals("{:value \"regular data\"}", DynamicObject.serialize(annotatedData));
@@ -36,4 +52,10 @@ public class MetadataTest {
 interface AnnotatedData extends DynamicObject<AnnotatedData> {
     @Meta String source();
     AnnotatedData source(String meta);
+    @Meta @Key(":source") AnnotatedData withSource(String meta);
+}
+
+interface CustomAnnotatedData extends DynamicObject<CustomAnnotatedData> {
+    @Meta @Key(":source") String getSource();
+    @Meta @Key(":source") CustomAnnotatedData setSource(String source);
 }
