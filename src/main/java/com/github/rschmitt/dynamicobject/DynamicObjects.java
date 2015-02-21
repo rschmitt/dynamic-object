@@ -59,13 +59,13 @@ public class DynamicObjects {
         return (T) obj;
     }
 
-    static <T extends DynamicObject<T>> Stream<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
+    static <T> Stream<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
         Iterator<T> iterator = deserializeStreamToIterator(streamReader, type);
         Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.IMMUTABLE);
         return StreamSupport.stream(spliterator, false);
     }
 
-    private static <T extends DynamicObject<T>> Iterator<T> deserializeStreamToIterator(PushbackReader streamReader, Class<T> type) {
+    private static <T> Iterator<T> deserializeStreamToIterator(PushbackReader streamReader, Class<T> type) {
         return new Iterator<T>() {
             private T stash = null;
             private boolean done = false;

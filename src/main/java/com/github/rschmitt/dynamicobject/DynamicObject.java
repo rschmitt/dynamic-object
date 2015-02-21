@@ -84,9 +84,9 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     }
 
     /**
-     * Lazily deserialize a stream of top-level Edn elements as the given DynamicObject type.
+     * Lazily deserialize a stream of top-level Edn elements as the given type.
      */
-    static <T extends DynamicObject<T>> Stream<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
+    static <T> Stream<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
         return DynamicObjects.deserializeStream(streamReader, type);
     }
 
