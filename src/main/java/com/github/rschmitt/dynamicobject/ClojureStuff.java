@@ -11,6 +11,7 @@ class ClojureStuff {
     static final Object EmptyVector = read("[]");
     static final Object Type = read(":type");
     static final Object Readers = read(":readers");
+    static final Object Default = read(":default");
 
     static final IFn Assoc = var("clojure.core", "assoc");
     static final IFn AssocBang = var("clojure.core", "assoc!");

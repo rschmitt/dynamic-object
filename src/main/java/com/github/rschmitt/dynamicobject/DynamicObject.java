@@ -3,6 +3,7 @@ package com.github.rschmitt.dynamicobject;
 import java.io.PushbackReader;
 import java.io.Writer;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
 public interface DynamicObject<T extends DynamicObject<T>> {
@@ -133,5 +134,14 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      */
     static <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
         DynamicObjects.deregisterTag(type);
+    }
+
+    /**
+     * Specify a default reader, which is a function that will be called when any unknown reader tags are encountered.
+     * The function will be passed the reader tag (as a string) and the tagged Edn element, and can return whatever it
+     * wants.
+     */
+    static <T> void setDefaultReader(BiFunction<String, Object, T> reader) {
+        DynamicObjects.setDefaultReader(reader);
     }
 }

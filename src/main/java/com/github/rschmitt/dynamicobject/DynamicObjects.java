@@ -1,6 +1,7 @@
 package com.github.rschmitt.dynamicobject;
 
 import clojure.java.api.Clojure;
+import clojure.lang.AFn;
 
 import java.io.IOException;
 import java.io.PushbackReader;
@@ -13,6 +14,8 @@ import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -21,6 +24,7 @@ import static java.lang.String.format;
 
 public class DynamicObjects {
     private static volatile Object readers = EmptyMap;
+    private static final AtomicReference<AFn> defaultReader = new AtomicReference<>(null);
     private static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
     private static final Object EOF = Clojure.read(":eof");
@@ -49,7 +53,7 @@ public class DynamicObjects {
 
     @SuppressWarnings("unchecked")
     static <T> T deserialize(PushbackReader streamReader, Class<T> type) {
-        Object opts = getReadersAsOptions();
+        Object opts = getReadOptions();
         opts = Assoc.invoke(opts, EOF, EOF);
         Object obj = Read.invoke(opts, streamReader);
         if (EOF.equals(obj))
@@ -145,8 +149,13 @@ public class DynamicObjects {
         RemoveMethod.invoke(PrintMethod, dispatchVal);
     }
 
-    private static Object getReadersAsOptions() {
-        return Assoc.invoke(EmptyMap, Readers, readers);
+    private static Object getReadOptions() {
+        Object map = Assoc.invoke(EmptyMap, Readers, readers);
+        AFn defaultReader = DynamicObjects.defaultReader.get();
+        if (defaultReader != null) {
+            map = Assoc.invoke(map, Default, defaultReader);
+        }
+        return map;
     }
 
     @SuppressWarnings("unused")
@@ -159,5 +168,19 @@ public class DynamicObjects {
         String clojureCode = format("(defmethod print-method %s [o, ^java.io.Writer w] (com.github.rschmitt.dynamicobject.%s o w \"%s\"))",
                 dispatchVal, method, arg);
         Eval.invoke(ReadString.invoke(clojureCode));
+    }
+
+    static <T> void setDefaultReader(BiFunction<String, Object, T> reader) {
+        if (reader == null) {
+            defaultReader.set(null);
+            return;
+        }
+        AFn wrappedReader = new AFn() {
+            @Override
+            public Object invoke(Object arg1, Object arg2) {
+                return reader.apply(arg1.toString(), arg2);
+            }
+        };
+        defaultReader.set(wrappedReader);
     }
 }
