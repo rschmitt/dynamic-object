@@ -23,7 +23,7 @@ import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 import static java.lang.String.format;
 
 public class DynamicObjects {
-    private static volatile Object readers = EmptyMap;
+    private static final AtomicReference<Object> readers = new AtomicReference<>(EmptyMap);
     private static final AtomicReference<AFn> defaultReader = new AtomicReference<>(null);
     private static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
@@ -122,27 +122,27 @@ public class DynamicObjects {
     static synchronized <T> void registerType(Class<T> type, EdnTranslator<T> translator) {
         EdnTranslatorAdapter<T> adapter = new EdnTranslatorAdapter<>(translator);
         translatorCache.put(type, adapter);
-        readers = Assoc.invoke(readers, cachedRead(translator.getTag()), adapter);
+        readers.getAndUpdate(readers -> Assoc.invoke(readers, cachedRead(translator.getTag()), adapter));
         defineMultimethod(type.getTypeName(), "DynamicObjects/invokeWriter", translator.getTag());
     }
 
     @SuppressWarnings("unchecked")
     static synchronized <T> void deregisterType(Class<T> type) {
         EdnTranslatorAdapter<T> adapter = (EdnTranslatorAdapter<T>) translatorCache.get(type);
-        readers = Dissoc.invoke(readers, cachedRead(adapter.getTag()));
+        readers.getAndUpdate(readers -> Dissoc.invoke(readers, cachedRead(adapter.getTag())));
         RemoveMethod.invoke(PrintMethod, adapter);
         translatorCache.remove(type);
     }
 
     static synchronized <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
         recordTagCache.put(type, tag);
-        readers = Assoc.invoke(readers, cachedRead(tag), new RecordReader<>(type));
+        readers.getAndUpdate(readers -> Assoc.invoke(readers, cachedRead(tag), new RecordReader<>(type)));
         defineMultimethod(":" + type.getTypeName(), "RecordPrinter/printRecord", tag);
     }
 
     static synchronized <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
         String tag = recordTagCache.get(type);
-        readers = Dissoc.invoke(readers, cachedRead(tag));
+        readers.getAndUpdate(readers -> Dissoc.invoke(readers, cachedRead(tag)));
         recordTagCache.remove(type);
 
         Object dispatchVal = cachedRead(":" + type.getTypeName());
@@ -150,7 +150,7 @@ public class DynamicObjects {
     }
 
     private static Object getReadOptions() {
-        Object map = Assoc.invoke(EmptyMap, Readers, readers);
+        Object map = Assoc.invoke(EmptyMap, Readers, readers.get());
         AFn defaultReader = DynamicObjects.defaultReader.get();
         if (defaultReader != null) {
             map = Assoc.invoke(map, Default, defaultReader);
@@ -160,7 +160,7 @@ public class DynamicObjects {
 
     @SuppressWarnings("unused")
     public static Object invokeWriter(Object obj, Writer writer, String tag) {
-        EdnTranslatorAdapter translator = (EdnTranslatorAdapter<?>) Get.invoke(readers, cachedRead(tag));
+        EdnTranslatorAdapter translator = (EdnTranslatorAdapter<?>) Get.invoke(readers.get(), cachedRead(tag));
         return translator.invoke(obj, writer);
     }
 
