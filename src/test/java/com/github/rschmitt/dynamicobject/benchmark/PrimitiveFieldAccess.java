@@ -7,7 +7,6 @@ public class PrimitiveFieldAccess {
     private final int Iterations = 500_000;
 
     @Test
-
     public void run() {
         IntPojo intPojo = new IntPojo(1);
         FinalIntPojo finalIntPojo = new FinalIntPojo(1);
