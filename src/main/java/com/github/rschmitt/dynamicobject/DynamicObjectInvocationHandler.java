@@ -4,12 +4,14 @@ import clojure.lang.AFn;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 import static com.github.rschmitt.dynamicobject.Reflection.*;
@@ -22,6 +24,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private final Object map;
     private final Class<T> type;
     private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
+    private static final ConcurrentMap<Method, MethodHandle> methodHandleCache = new ConcurrentHashMap<>();
 
     DynamicObjectInvocationHandler(Object map, Class<T> type) {
         this.map = map;
@@ -145,14 +148,25 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
-        Class<?> declaringClass = method.getDeclaringClass();
-        Constructor<MethodHandles.Lookup> lookupConstructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
-        lookupConstructor.setAccessible(true);
-        int TRUSTED = -1;
-        return lookupConstructor.newInstance(declaringClass, TRUSTED)
-                .unreflectSpecial(method, declaringClass)
+        return getMethodHandle(method)
                 .bindTo(proxy)
                 .invokeWithArguments(args);
+    }
+
+    private MethodHandle getMethodHandle(Method method) {
+        return methodHandleCache.computeIfAbsent(method, DynamicObjectInvocationHandler::createMethodHandle);
+    }
+
+    private static MethodHandle createMethodHandle(Method method) {
+        try {
+            Class<?> declaringClass = method.getDeclaringClass();
+            Constructor<MethodHandles.Lookup> lookupConstructor = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class, int.class);
+            lookupConstructor.setAccessible(true);
+            int TRUSTED = -1;
+            return lookupConstructor.newInstance(declaringClass, TRUSTED).unreflectSpecial(method, declaringClass);
+        } catch (ReflectiveOperationException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private Object getValueFor(Method method) {
