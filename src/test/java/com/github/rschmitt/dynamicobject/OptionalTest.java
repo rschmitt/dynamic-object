@@ -33,6 +33,15 @@ public class OptionalTest {
     }
 
     @Test
+    public void nonOptionalBuilder() {
+        OptWrapper nothing = newInstance(OptWrapper.class).rawStr(null).validate();
+        OptWrapper some = newInstance(OptWrapper.class).rawStr("some string").validate();
+
+        assertEquals(some.rawStr(), Optional.of("some string"));
+        assertEquals(nothing.rawStr(), Optional.empty());
+    }
+
+    @Test
     public void intPresent() {
         OptWrapper instance = deserialize("{:i 24601}", OptWrapper.class).validate();
         OptWrapper expected = newInstance(OptWrapper.class).i(Optional.of(24601)).validate();
@@ -99,4 +108,7 @@ interface OptWrapper extends DynamicObject<OptWrapper> {
     OptWrapper ints(Optional<List<Integer>> ints);
     OptWrapper inst(Optional<Instant> inst);
     OptWrapper wrapper(Optional<OptWrapper> wrapper);
+
+    Optional<String> rawStr();
+    OptWrapper rawStr(String str);
 }
