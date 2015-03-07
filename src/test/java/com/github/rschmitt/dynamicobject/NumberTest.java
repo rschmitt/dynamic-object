@@ -1,5 +1,6 @@
 package com.github.rschmitt.dynamicobject;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -9,6 +10,11 @@ import static com.github.rschmitt.dynamicobject.DynamicObject.*;
 import static org.junit.Assert.assertEquals;
 
 public class NumberTest {
+    @Before
+    public void setup() {
+        DynamicObjects.registerTag(ArbitraryPrecision.class, "ap");
+    }
+
     @Test
     public void BigDecimal() {
         String edn = "{:bigDecimal 3.14159M}";
@@ -17,6 +23,7 @@ public class NumberTest {
 
         assertEquals(edn, serialize(arbitraryPrecision));
         assertEquals(newInstance(ArbitraryPrecision.class).bigDecimal(new BigDecimal("3.14159")), arbitraryPrecision);
+        binaryRoundTrip(arbitraryPrecision);
     }
 
     @Test
@@ -27,6 +34,12 @@ public class NumberTest {
 
         assertEquals(edn, serialize(arbitraryPrecision));
         assertEquals(newInstance(ArbitraryPrecision.class).bigInteger(new BigInteger("9234812039419082756912384500123")), arbitraryPrecision);
+        binaryRoundTrip(arbitraryPrecision);
+    }
+
+    private void binaryRoundTrip(Object expected) {
+        Object actual = fromFressianByteArray(toFressianByteArray(expected));
+        assertEquals(expected, actual);
     }
 }
 

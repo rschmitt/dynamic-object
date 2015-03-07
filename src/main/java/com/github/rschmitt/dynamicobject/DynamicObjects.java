@@ -2,6 +2,7 @@ package com.github.rschmitt.dynamicobject;
 
 import clojure.java.api.Clojure;
 import clojure.lang.AFn;
+import clojure.lang.BigInt;
 import clojure.lang.Keyword;
 import org.fressian.FressianReader;
 import org.fressian.FressianWriter;
@@ -13,6 +14,7 @@ import org.fressian.impl.MapLookup;
 
 import java.io.*;
 import java.lang.reflect.Proxy;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,6 +47,16 @@ public class DynamicObjects {
             String ns = (String) r.readObject();
             String name = (String) r.readObject();
             return Keyword.intern(ns, name);
+        });
+
+        Handlers.installHandler(fressianWriteHandlers, BigInt.class, "bigint", (w, instance) -> {
+            w.writeTag("bigint", 1);
+            w.writeBytes(((BigInt) instance).toBigInteger().toByteArray());
+        });
+
+        fressianReadHandlers.put("bigint", (r, tag, componentCount) -> {
+            BigInteger bigInteger = new BigInteger((byte[]) r.readObject());
+            return Bigint.invoke(bigInteger);
         });
     }
 
