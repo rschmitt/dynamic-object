@@ -1,13 +1,11 @@
 package com.github.rschmitt.dynamicobject;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Random;
-import java.util.Set;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
@@ -22,6 +20,20 @@ public class CollectionsTest {
     private static final Random Random = new Random();
     private static final Base64.Encoder Encoder = Base64.getEncoder();
 
+    @Before
+    public void setup() {
+        DynamicObject.registerTag(ListSchema.class, "ls");
+        DynamicObject.registerTag(MapSchema.class, "ms");
+        DynamicObject.registerTag(SetSchema.class, "ss");
+    }
+
+    @After
+    public void teardown() {
+        DynamicObject.deregisterTag(ListSchema.class);
+        DynamicObject.deregisterTag(MapSchema.class);
+        DynamicObject.deregisterTag(SetSchema.class);
+    }
+
     @Test
     public void listOfStrings() {
         ListSchema listSchema = deserialize("{:strings [\"one\" \"two\" \"three\"]}", ListSchema.class);
@@ -29,6 +41,7 @@ public class CollectionsTest {
         assertEquals("one", stringList.get(0));
         assertEquals("two", stringList.get(1));
         assertEquals("three", stringList.get(2));
+        binaryRoundTrip(listSchema);
     }
 
     // This is just here to prove a point about Java<->Clojure interop.
@@ -42,6 +55,7 @@ public class CollectionsTest {
         assertEquals(3, collect.get(0).intValue());
         assertEquals(3, collect.get(1).intValue());
         assertEquals(5, collect.get(2).intValue());
+        binaryRoundTrip(listSchema);
     }
 
     @Test
@@ -52,6 +66,7 @@ public class CollectionsTest {
         assertTrue(stringSet.contains("one"));
         assertTrue(stringSet.contains("two"));
         assertTrue(stringSet.contains("three"));
+        binaryRoundTrip(setSchema);
     }
 
     @Test
@@ -60,6 +75,7 @@ public class CollectionsTest {
         MapSchema mapSchema = deserialize(edn, MapSchema.class);
         assertEquals("value", mapSchema.dictionary().get("key"));
         assertEquals(1, mapSchema.dictionary().size());
+        binaryRoundTrip(mapSchema);
     }
 
     @Test
@@ -71,6 +87,8 @@ public class CollectionsTest {
 
         assertEquals(builtList, deserialized.ints());
         assertEquals(builtList, built.ints());
+        binaryRoundTrip(built);
+        binaryRoundTrip(deserialized);
     }
 
     @Test
@@ -83,6 +101,8 @@ public class CollectionsTest {
 
         assertEquals(builtMap, deserialized.ints());
         assertEquals(builtMap, built.ints());
+        binaryRoundTrip(deserialized);
+        binaryRoundTrip(built);
     }
 
     @Test
@@ -92,6 +112,7 @@ public class CollectionsTest {
         ListSchema listSchema = newInstance(ListSchema.class).strings(strings);
 
         assertEquals(strings, listSchema.strings());
+        binaryRoundTrip(listSchema);
     }
 
     @Test
@@ -102,6 +123,12 @@ public class CollectionsTest {
 
         assertEquals(map.size(), mapSchema.dictionary().size());
         assertEquals(map, mapSchema.dictionary());
+        binaryRoundTrip(mapSchema);
+    }
+
+    private void binaryRoundTrip(Object expected) {
+        Object actual = DynamicObject.fromFressianByteArray(DynamicObject.toFressianByteArray(expected));
+        assertEquals(expected, actual);
     }
 
     private static String string() {

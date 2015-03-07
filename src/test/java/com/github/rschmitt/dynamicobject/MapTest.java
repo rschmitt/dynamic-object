@@ -2,11 +2,14 @@ package com.github.rschmitt.dynamicobject;
 
 import clojure.lang.EdnReader;
 import clojure.lang.PersistentHashMap;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static java.lang.String.format;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -14,11 +17,22 @@ public class MapTest {
     static final String SimpleEdn = "{:str \"expected value\", :i 4, :d 3.14}";
     static final String NestedEdn = format("{:version 1, :simple %s}", SimpleEdn);
 
+    @Before
+    public void setup() {
+        DynamicObject.registerTag(EmptyObject.class, "eo");
+    }
+
+    @After
+    public void teardown() {
+        DynamicObject.deregisterTag(EmptyObject.class);
+    }
+
     @Test
     public void getMapReturnsBackingMap() {
         EmptyObject object = deserialize(NestedEdn, EmptyObject.class);
         Object map = EdnReader.readString(NestedEdn, PersistentHashMap.EMPTY);
         assertEquals(map, object.getMap());
+        binaryRoundTrip(object);
     }
 
     @Test
@@ -26,6 +40,8 @@ public class MapTest {
         EmptyObject obj1 = deserialize(SimpleEdn, EmptyObject.class);
         EmptyObject obj2 = deserialize(NestedEdn, EmptyObject.class);
         assertFalse(obj1.equals(obj2));
+        binaryRoundTrip(obj1);
+        binaryRoundTrip(obj2);
     }
 
     @Test
@@ -33,6 +49,11 @@ public class MapTest {
         EmptyObject nestedObj = deserialize(NestedEdn, EmptyObject.class);
         String actualEdn = serialize(nestedObj);
         assertEquals(NestedEdn, actualEdn);
+    }
+
+    private void binaryRoundTrip(Object expected) {
+        Object actual = DynamicObject.fromFressianByteArray(DynamicObject.toFressianByteArray(expected));
+        assertEquals(expected, actual);
     }
 
     public interface EmptyObject extends DynamicObject<EmptyObject> {
