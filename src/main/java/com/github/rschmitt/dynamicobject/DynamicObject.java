@@ -122,7 +122,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     /**
      * Deserialize and return the Fressian-encoded object in {@code bytes}.
      */
-    static Object fromFressianByteArray(byte[] bytes) {
+    static <T> T fromFressianByteArray(byte[] bytes) {
         return DynamicObjects.fromFressianByteArray(bytes);
     }
 
@@ -146,6 +146,14 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      */
     static <T> void registerType(Class<T> type, EdnTranslator<T> translator) {
         DynamicObjects.registerType(type, translator);
+    }
+
+    /**
+     * Register a {@link org.fressian.handlers.ReadHandler} and {@link org.fressian.handlers.WriteHandler} to enable
+     * instances of {@code type} to be serialized to and deserialized from Fressian data.
+     */
+    static void registerType(Class type, String tag, ReadHandler readHandler, WriteHandler writeHandler) {
+        DynamicObjects.registerType(type, tag, readHandler, writeHandler);
     }
 
     /**

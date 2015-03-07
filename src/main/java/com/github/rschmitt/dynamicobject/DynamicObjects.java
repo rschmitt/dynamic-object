@@ -27,6 +27,7 @@ public class DynamicObjects {
     private static final AtomicReference<Object> translators = new AtomicReference<>(EmptyMap);
     private static final AtomicReference<AFn> defaultReader = new AtomicReference<>(getUnknownReader());
     private static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, String> binaryTagCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class, Map<String, WriteHandler>> fressianWriteHandlers = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Object, ReadHandler> fressianReadHandlers = new ConcurrentHashMap<>();
@@ -154,12 +155,25 @@ public class DynamicObjects {
         definePrintMethod(type.getTypeName(), "DynamicObjects/invokeWriter", translator.getTag());
     }
 
+    static synchronized void registerType(Class type, String tag, ReadHandler readHandler, WriteHandler writeHandler) {
+        binaryTagCache.put(type, tag);
+        Handlers.installHandler(fressianWriteHandlers, type, tag, writeHandler);
+        fressianReadHandlers.putIfAbsent(tag, readHandler);
+    }
+
     @SuppressWarnings("unchecked")
     static synchronized <T> void deregisterType(Class<T> type) {
         EdnTranslatorAdapter<T> adapter = (EdnTranslatorAdapter<T>) translatorCache.get(type);
         translators.getAndUpdate(translators -> Dissoc.invoke(translators, cachedRead(adapter.getTag())));
         RemoveMethod.invoke(PrintMethod, adapter);
         translatorCache.remove(type);
+
+        fressianWriteHandlers.remove(type);
+        String tag = binaryTagCache.get(type);
+        if (tag != null) {
+            fressianReadHandlers.remove(tag);
+            binaryTagCache.remove(type);
+        }
     }
 
     static synchronized <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
@@ -251,7 +265,7 @@ public class DynamicObjects {
         return baos.toByteArray();
     }
 
-    public static Object fromFressianByteArray(byte[] bytes) {
+    public static <T> T fromFressianByteArray(byte[] bytes) {
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         return DynamicObject.deserializeFromFressian(bais);
     }

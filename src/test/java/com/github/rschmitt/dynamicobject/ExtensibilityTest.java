@@ -1,37 +1,45 @@
 package com.github.rschmitt.dynamicobject;
 
+import org.fressian.Reader;
+import org.fressian.Writer;
+import org.fressian.handlers.ReadHandler;
+import org.fressian.handlers.WriteHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
-import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.*;
 import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
 
-public class TaggedReaderTest {
+public class ExtensibilityTest {
     private static final String Edn = "{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}";
 
     @Before
     public void setup() {
         DynamicObject.registerType(DumbClass.class, new DumbClassTranslator());
+        DynamicObject.registerTag(DumbClassHolder.class, "dh");
+        DynamicObject.registerType(DumbClass.class, "dumb", new DumbClassReader(), new DumbClassWriter());
     }
 
     @After
     public void teardown() {
         DynamicObject.deregisterType(DumbClass.class);
+        DynamicObject.deregisterTag(DumbClassHolder.class);
     }
 
     @Test
     public void roundTrip() {
-        DumbClassHolder holder = DynamicObject.deserialize(Edn, DumbClassHolder.class);
+        DumbClassHolder holder = deserialize(Edn, DumbClassHolder.class);
 
         String serialized = serialize(holder);
 
         assertEquals(Edn, serialized);
         assertEquals(new DumbClass(1, "str"), holder.dumb().get(0));
+        assertEquals(holder, fromFressianByteArray(toFressianByteArray(holder)));
     }
 
     @Test
@@ -54,7 +62,7 @@ public class TaggedReaderTest {
 
     @Test
     public void prettyPrint() {
-        DumbClassHolder holder = DynamicObject.deserialize(Edn, DumbClassHolder.class);
+        DumbClassHolder holder = deserialize(Edn, DumbClassHolder.class);
         String expectedFormattedString = format("{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}%n");
         assertEquals(expectedFormattedString, holder.toFormattedString());
     }
@@ -100,6 +108,23 @@ class DumbClassTranslator implements EdnTranslator<DumbClass> {
 
         DumbClassProxy version(long version);
         DumbClassProxy str(String str);
+    }
+}
+
+class DumbClassReader implements ReadHandler {
+    @Override
+    public Object read(Reader r, Object tag, int componentCount) throws IOException {
+        return new DumbClass(r.readInt(), (String) r.readObject());
+    }
+}
+
+class DumbClassWriter implements WriteHandler {
+    @Override
+    public void write(Writer w, Object instance) throws IOException {
+        DumbClass dumb = (DumbClass) instance;
+        w.writeTag("dumb", 2);
+        w.writeInt(dumb.getVersion());
+        w.writeObject(dumb.getStr());
     }
 }
 
