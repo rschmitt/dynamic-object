@@ -21,9 +21,9 @@ public class RecursionTest {
         LinkedList middle = newInstance(LinkedList.class).value(2).next(tail);
         LinkedList head = newInstance(LinkedList.class).value(1).next(middle);
 
-        roundTrip(tail);
-        roundTrip(middle);
-        roundTrip(head);
+        roundTrip(tail, false);
+        roundTrip(middle, false);
+        roundTrip(head, false);
 
         assertEquals(1, head.value());
         assertEquals(2, head.next().value());
@@ -43,9 +43,9 @@ public class RecursionTest {
         LinkedList middle = newInstance(LinkedList.class).value(2).next(tail);
         LinkedList head = newInstance(LinkedList.class).value(1).next(middle);
 
-        roundTrip(tail);
-        roundTrip(middle);
-        roundTrip(head);
+        roundTrip(tail, true);
+        roundTrip(middle, true);
+        roundTrip(head, true);
         assertEquals("#LinkedList{:value 3}", serialize(tail));
         assertEquals("#LinkedList{:next #LinkedList{:value 3}, :value 2}", serialize(middle));
         assertEquals("#LinkedList{:next #LinkedList{:next #LinkedList{:value 3}, :value 2}, :value 1}", serialize(head));
@@ -59,9 +59,9 @@ public class RecursionTest {
 
         DynamicObject.registerTag(LinkedList.class, "LinkedList");
 
-        roundTrip(tail);
-        roundTrip(middle);
-        roundTrip(head);
+        roundTrip(tail, true);
+        roundTrip(middle, true);
+        roundTrip(head, true);
         assertEquals("#LinkedList{:value 3}", serialize(tail));
         assertEquals("#LinkedList{:next #LinkedList{:value 3}, :value 2}", serialize(middle));
         assertEquals("#LinkedList{:next #LinkedList{:next #LinkedList{:value 3}, :value 2}, :value 1}", serialize(head));
@@ -77,9 +77,9 @@ public class RecursionTest {
 
         DynamicObject.deregisterTag(LinkedList.class);
 
-        roundTrip(tail);
-        roundTrip(middle);
-        roundTrip(head);
+        roundTrip(tail, false);
+        roundTrip(middle, false);
+        roundTrip(head, false);
 
         assertEquals("{:next {:next {:value 3}, :value 2}, :value 1}", serialize(head));
         assertEquals("{:next {:value 3}, :value 2}", serialize(middle));
@@ -103,8 +103,10 @@ public class RecursionTest {
         assertEquals(DynamicObject.serialize(obj1), DynamicObject.serialize(obj2));
     }
 
-    private void roundTrip(LinkedList linkedList) {
+    private void roundTrip(LinkedList linkedList, boolean binary) {
         assertEquals(linkedList, deserialize(serialize(linkedList), LinkedList.class));
+        if (binary)
+            assertEquals(linkedList, fromFressianByteArray(toFressianByteArray(linkedList)));
     }
 }
 
