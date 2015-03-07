@@ -1,5 +1,10 @@
 package com.github.rschmitt.dynamicobject;
 
+import org.fressian.handlers.ReadHandler;
+import org.fressian.handlers.WriteHandler;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PushbackReader;
 import java.io.Writer;
 import java.util.Map;
@@ -92,6 +97,36 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     }
 
     /**
+     * Serialize the {@code o} to {@code os}, using the Fressian binary serialization format. A Fressian footer
+     * (containing an Adler32 checksum of the data) will be written, and the supplied OutputStream will be closed.
+     */
+    static void serializeToFressian(Object o, OutputStream os) {
+        DynamicObjects.serializeToFressian(o, os);
+    }
+
+    /**
+     * Read a Fressian-serialized object from the supplied InputStream. After the object is read, the Fressian footer
+     * will be validated and {@code is} will be closed.
+     */
+    static <T> T deserializeFromFressian(InputStream is) {
+        return DynamicObjects.deserializeFromFressian(is);
+    }
+
+    /**
+     * Serialize {@code o} to binary Fressian data.
+     */
+    static byte[] toFressianByteArray(Object o) {
+        return DynamicObjects.toFressianByteArray(o);
+    }
+
+    /**
+     * Deserialize and return the Fressian-encoded object in {@code bytes}.
+     */
+    static Object fromFressianByteArray(byte[] bytes) {
+        return DynamicObjects.fromFressianByteArray(bytes);
+    }
+
+    /**
      * Use the supplied {@code map} to back an instance of {@code type}.
      */
     static <T extends DynamicObject<T>> T wrap(Object map, Class<T> type) {
@@ -151,5 +186,23 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      */
     static <T> void setDefaultReader(BiFunction<String, Object, T> reader) {
         DynamicObjects.setDefaultReader(reader);
+    }
+
+    /**
+     * Obtain a Fressian {@link org.fressian.handlers.ReadHandler} for the specified DynamicObject {@code type}. This
+     * is only recommended if you want to roll your own {@link org.fressian.FressianReader} for maximum flexibility.
+     * Otherwise, it is recommended to use {@link #fromFressianByteArray} or {@link #deserializeFromFressian} instead.
+     */
+    static <T extends DynamicObject<T>> ReadHandler getFressianReadHandler(String tag, Class<T> type) {
+        return new FressianReadHandler(type, tag);
+    }
+
+    /**
+     * Obtain a Fressian {@link org.fressian.handlers.WriteHandler} for the specified DynamicObject {@code type}. This
+     * is only recommended if you want to roll your own {@link org.fressian.FressianWriter} for maximum flexibility.
+     * Otherwise, it is recommended to use {@link #toFressianByteArray} or {@link #serializeToFressian} instead.
+     */
+    static <T extends DynamicObject<T>> WriteHandler getFressianWriteHandler(String tag, Class<T> type) {
+        return new FressianWriteHandler(type, tag);
     }
 }

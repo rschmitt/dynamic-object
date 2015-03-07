@@ -2,17 +2,18 @@ package com.github.rschmitt.dynamicobject;
 
 import clojure.java.api.Clojure;
 import clojure.lang.AFn;
+import clojure.lang.Keyword;
+import org.fressian.FressianReader;
+import org.fressian.FressianWriter;
+import org.fressian.handlers.ReadHandler;
+import org.fressian.handlers.WriteHandler;
+import org.fressian.impl.Handlers;
+import org.fressian.impl.InheritanceLookup;
+import org.fressian.impl.MapLookup;
 
-import java.io.IOException;
-import java.io.PushbackReader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Proxy;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
@@ -27,7 +28,24 @@ public class DynamicObjects {
     private static final AtomicReference<AFn> defaultReader = new AtomicReference<>(getUnknownReader());
     private static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class, Map<String, WriteHandler>> fressianWriteHandlers = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Object, ReadHandler> fressianReadHandlers = new ConcurrentHashMap<>();
     private static final Object EOF = Clojure.read(":eof");
+
+    static {
+        Handlers.installHandler(fressianWriteHandlers, Keyword.class, "key", (w, instance) -> {
+            Keyword keyword = (Keyword) instance;
+            w.writeTag("key", 2);
+            w.writeObject(keyword.getNamespace(), true);
+            w.writeObject(keyword.getName(), true);
+        });
+
+        fressianReadHandlers.put("key", (r, tag, componentCount) -> {
+            String ns = (String) r.readObject();
+            String name = (String) r.readObject();
+            return Keyword.intern(ns, name);
+        });
+    }
 
     private static AFn getUnknownReader() {
         String clojureCode = format(
@@ -148,6 +166,9 @@ public class DynamicObjects {
         recordTagCache.put(type, tag);
         translators.getAndUpdate(translators -> Assoc.invoke(translators, cachedRead(tag), new RecordReader<>(type)));
         definePrintMethod(":" + type.getTypeName(), "RecordPrinter/printRecord", tag);
+
+        Handlers.installHandler(fressianWriteHandlers, type, tag, DynamicObject.getFressianWriteHandler(tag, type));
+        fressianReadHandlers.putIfAbsent(tag, DynamicObject.getFressianReadHandler(tag, type));
     }
 
     static synchronized <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
@@ -157,6 +178,9 @@ public class DynamicObjects {
 
         Object dispatchVal = cachedRead(":" + type.getTypeName());
         RemoveMethod.invoke(PrintMethod, dispatchVal);
+
+        fressianWriteHandlers.remove(type);
+        fressianReadHandlers.remove(tag);
     }
 
     private static Object getReadOptions() {
@@ -195,5 +219,40 @@ public class DynamicObjects {
                 return reader.apply(arg1.toString(), arg2);
             }
         };
+    }
+
+    static void serializeToFressian(Object o, OutputStream os) {
+        FressianWriter fressianWriter = new FressianWriter(os, new InheritanceLookup<>(new MapLookup<>(fressianWriteHandlers)));
+        try {
+            fressianWriter.writeObject(o);
+            fressianWriter.writeFooter();
+            fressianWriter.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    static <T> T deserializeFromFressian(InputStream is) {
+        FressianReader fressianReader = new FressianReader(is, new MapLookup<>(fressianReadHandlers));
+        try {
+            Object o = fressianReader.readObject();
+            fressianReader.validateFooter();
+            fressianReader.close();
+            return (T) o;
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public static byte[] toFressianByteArray(Object o) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DynamicObject.serializeToFressian(o, baos);
+        return baos.toByteArray();
+    }
+
+    public static Object fromFressianByteArray(byte[] bytes) {
+        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        return DynamicObject.deserializeFromFressian(bais);
     }
 }
