@@ -1,9 +1,5 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.lang.AFn;
-
-import java.io.StringWriter;
-import java.io.Writer;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -23,12 +19,14 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
     private final Object map;
     private final Class<T> type;
+    private final DynamicObjectInstance instance;
     private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
     private static final ConcurrentMap<Method, MethodHandle> methodHandleCache = new ConcurrentHashMap<>();
 
     DynamicObjectInvocationHandler(Object map, Class<T> type) {
         this.map = map;
         this.type = type;
+        this.instance = new DynamicObjectInstance<>(map, type);
     }
 
     @Override
@@ -46,18 +44,15 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             return invokeBuilderMethod(method, args);
 
         switch (methodName) {
-            case "getMap": return map;
-            case "getType": return type;
-            case "toString": return map.toString();
-            case "hashCode": return map.hashCode();
-            case "prettyPrint": return Pprint.invoke(map);
-            case "toFormattedString":
-                Writer w = new StringWriter();
-                Pprint.invoke(map, w);
-                return w.toString();
-            case "merge": return merge((DynamicObject<T>) args[0]);
-            case "intersect": return intersect((DynamicObject<T>) args[0]);
-            case "subtract": return subtract((DynamicObject<T>) args[0]);
+            case "getMap": return instance.getMap();
+            case "getType": return instance.getType();
+            case "toString": return instance.toString();
+            case "hashCode": return instance.hashCode();
+            case "prettyPrint": instance.prettyPrint(); return null;
+            case "toFormattedString": return instance.toFormattedString();
+            case "merge": return instance.merge((DynamicObject<T>) args[0]);
+            case "intersect": return instance.intersect((DynamicObject<T>) args[0]);
+            case "subtract": return instance.subtract((DynamicObject<T>) args[0]);
             case "validate":
                 Validation.validateInstance(type, this::getAndCacheValueFor, this::getRawValueFor);
                 return proxy;
@@ -76,7 +71,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         Object key = getKeyForBuilder(method);
         if (isMetadataBuilder(method))
             return assocMeta(key, args[0]);
-        return assoc(key, Conversions.javaToClojure(args[0]));
+        return instance.assoc(key, Conversions.javaToClojure(args[0]));
     }
 
     private Object invokeGetterMethod(Method method) {
@@ -87,32 +82,6 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (value == null && isRequired(method))
             throw new NullPointerException(format("Required field %s was null", methodName));
         return value;
-    }
-
-    private Object intersect(DynamicObject<T> arg) {
-        return diff(arg, 2);
-    }
-
-    private Object subtract(DynamicObject<T> arg) {
-        return diff(arg, 0);
-    }
-
-    private Object diff(DynamicObject<T> arg, int idx) {
-        Object array = Diff.invoke(map, arg.getMap());
-        Object union = Nth.invoke(array, idx);
-        if (union == null) union = EmptyMap;
-        union = Metadata.withTypeMetadata(union, type);
-        return DynamicObject.wrap(union, type);
-    }
-
-    private T merge(DynamicObject<T> other) {
-        AFn ignoreNulls = new AFn() {
-            public Object invoke(Object arg1, Object arg2) {
-                return (arg2 == null) ? arg1 : arg2;
-            }
-        };
-        Object mergedMap = MergeWith.invoke(ignoreNulls, map, other.getMap());
-        return DynamicObject.wrap(mergedMap, type);
     }
 
     @SuppressWarnings("unchecked")
@@ -128,12 +97,6 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return value;
     }
 
-    private T assoc(Object key, Object value) {
-        if (value instanceof DynamicObject)
-            value = ((DynamicObject) value).getMap();
-        return DynamicObject.wrap(Assoc.invoke(map, key, value), type);
-    }
-
     private Object assocMeta(Object key, Object value) {
         return DynamicObject.wrap(VaryMeta.invoke(map, Assoc, key, value), type);
     }
@@ -145,6 +108,17 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private Object getMetadataFor(Object key) {
         Object meta = Meta.invoke(map);
         return Get.invoke(meta, key);
+    }
+
+    private Object getValueFor(Method method) {
+        Object val = getRawValueFor(method);
+        Type genericReturnType = method.getGenericReturnType();
+        return Conversions.clojureToJava(val, genericReturnType);
+    }
+
+    private Object getRawValueFor(Method method) {
+        Object key = Reflection.getKeyForGetter(method);
+        return instance.invokeGetter(key);
     }
 
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
@@ -167,16 +141,5 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         } catch (ReflectiveOperationException ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    private Object getValueFor(Method method) {
-        Object val = getRawValueFor(method);
-        Type genericReturnType = method.getGenericReturnType();
-        return Conversions.clojureToJava(val, genericReturnType);
-    }
-
-    private Object getRawValueFor(Method method) {
-        Object key = Reflection.getKeyForGetter(method);
-        return Get.invoke(map, key);
     }
 }
