@@ -87,20 +87,20 @@ public class SchemaCollectionTest {
         T actual = deserialize(edn, type);
         assertEquals(obj, actual);
     }
-}
 
-interface Coll extends DynamicObject<Coll> {
-    List<X> list();
-    Set<X> set();
-    Map<X, X> map();
+    public interface Coll extends DynamicObject<Coll> {
+        List<X> list();
+        Set<X> set();
+        Map<X, X> map();
 
-    Coll list(List<X> list);
-    Coll set(Set<X> set);
-    Coll map(Map<X, X> map);
-}
+        Coll list(List<X> list);
+        Coll set(Set<X> set);
+        Coll map(Map<X, X> map);
+    }
 
-interface X extends DynamicObject<X> {
-    int y();
+    public interface X extends DynamicObject<X> {
+        int y();
 
-    X y(int y);
+        X y(int y);
+    }
 }

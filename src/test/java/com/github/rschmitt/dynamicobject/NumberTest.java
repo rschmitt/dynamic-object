@@ -41,12 +41,12 @@ public class NumberTest {
         Object actual = fromFressianByteArray(toFressianByteArray(expected));
         assertEquals(expected, actual);
     }
-}
 
-interface ArbitraryPrecision extends DynamicObject<ArbitraryPrecision> {
-    BigDecimal bigDecimal();
-    BigInteger bigInteger();
+    public interface ArbitraryPrecision extends DynamicObject<ArbitraryPrecision> {
+        BigDecimal bigDecimal();
+        BigInteger bigInteger();
 
-    ArbitraryPrecision bigDecimal(BigDecimal bigDecimal);
-    ArbitraryPrecision bigInteger(BigInteger bigInteger);
+        ArbitraryPrecision bigDecimal(BigDecimal bigDecimal);
+        ArbitraryPrecision bigInteger(BigInteger bigInteger);
+    }
 }

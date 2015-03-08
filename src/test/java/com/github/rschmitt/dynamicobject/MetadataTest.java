@@ -47,15 +47,15 @@ public class MetadataTest {
         AnnotatedData withMetadata = AnnotatedData.source("Datomic");
         assertEquals(AnnotatedData, withMetadata);
     }
-}
 
-interface AnnotatedData extends DynamicObject<AnnotatedData> {
-    @Meta String source();
-    AnnotatedData source(String meta);
-    @Meta @Key(":source") AnnotatedData withSource(String meta);
-}
+    public interface AnnotatedData extends DynamicObject<AnnotatedData> {
+        @Meta String source();
+        AnnotatedData source(String meta);
+        @Meta @Key(":source") AnnotatedData withSource(String meta);
+    }
 
-interface CustomAnnotatedData extends DynamicObject<CustomAnnotatedData> {
-    @Meta @Key(":source") String getSource();
-    @Meta @Key(":source") CustomAnnotatedData setSource(String source);
+    public interface CustomAnnotatedData extends DynamicObject<CustomAnnotatedData> {
+        @Meta @Key(":source") String getSource();
+        @Meta @Key(":source") CustomAnnotatedData setSource(String source);
+    }
 }

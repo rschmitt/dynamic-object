@@ -25,11 +25,11 @@ public class MethodHandleTest {
         T instance = deserialize(edn, type);
         return receiptHandleMetadataBuilder.apply(instance, ReceiptHandle);
     }
-}
 
-interface QueueMessage extends DynamicObject<QueueMessage> {
-    String command();
+    public interface QueueMessage extends DynamicObject<QueueMessage> {
+        String command();
 
-    @Meta UUID receiptHandle();
-    QueueMessage receiptHandle(UUID receiptHandle);
+        @Meta UUID receiptHandle();
+        QueueMessage receiptHandle(UUID receiptHandle);
+    }
 }

@@ -69,16 +69,16 @@ public class NestingTest {
         assertEquals(outerMap, nested.nestedMaps());
         assertEquals("{:nestedMaps {1 {1 2}}}", serialize(nested));
     }
-}
 
-interface Nested extends DynamicObject<Nested> {
-    List<List<String>> nestedStrings();
-    List<List<Integer>> nestedIntegers();
-    List<Set<Short>> nestedShorts();
-    Map<Integer, Map<Integer, Integer>> nestedMaps();
+    public interface Nested extends DynamicObject<Nested> {
+        List<List<String>> nestedStrings();
+        List<List<Integer>> nestedIntegers();
+        List<Set<Short>> nestedShorts();
+        Map<Integer, Map<Integer, Integer>> nestedMaps();
 
-    Nested nestedStrings(List<List<String>> strings);
-    Nested nestedIntegers(List<List<Integer>> integers);
-    Nested nestedShorts(List<Set<Short>> nestedShorts);
-    Nested nestedMaps(Map<Integer, Map<Integer, Integer>> nestedMaps);
+        Nested nestedStrings(List<List<String>> strings);
+        Nested nestedIntegers(List<List<Integer>> integers);
+        Nested nestedShorts(List<Set<Short>> nestedShorts);
+        Nested nestedMaps(Map<Integer, Map<Integer, Integer>> nestedMaps);
+    }
 }

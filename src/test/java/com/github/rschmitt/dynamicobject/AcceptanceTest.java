@@ -53,6 +53,26 @@ public class AcceptanceTest {
     private String randomString() {
         return randomUUID().toString().substring(0, 8);
     }
+
+    public interface DocumentPointer extends DynamicObject<DocumentPointer> {
+        String location();
+
+        DocumentPointer location(String location);
+    }
+
+    public interface Document extends DynamicObject<Document> {
+        UUID uuid();
+        String name();
+        Date date();
+        Set<Path> paths();
+        @Key(":document-pointer") DocumentPointer documentPointer();
+
+        Document uuid(UUID uuid);
+        Document name(String name);
+        Document date(Date date);
+        Document paths(Set<Path> paths);
+        Document documentPointer(DocumentPointer documentPointer);
+    }
 }
 
 class Path {
@@ -127,24 +147,4 @@ class PathTranslator implements EdnTranslator<Path> {
     public String getTag() {
         return "Path";
     }
-}
-
-interface DocumentPointer extends DynamicObject<DocumentPointer> {
-    String location();
-
-    DocumentPointer location(String location);
-}
-
-interface Document extends DynamicObject<Document> {
-    UUID uuid();
-    String name();
-    Date date();
-    Set<Path> paths();
-    @Key(":document-pointer") DocumentPointer documentPointer();
-
-    Document uuid(UUID uuid);
-    Document name(String name);
-    Document date(Date date);
-    Document paths(Set<Path> paths);
-    Document documentPointer(DocumentPointer documentPointer);
 }

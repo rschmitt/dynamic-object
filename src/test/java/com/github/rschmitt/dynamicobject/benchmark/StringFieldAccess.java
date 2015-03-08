@@ -53,12 +53,12 @@ public class StringFieldAccess {
         long timeInMillis = (endTime - startTime) / 1000000;
         System.out.println(String.format("%s: %,d ms", desc, timeInMillis));
     }
-}
 
-interface StringField extends DynamicObject<StringField> {
-    String str();
+    public interface StringField extends DynamicObject<StringField> {
+        String str();
 
-    StringField str(String str);
+        StringField str(String str);
+    }
 }
 
 class StringPojo {

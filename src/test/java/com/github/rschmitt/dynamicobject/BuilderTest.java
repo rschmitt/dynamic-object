@@ -36,21 +36,20 @@ public class BuilderTest {
         Buildable obj = DynamicObject.newInstance(Buildable.class).str(null);
         assertEquals("{:str nil}", DynamicObject.serialize(obj));
     }
-}
 
+    public interface Buildable extends DynamicObject<Buildable> {
+        String str();
+        int i();
+        long l();
+        short s();
+        float f();
+        double d();
 
-interface Buildable extends DynamicObject<Buildable> {
-    String str();
-    int i();
-    long l();
-    short s();
-    float f();
-    double d();
-
-    Buildable str(String str);
-    Buildable i(int i);
-    Buildable l(long l);
-    Buildable s(short s);
-    Buildable f(float f);
-    Buildable d(double d);
+        Buildable str(String str);
+        Buildable i(int i);
+        Buildable l(long l);
+        Buildable s(short s);
+        Buildable f(float f);
+        Buildable d(double d);
+    }
 }

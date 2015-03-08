@@ -95,12 +95,12 @@ public class DiffTest {
         assertNull(diff.list().get(1));
         assertEquals(Integer.valueOf(1), diff.list().get(2));
     }
-}
 
-interface Diffable extends DynamicObject<Diffable> {
-    String a();
-    String b();
-    Diffable d();
-    Set<Integer> set();
-    List<Integer> list();
+    public interface Diffable extends DynamicObject<Diffable> {
+        String a();
+        String b();
+        Diffable d();
+        Set<Integer> set();
+        List<Integer> list();
+    }
 }

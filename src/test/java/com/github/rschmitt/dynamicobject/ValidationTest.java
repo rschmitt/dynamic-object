@@ -41,7 +41,6 @@ public class ValidationTest {
         assertNull(noRequiredFields.s(null).validate().s());
     }
 
-
     @Test
     public void validationSuccessful() {
         validationSuccess("#R{:x 1, :y 2}", RequiredFields.class);
@@ -186,75 +185,76 @@ public class ValidationTest {
         T instance = deserialize(edn, type).validate();
         Assert.assertEquals(edn, serialize(instance));
     }
-}
 
-interface NoRequiredFields extends DynamicObject<NoRequiredFields> {
-    String s();
-    NoRequiredFields s(String s);
-}
 
-interface RequiredFields extends DynamicObject<RequiredFields> {
-    @Required int x();
-    @Required int y();
+    public interface NoRequiredFields extends DynamicObject<NoRequiredFields> {
+        String s();
+        NoRequiredFields s(String s);
+    }
 
-    int z();
-}
+    public interface RequiredFields extends DynamicObject<RequiredFields> {
+        @Required int x();
+        @Required int y();
 
-interface RequiredBoxedFields extends DynamicObject<RequiredBoxedFields> {
-    @Required Integer x();
-}
+        int z();
+    }
 
-interface Mismatch extends DynamicObject<Mismatch> {
-    @Key(":required-string") @Required String requiredString();
-    @Key(":optional-string") String optionalString();
-}
+    public interface RequiredBoxedFields extends DynamicObject<RequiredBoxedFields> {
+        @Required Integer x();
+    }
 
-interface Inner extends DynamicObject<Inner> {
-    @Required int x();
-}
+    public interface Mismatch extends DynamicObject<Mismatch> {
+        @Key(":required-string") @Required String requiredString();
+        @Key(":optional-string") String optionalString();
+    }
 
-interface Outer extends DynamicObject<Outer> {
-    @Required Inner inner();
-}
+    public interface Inner extends DynamicObject<Inner> {
+        @Required int x();
+    }
 
-interface ListContainer extends DynamicObject<ListContainer> {
-    List<BigInteger> list();
-    List<Inner> inner();
-}
+    public interface Outer extends DynamicObject<Outer> {
+        @Required Inner inner();
+    }
 
-interface CompoundLists extends DynamicObject<CompoundLists> {
-    List<String> strings();
-    List<Integer> ints();
-    List rawList();
-    List<?> wildcardList();
-    List<List<String>> listOfListOfStrings();
-}
+    public interface ListContainer extends DynamicObject<ListContainer> {
+        List<BigInteger> list();
+        List<Inner> inner();
+    }
 
-interface CompoundSets extends DynamicObject<CompoundSets> {
-    Set<String> strings();
-    Set<Integer> ints();
-    Set rawSet();
-    Set<?> wildcardSet();
-    Set<Set<String>> setOfSetOfStrings();
-}
+    public interface CompoundLists extends DynamicObject<CompoundLists> {
+        List<String> strings();
+        List<Integer> ints();
+        List rawList();
+        List<?> wildcardList();
+        List<List<String>> listOfListOfStrings();
+    }
 
-interface CompoundMaps extends DynamicObject<CompoundMaps> {
-    Map<String, String> strings();
-    Map rawMap();
-    Map<?, String> wildcardKey();
-    Map<String, ?> wildcardValue();
-    Map<String, Map<String, String>> nestedGenericMaps();
-    Map<Integer, Map<Integer, Float>> nestedNumericMaps();
-}
+    public interface CompoundSets extends DynamicObject<CompoundSets> {
+        Set<String> strings();
+        Set<Integer> ints();
+        Set rawSet();
+        Set<?> wildcardSet();
+        Set<Set<String>> setOfSetOfStrings();
+    }
 
-interface Custom extends DynamicObject<Custom> {
-    @Required int oddsOnly();
-    @Required int required();
+    public interface CompoundMaps extends DynamicObject<CompoundMaps> {
+        Map<String, String> strings();
+        Map rawMap();
+        Map<?, String> wildcardKey();
+        Map<String, ?> wildcardValue();
+        Map<String, Map<String, String>> nestedGenericMaps();
+        Map<Integer, Map<Integer, Float>> nestedNumericMaps();
+    }
 
-    @Override
-    default Custom validate() {
-        if (oddsOnly() % 2 == 0)
-            throw new IllegalStateException("Odd number expected");
-        return this;
+    public interface Custom extends DynamicObject<Custom> {
+        @Required int oddsOnly();
+        @Required int required();
+
+        @Override
+        default Custom validate() {
+            if (oddsOnly() % 2 == 0)
+                throw new IllegalStateException("Odd number expected");
+            return this;
+        }
     }
 }

@@ -22,22 +22,22 @@ public class CustomMethodTest {
         CustomMethod obj = DynamicObject.newInstance(CustomMethod.class).customWither(4);
         assertEquals("4", obj.callIntoGetter());
     }
-}
 
-interface CustomMethod extends DynamicObject<CustomMethod> {
-    String str();
+    public interface CustomMethod extends DynamicObject<CustomMethod> {
+        String str();
 
-    CustomMethod str(String str);
+        CustomMethod str(String str);
 
-    default String customMethod() {
-        return "asdf";
-    }
+        default String customMethod() {
+            return "asdf";
+        }
 
-    default String callIntoGetter() {
-        return str();
-    }
+        default String callIntoGetter() {
+            return str();
+        }
 
-    default CustomMethod customWither(int x) {
-        return str(String.valueOf(x));
+        default CustomMethod customWither(int x) {
+            return str(String.valueOf(x));
+        }
     }
 }

@@ -43,12 +43,12 @@ public class RecordTest {
 
         DynamicObject.deserialize(edn, Random.class);
     }
-}
 
-interface Defrecord extends DynamicObject<Defrecord> {
-    String str();
-}
+    public interface Defrecord extends DynamicObject<Defrecord> {
+        String str();
+    }
 
-interface Random extends DynamicObject<Random> {
-    String str();
+    public interface Random extends DynamicObject<Random> {
+        String str();
+    }
 }

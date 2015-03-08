@@ -74,11 +74,11 @@ public class ExtensibilityTest {
         assertEquals("25", serialize(25));
         assertEquals("\"asdf\"", serialize("asdf"));
     }
-}
 
-// This is a DynamicObject that contains a regular POJO.
-interface DumbClassHolder extends DynamicObject<DumbClassHolder> {
-    List<DumbClass> dumb();
+    // This is a DynamicObject that contains a regular POJO.
+    public interface DumbClassHolder extends DynamicObject<DumbClassHolder> {
+        List<DumbClass> dumb();
+    }
 }
 
 // This is a translation class that functions as an Edn reader/writer for its associated POJO.
@@ -102,7 +102,7 @@ class DumbClassTranslator implements EdnTranslator<DumbClass> {
         return "MyDumbClass"; // This is deliberately different from the class name.
     }
 
-    interface DumbClassProxy extends DynamicObject<DumbClassProxy> {
+    public interface DumbClassProxy extends DynamicObject<DumbClassProxy> {
         long version();
         String str();
 

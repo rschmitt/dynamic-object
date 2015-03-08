@@ -56,9 +56,9 @@ public class MergeTest {
 
         assertEquals("#M{:m #M{:a \"inner\"}, :a \"outer\"}", DynamicObject.serialize(c));
     }
-}
 
-interface Mergeable extends DynamicObject<Mergeable> {
-    String a();
-    Mergeable m();
+    public interface Mergeable extends DynamicObject<Mergeable> {
+        String a();
+        Mergeable m();
+    }
 }

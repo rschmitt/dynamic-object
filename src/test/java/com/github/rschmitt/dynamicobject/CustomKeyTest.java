@@ -32,21 +32,21 @@ public class CustomKeyTest {
 
         assertEquals(expected, actual);
     }
-}
 
-interface KeywordInterface extends DynamicObject<KeywordInterface> {
-    @Key(":a-sample-int") int aSampleInt();
+    public interface KeywordInterface extends DynamicObject<KeywordInterface> {
+        @Key(":a-sample-int") int aSampleInt();
 
-    KeywordInterface aSampleInt(int aSampleInt);
-}
+        KeywordInterface aSampleInt(int aSampleInt);
+    }
 
-interface StringInterface extends DynamicObject<StringInterface> {
-    @Key("a-sample-string") String sampleString();
+    public interface StringInterface extends DynamicObject<StringInterface> {
+        @Key("a-sample-string") String sampleString();
 
-    StringInterface sampleString(String sampleString);
-}
+        StringInterface sampleString(String sampleString);
+    }
 
-interface CustomBuilder extends DynamicObject<CustomBuilder> {
-    @Key(":element") String getElement();
-    @Key(":element") CustomBuilder withElement(String element);
+    public interface CustomBuilder extends DynamicObject<CustomBuilder> {
+        @Key(":element") String getElement();
+        @Key(":element") CustomBuilder withElement(String element);
+    }
 }

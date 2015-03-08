@@ -54,13 +54,12 @@ public class PrimitiveFieldAccess {
         long timeInMillis = (endTime - startTime) / 1000000;
         System.out.println(String.format("%s: %,d ms", desc, timeInMillis));
     }
-}
 
+    public interface IntField extends DynamicObject<IntField> {
+        int i();
 
-interface IntField extends DynamicObject<IntField> {
-    int i();
-
-    IntField i(int i);
+        IntField i(int i);
+    }
 }
 
 class IntPojo {

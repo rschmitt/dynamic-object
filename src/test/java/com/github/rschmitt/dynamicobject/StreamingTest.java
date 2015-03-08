@@ -67,8 +67,8 @@ public class StreamingTest {
     public void nilTest() {
         deserializeStream(new PushbackReader(new StringReader("nil")), StreamingType.class).collect(toList());
     }
-}
 
-interface StreamingType extends DynamicObject<StreamingType> {
-    int x();
+    public interface StreamingType extends DynamicObject<StreamingType> {
+        int x();
+    }
 }

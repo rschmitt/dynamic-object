@@ -136,24 +136,24 @@ public class CollectionsTest {
         Random.nextBytes(buf);
         return Encoder.encodeToString(buf);
     }
-}
 
-interface ListSchema extends DynamicObject<ListSchema> {
-    List<String> strings();
-    List<Integer> ints();
+    public interface ListSchema extends DynamicObject<ListSchema> {
+        List<String> strings();
+        List<Integer> ints();
 
-    ListSchema strings(List<String> strings);
-    ListSchema ints(List<Integer> ints);
-}
+        ListSchema strings(List<String> strings);
+        ListSchema ints(List<Integer> ints);
+    }
 
-interface SetSchema extends DynamicObject<SetSchema> {
-    Set<String> strings();
-}
+    public interface SetSchema extends DynamicObject<SetSchema> {
+        Set<String> strings();
+    }
 
-interface MapSchema extends DynamicObject<MapSchema> {
-    Map<String, String> dictionary();
-    Map<Integer, Integer> ints();
+    public interface MapSchema extends DynamicObject<MapSchema> {
+        Map<String, String> dictionary();
+        Map<Integer, Integer> ints();
 
-    MapSchema dictionary(Map<String, String> dictionary);
-    MapSchema ints(Map<Integer, Integer> ints);
+        MapSchema dictionary(Map<String, String> dictionary);
+        MapSchema ints(Map<Integer, Integer> ints);
+    }
 }

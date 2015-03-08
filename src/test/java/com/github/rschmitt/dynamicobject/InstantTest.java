@@ -49,12 +49,12 @@ public class InstantTest {
         assertEquals(expected, timeWrapper.instant());
         assertEquals(edn, serialize(timeWrapper));
     }
-}
 
-interface TimeWrapper extends DynamicObject<TimeWrapper> {
-    Date date();
-    Instant instant();
+    public interface TimeWrapper extends DynamicObject<TimeWrapper> {
+        Date date();
+        Instant instant();
 
-    TimeWrapper date(Date date);
-    TimeWrapper instant(Instant instant);
+        TimeWrapper date(Date date);
+        TimeWrapper instant(Instant instant);
+    }
 }

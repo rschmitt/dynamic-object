@@ -94,21 +94,21 @@ public class OptionalTest {
     public void optionalValidationFailure() {
         deserialize("{:str 4}", OptWrapper.class).validate();
     }
-}
 
-interface OptWrapper extends DynamicObject<OptWrapper> {
-    Optional<String> str();
-    Optional<Integer> i();
-    Optional<List<Integer>> ints();
-    Optional<Instant> inst();
-    Optional<OptWrapper> wrapper();
+    public interface OptWrapper extends DynamicObject<OptWrapper> {
+        Optional<String> str();
+        Optional<Integer> i();
+        Optional<List<Integer>> ints();
+        Optional<Instant> inst();
+        Optional<OptWrapper> wrapper();
 
-    OptWrapper str(Optional<String> str);
-    OptWrapper i(Optional<Integer> i);
-    OptWrapper ints(Optional<List<Integer>> ints);
-    OptWrapper inst(Optional<Instant> inst);
-    OptWrapper wrapper(Optional<OptWrapper> wrapper);
+        OptWrapper str(Optional<String> str);
+        OptWrapper i(Optional<Integer> i);
+        OptWrapper ints(Optional<List<Integer>> ints);
+        OptWrapper inst(Optional<Instant> inst);
+        OptWrapper wrapper(Optional<OptWrapper> wrapper);
 
-    Optional<String> rawStr();
-    OptWrapper rawStr(String str);
+        Optional<String> rawStr();
+        OptWrapper rawStr(String str);
+    }
 }
