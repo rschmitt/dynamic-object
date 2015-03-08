@@ -4,6 +4,7 @@ import clojure.java.api.Clojure;
 import clojure.lang.AFn;
 import clojure.lang.BigInt;
 import clojure.lang.Keyword;
+import net.fushizen.invokedynamic.proxy.DynamicProxy;
 import org.fressian.FressianReader;
 import org.fressian.FressianWriter;
 import org.fressian.handlers.ReadHandler;
@@ -17,6 +18,7 @@ import java.lang.reflect.Proxy;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
@@ -33,6 +35,7 @@ public class DynamicObjects {
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class, Map<String, WriteHandler>> fressianWriteHandlers = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Object, ReadHandler> fressianReadHandlers = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Class, DynamicProxy> proxyCache = new ConcurrentHashMap<>();
     private static final Object EOF = Clojure.read(":eof");
 
     static {
@@ -150,10 +153,26 @@ public class DynamicObjects {
         if (typeMetadata != null && !type.equals(typeMetadata))
             throw new ClassCastException(String.format("Attempted to wrap a map tagged as %s in type %s",
                     typeMetadata.getSimpleName(), type.getSimpleName()));
-        DynamicObjectInstance instance = new DynamicObjectInstance(map, type);
-        return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
-                new Class<?>[]{type},
-                new DynamicObjectInvocationHandler(instance));
+        try {
+            T t = (T) proxyCache.computeIfAbsent(type, DynamicObjects::createProxy).constructor().invoke();
+            DynamicObjectInstance i = (DynamicObjectInstance) t;
+            i.map = map;
+            i.type = type;
+            return t;
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
+    }
+
+    static DynamicProxy createProxy(Class dynamicObjectType) {
+        try {
+            return DynamicProxy.builder().withInterfaces(dynamicObjectType)
+                    .withSuperclass(DynamicObjectInstance.class)
+                    .withInvocationHandler(new InvokeDynamicInvocationHandler(dynamicObjectType))
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
