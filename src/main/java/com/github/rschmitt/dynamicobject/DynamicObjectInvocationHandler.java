@@ -9,11 +9,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static com.github.rschmitt.dynamicobject.Reflection.*;
-import static java.lang.String.format;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
-    private final DynamicObjectInstance instance;
     private static final ConcurrentMap<Method, MethodHandle> methodHandleCache = new ConcurrentHashMap<>();
+
+    private final DynamicObjectInstance instance;
 
     DynamicObjectInvocationHandler(Object map, Class<T> type) {
         this.instance = new DynamicObjectInstance<>(map, type);
@@ -26,7 +26,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
         if (method.isDefault()) {
             if (methodName.equals("validate"))
-                Validation.validateInstance(instance, this::getAndCacheValueFor);
+                instance.validate((T) proxy);
             return invokeDefaultMethod(proxy, method, args);
         }
 
@@ -40,16 +40,18 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             case "hashCode": return instance.hashCode();
             case "prettyPrint": instance.prettyPrint(); return null;
             case "toFormattedString": return instance.toFormattedString();
-            case "merge": return instance.merge((DynamicObject<T>) args[0]);
-            case "intersect": return instance.intersect((DynamicObject<T>) args[0]);
-            case "subtract": return instance.subtract((DynamicObject<T>) args[0]);
-            case "validate":
-                Validation.validateInstance(instance, this::getAndCacheValueFor);
-                return proxy;
+            case "merge": return instance.merge((T) args[0]);
+            case "intersect": return instance.intersect((T) args[0]);
+            case "subtract": return instance.subtract((T) args[0]);
+            case "validate": return instance.validate((T) proxy);
             case "equals": return instance.equals(args[0]);
             default:
                 return invokeGetterMethod(method);
         }
+    }
+
+    private boolean isBuilderMethod(Method method) {
+        return method.getReturnType().equals(instance.getType()) && method.getParameterCount() == 1;
     }
 
     private Object invokeBuilderMethod(Method method, Object[] args) {
@@ -60,22 +62,11 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     }
 
     private Object invokeGetterMethod(Method method) {
-        String methodName = method.getName();
         if (isMetadataGetter(method))
             return instance.getMetadataFor(getKeyForGetter(method));
-        Object value = getAndCacheValueFor(method);
-        if (value == null && isRequired(method))
-            throw new NullPointerException(format("Required field %s was null", methodName));
-        return value;
-    }
-
-    private Object getAndCacheValueFor(Method method) {
         Object key = Reflection.getKeyForGetter(method);
-        return instance.getAndCacheValueFor(key, method.getGenericReturnType());
-    }
-
-    private boolean isBuilderMethod(Method method) {
-        return method.getReturnType().equals(instance.getType()) && method.getParameterCount() == 1;
+        boolean isRequired = isRequired(method);
+        return instance.invokeGetter(key, isRequired, method.getGenericReturnType());
     }
 
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {

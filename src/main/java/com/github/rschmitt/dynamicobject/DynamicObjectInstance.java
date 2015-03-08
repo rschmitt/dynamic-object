@@ -9,8 +9,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
+import static java.lang.String.format;
 
-public class DynamicObjectInstance<T extends DynamicObject<T>> {
+class DynamicObjectInstance<T extends DynamicObject<T>> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
@@ -18,7 +19,7 @@ public class DynamicObjectInstance<T extends DynamicObject<T>> {
     private volatile Class<T> type;
     private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
 
-    public DynamicObjectInstance(Object map, Class<T> type) {
+    DynamicObjectInstance(Object map, Class<T> type) {
         this.map = map;
         this.type = type;
     }
@@ -107,6 +108,13 @@ public class DynamicObjectInstance<T extends DynamicObject<T>> {
         return Get.invoke(meta, key);
     }
 
+    public Object invokeGetter(Object key, boolean isRequired, Type genericReturnType) {
+        Object value = getAndCacheValueFor(key, genericReturnType);
+        if (value == null && isRequired)
+            throw new NullPointerException(format("Required field %s was null", key.toString()));
+        return value;
+    }
+
     @SuppressWarnings("unchecked")
     public Object getAndCacheValueFor(Object key, Type genericReturnType) {
         Object cachedValue = valueCache.getOrDefault(key, Default);
@@ -121,11 +129,12 @@ public class DynamicObjectInstance<T extends DynamicObject<T>> {
     }
 
     public Object getValueFor(Object key, Type genericReturnType) {
-        Object val = invokeGetter(key);
+        Object val = Get.invoke(map, key);
         return Conversions.clojureToJava(val, genericReturnType);
     }
 
-    public Object invokeGetter(Object key) {
-        return Get.invoke(map, key);
+    public T validate(T self) {
+        Validation.validateInstance(this);
+        return self;
     }
 }

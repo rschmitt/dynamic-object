@@ -15,16 +15,17 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.github.rschmitt.dynamicobject.Reflection.getKeyForBuilder;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 class Validation {
-    static <T extends DynamicObject<T>> void validateInstance(
-            DynamicObjectInstance<T> instance,
-            Function<Method, Object> getter
-    ) {
+    static <T extends DynamicObject<T>> void validateInstance(DynamicObjectInstance<T> instance) {
         MethodObject<T> methodObject = new MethodObject<>();
-        methodObject.validate(instance, getter);
+        methodObject.validate(instance, m -> {
+            Object key = getKeyForBuilder(m);
+            return instance.getAndCacheValueFor(key, m.getGenericReturnType());
+        });
         Collection<Method> missingFields = methodObject.missingFields;
         Map<Method, Class<?>> mismatchedFields = methodObject.mismatchedFields;
         if (!missingFields.isEmpty() || !mismatchedFields.isEmpty())
