@@ -15,8 +15,8 @@ class DynamicObjectInstance<T extends DynamicObject<T>> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
-    private volatile Object map;
-    private volatile Class<T> type;
+    private final Object map;
+    private final Class<T> type;
     private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
 
     DynamicObjectInstance(Object map, Class<T> type) {
@@ -28,16 +28,8 @@ class DynamicObjectInstance<T extends DynamicObject<T>> {
         return (Map) map;
     }
 
-    public void setMap(Object map) {
-        this.map = map;
-    }
-
     public Class<T> getType() {
         return type;
-    }
-
-    public void setType(Class<T> type) {
-        this.type = type;
     }
 
     @Override

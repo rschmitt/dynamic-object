@@ -7,46 +7,64 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiFunction;
 
 import static com.github.rschmitt.dynamicobject.Reflection.*;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
     private static final ConcurrentMap<Method, MethodHandle> methodHandleCache = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Method, Invokee> invocationCache = new ConcurrentHashMap<>();
 
-    private final DynamicObjectInstance instance;
+    private final DynamicObjectInstance<T> instance;
 
-    DynamicObjectInvocationHandler(Object map, Class<T> type) {
-        this.instance = new DynamicObjectInstance<>(map, type);
+    DynamicObjectInvocationHandler(DynamicObjectInstance<T> instance) {
+        this.instance = instance;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        return invocationCache.computeIfAbsent(method, this::getInvocation).invoke(instance, proxy, args);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Invokee getInvocation(Method method) {
         String methodName = method.getName();
 
         if (method.isDefault()) {
-            if (methodName.equals("validate"))
-                instance.validate((T) proxy);
-            return invokeDefaultMethod(proxy, method, args);
+            if (methodName.equals("validate")) {
+                return (instance, p, a) -> {
+                    instance.validate((T) p);
+                    return invokeDefaultMethod(p, method, a);
+                };
+            }
+            return (instance, p, a) -> invokeDefaultMethod(p, method, a);
         }
 
-        if (isBuilderMethod(method))
-            return invokeBuilderMethod(method, args);
+        if (isBuilderMethod(method)) {
+            Object key = getKeyForBuilder(method);
+            if (isMetadataBuilder(method))
+                return (instance, p, a) -> instance.assocMeta(key, a[0]);
+            return (instance, p, a) -> instance.assoc(key, Conversions.javaToClojure(a[0]));
+        }
 
         switch (methodName) {
-            case "getMap": return instance.getMap();
-            case "getType": return instance.getType();
-            case "toString": return instance.toString();
-            case "hashCode": return instance.hashCode();
-            case "prettyPrint": instance.prettyPrint(); return null;
-            case "toFormattedString": return instance.toFormattedString();
-            case "merge": return instance.merge((T) args[0]);
-            case "intersect": return instance.intersect((T) args[0]);
-            case "subtract": return instance.subtract((T) args[0]);
-            case "validate": return instance.validate((T) proxy);
-            case "equals": return instance.equals(args[0]);
+            case "getMap": return (instance, p, a) -> instance.getMap();
+            case "getType": return (instance, p, a) -> instance.getType();
+            case "toString": return (instance, p, a) -> instance.toString();
+            case "hashCode": return (instance, p, a) -> instance.hashCode();
+            case "prettyPrint": return (instance, p, a) -> { instance.prettyPrint(); return null; };
+            case "toFormattedString": return (instance, p, a) -> instance.toFormattedString();
+            case "merge": return (instance, p, a) -> instance.merge((T) a[0]);
+            case "intersect": return (instance, p, a) -> instance.intersect((T) a[0]);
+            case "subtract": return (instance, p, a) -> instance.subtract((T) a[0]);
+            case "validate": return (instance, p, a) -> instance.validate((T) p);
+            case "equals": return (instance, p, a) -> instance.equals(a[0]);
             default:
-                return invokeGetterMethod(method);
+                if (isMetadataGetter(method))
+                    return (instance, p, a) -> instance.getMetadataFor(getKeyForGetter(method));
+                Object key = Reflection.getKeyForGetter(method);
+                boolean isRequired = isRequired(method);
+                return (instance, p, a) -> instance.invokeGetter(key, isRequired, method.getGenericReturnType());
         }
     }
 
@@ -54,25 +72,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         return method.getReturnType().equals(instance.getType()) && method.getParameterCount() == 1;
     }
 
-    private Object invokeBuilderMethod(Method method, Object[] args) {
-        Object key = getKeyForBuilder(method);
-        if (isMetadataBuilder(method))
-            return instance.assocMeta(key, args[0]);
-        return instance.assoc(key, Conversions.javaToClojure(args[0]));
-    }
-
-    private Object invokeGetterMethod(Method method) {
-        if (isMetadataGetter(method))
-            return instance.getMetadataFor(getKeyForGetter(method));
-        Object key = Reflection.getKeyForGetter(method);
-        boolean isRequired = isRequired(method);
-        return instance.invokeGetter(key, isRequired, method.getGenericReturnType());
-    }
-
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
-        return getMethodHandle(method)
-                .bindTo(proxy)
-                .invokeWithArguments(args);
+        return getMethodHandle(method).bindTo(proxy).invokeWithArguments(args);
     }
 
     private MethodHandle getMethodHandle(Method method) {
@@ -89,5 +90,10 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         } catch (ReflectiveOperationException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    @FunctionalInterface
+    public interface Invokee {
+        Object invoke(DynamicObjectInstance instance, Object proxy, Object[] args) throws Throwable;
     }
 }

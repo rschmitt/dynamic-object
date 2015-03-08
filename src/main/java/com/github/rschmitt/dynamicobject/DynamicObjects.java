@@ -119,9 +119,10 @@ public class DynamicObjects {
         if (typeMetadata != null && !type.equals(typeMetadata))
             throw new ClassCastException(String.format("Attempted to wrap a map tagged as %s in type %s",
                     typeMetadata.getSimpleName(), type.getSimpleName()));
+        DynamicObjectInstance instance = new DynamicObjectInstance(map, type);
         return (T) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(),
                 new Class<?>[]{type},
-                new DynamicObjectInvocationHandler(map, type));
+                new DynamicObjectInvocationHandler(instance));
     }
 
     static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
