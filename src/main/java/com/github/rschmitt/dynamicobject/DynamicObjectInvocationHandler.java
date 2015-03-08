@@ -5,27 +5,17 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 import static com.github.rschmitt.dynamicobject.Reflection.*;
 import static java.lang.String.format;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
-    private static final Object Default = new Object();
-    private static final Object Null = new Object();
-
-    private final Object map;
-    private final Class<T> type;
     private final DynamicObjectInstance instance;
-    private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
     private static final ConcurrentMap<Method, MethodHandle> methodHandleCache = new ConcurrentHashMap<>();
 
     DynamicObjectInvocationHandler(Object map, Class<T> type) {
-        this.map = map;
-        this.type = type;
         this.instance = new DynamicObjectInstance<>(map, type);
     }
 
@@ -56,12 +46,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             case "validate":
                 Validation.validateInstance(instance, this::getAndCacheValueFor);
                 return proxy;
-            case "equals":
-                Object other = args[0];
-                if (other instanceof DynamicObject)
-                    return map.equals(((DynamicObject) other).getMap());
-                else
-                    return method.invoke(map, args);
+            case "equals": return instance.equals(args[0]);
             default:
                 return invokeGetterMethod(method);
         }
@@ -70,55 +55,27 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
     private Object invokeBuilderMethod(Method method, Object[] args) {
         Object key = getKeyForBuilder(method);
         if (isMetadataBuilder(method))
-            return assocMeta(key, args[0]);
+            return instance.assocMeta(key, args[0]);
         return instance.assoc(key, Conversions.javaToClojure(args[0]));
     }
 
     private Object invokeGetterMethod(Method method) {
         String methodName = method.getName();
         if (isMetadataGetter(method))
-            return getMetadataFor(getKeyForGetter(method));
+            return instance.getMetadataFor(getKeyForGetter(method));
         Object value = getAndCacheValueFor(method);
         if (value == null && isRequired(method))
             throw new NullPointerException(format("Required field %s was null", methodName));
         return value;
     }
 
-    @SuppressWarnings("unchecked")
     private Object getAndCacheValueFor(Method method) {
-        Object cachedValue = valueCache.getOrDefault(method, Default);
-        if (cachedValue == Null) return null;
-        if (cachedValue != Default) return cachedValue;
-        Object value = getValueFor(method);
-        if (value == null)
-            valueCache.putIfAbsent(method, Null);
-        else
-            valueCache.putIfAbsent(method, value);
-        return value;
-    }
-
-    private Object assocMeta(Object key, Object value) {
-        return DynamicObject.wrap(VaryMeta.invoke(map, Assoc, key, value), type);
+        Object key = Reflection.getKeyForGetter(method);
+        return instance.getAndCacheValueFor(key, method.getGenericReturnType());
     }
 
     private boolean isBuilderMethod(Method method) {
-        return method.getReturnType().equals(type) && method.getParameterCount() == 1;
-    }
-
-    private Object getMetadataFor(Object key) {
-        Object meta = Meta.invoke(map);
-        return Get.invoke(meta, key);
-    }
-
-    private Object getValueFor(Method method) {
-        Object val = getRawValueFor(method);
-        Type genericReturnType = method.getGenericReturnType();
-        return Conversions.clojureToJava(val, genericReturnType);
-    }
-
-    private Object getRawValueFor(Method method) {
-        Object key = Reflection.getKeyForGetter(method);
-        return instance.invokeGetter(key);
+        return method.getReturnType().equals(instance.getType()) && method.getParameterCount() == 1;
     }
 
     private Object invokeDefaultMethod(Object proxy, Method method, Object[] args) throws Throwable {
