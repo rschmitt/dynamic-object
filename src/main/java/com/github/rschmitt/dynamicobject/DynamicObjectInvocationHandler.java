@@ -44,7 +44,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             Object key = getKeyForBuilder(method);
             if (isMetadataBuilder(method))
                 return (instance, p, a) -> instance.assocMeta(key, a[0]);
-            return (instance, p, a) -> instance.assoc(key, Conversions.javaToClojure(a[0]));
+            return (instance, p, a) -> instance.convertAndAssoc(key, a[0]);
         }
 
         switch (methodName) {

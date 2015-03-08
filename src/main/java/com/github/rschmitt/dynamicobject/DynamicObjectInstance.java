@@ -11,13 +11,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 import static java.lang.String.format;
 
-class DynamicObjectInstance<T extends DynamicObject<T>> {
+public class DynamicObjectInstance<T extends DynamicObject<T>> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
-    private final Object map;
-    private final Class<T> type;
+    Object map;
+    Class<T> type;
     private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
+
+    public DynamicObjectInstance() {
+    }
 
     DynamicObjectInstance(Object map, Class<T> type) {
         this.map = map;
@@ -85,6 +88,10 @@ class DynamicObjectInstance<T extends DynamicObject<T>> {
         return DynamicObject.wrap(union, type);
     }
 
+    public T convertAndAssoc(Object key, Object value) {
+        return assoc(key, Conversions.javaToClojure(value));
+    }
+
     public T assoc(Object key, Object value) {
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
@@ -128,5 +135,10 @@ class DynamicObjectInstance<T extends DynamicObject<T>> {
     public T validate(T self) {
         Validation.validateInstance(this);
         return self;
+    }
+
+    public Object $$validate() {
+        Validation.validateInstance(this);
+        return this;
     }
 }
