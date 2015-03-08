@@ -36,7 +36,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
 
         if (method.isDefault()) {
             if (methodName.equals("validate"))
-                Validation.validateInstance(type, this::getAndCacheValueFor, this::getRawValueFor);
+                Validation.validateInstance(instance, this::getAndCacheValueFor);
             return invokeDefaultMethod(proxy, method, args);
         }
 
@@ -54,7 +54,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             case "intersect": return instance.intersect((DynamicObject<T>) args[0]);
             case "subtract": return instance.subtract((DynamicObject<T>) args[0]);
             case "validate":
-                Validation.validateInstance(type, this::getAndCacheValueFor, this::getRawValueFor);
+                Validation.validateInstance(instance, this::getAndCacheValueFor);
                 return proxy;
             case "equals":
                 Object other = args[0];

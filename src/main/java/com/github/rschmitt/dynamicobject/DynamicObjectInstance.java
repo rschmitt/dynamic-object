@@ -4,6 +4,7 @@ import clojure.lang.AFn;
 
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
@@ -18,8 +19,8 @@ public class DynamicObjectInstance<T extends DynamicObject<T>> {
         this.type = type;
     }
 
-    public Object getMap() {
-        return map;
+    public Map getMap() {
+        return (Map) map;
     }
 
     public void setMap(Object map) {

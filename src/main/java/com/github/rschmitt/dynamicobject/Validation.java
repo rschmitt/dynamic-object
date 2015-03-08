@@ -20,12 +20,11 @@ import static java.util.stream.Collectors.toList;
 
 class Validation {
     static <T extends DynamicObject<T>> void validateInstance(
-            Class<T> type,
-            Function<Method, Object> getter,
-            Function<Method, Object> rawGetter
+            DynamicObjectInstance<T> instance,
+            Function<Method, Object> getter
     ) {
         MethodObject<T> methodObject = new MethodObject<>();
-        methodObject.validate(type, getter, rawGetter);
+        methodObject.validate(instance, getter);
         Collection<Method> missingFields = methodObject.missingFields;
         Map<Method, Class<?>> mismatchedFields = methodObject.mismatchedFields;
         if (!missingFields.isEmpty() || !mismatchedFields.isEmpty())
@@ -38,17 +37,17 @@ class Validation {
         private Function<Method, Object> getter;
 
         void validate(
-                Class<T> type,
-                Function<Method, Object> getter,
-                Function<Method, Object> rawGetter
+                DynamicObjectInstance<T> instance,
+                Function<Method, Object> getter
         ) {
-            Collection<Method> fields = Reflection.fieldGetters(type);
+            Collection<Method> fields = Reflection.fieldGetters(instance.getType());
             this.getter = getter;
             for (Method field : fields) {
+                Object key = Reflection.getKeyForGetter(field);
                 try {
                     validateField(field);
                 } catch (ClassCastException | AssertionError cce) {
-                    mismatchedFields.put(field, rawGetter.apply(field).getClass());
+                    mismatchedFields.put(field, instance.getMap().get(key).getClass());
                 }
             }
         }
