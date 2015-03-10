@@ -14,6 +14,7 @@ import org.fressian.impl.InheritanceLookup;
 import org.fressian.impl.MapLookup;
 
 import java.io.*;
+import java.lang.reflect.Proxy;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +37,7 @@ public class DynamicObjects {
     private static final ConcurrentHashMap<Object, ReadHandler> fressianReadHandlers = new ConcurrentHashMap<>();
     private static final ConcurrentMap<Class, DynamicProxy> proxyCache = new ConcurrentHashMap<>();
     private static final Object EOF = Clojure.read(":eof");
+    private static final boolean USE_INVOKEDYNAMIC = true;
 
     static {
         Handlers.installHandler(fressianWriteHandlers, Keyword.class, "key", (w, instance) -> {
@@ -152,6 +154,14 @@ public class DynamicObjects {
         if (typeMetadata != null && !type.equals(typeMetadata))
             throw new ClassCastException(String.format("Attempted to wrap a map tagged as %s in type %s",
                     typeMetadata.getSimpleName(), type.getSimpleName()));
+
+        if (USE_INVOKEDYNAMIC)
+            return createIndyProxy(map, type);
+        else
+            return createReflectionProxy(map, type);
+    }
+
+    private static <T> T createIndyProxy(Object map, Class<T> type) {
         try {
             T t = (T) proxyCache.computeIfAbsent(type, DynamicObjects::createProxy).constructor().invoke();
             DynamicObjectInstance i = (DynamicObjectInstance) t;
@@ -161,6 +171,22 @@ public class DynamicObjects {
         } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
         }
+    }
+
+    private static <T, U extends DynamicObject<U>> T createReflectionProxy(Object map, Class<T> type) {
+        DynamicObjectInstance<U> instance = new DynamicObjectInstance<U>() {
+            @Override
+            public U $$customValidate() {
+                return null;
+            }
+        };
+        instance.type = (Class<U>) type;
+        instance.map = map;
+        return (T) Proxy.newProxyInstance(
+                Thread.currentThread().getContextClassLoader(),
+                new Class<?>[]{type},
+                new DynamicObjectInvocationHandler<>(instance)
+        );
     }
 
     static DynamicProxy createProxy(Class dynamicObjectType) {
