@@ -163,7 +163,6 @@ public class ValidationTest {
     }
 
     @Test
-    @Ignore("This feature needs to be reworked to support invokedynamic")
     public void customValidation() {
         validationSuccess("{:oddsOnly 5, :required 0}", Custom.class);
         validationFailure("{:oddsOnly 4, :required 0}", Custom.class);

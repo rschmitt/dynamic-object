@@ -14,7 +14,6 @@ import org.fressian.impl.InheritanceLookup;
 import org.fressian.impl.MapLookup;
 
 import java.io.*;
-import java.lang.reflect.Proxy;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -166,7 +165,8 @@ public class DynamicObjects {
 
     static DynamicProxy createProxy(Class dynamicObjectType) {
         try {
-            return DynamicProxy.builder().withInterfaces(dynamicObjectType)
+            return DynamicProxy.builder()
+                    .withInterfaces(dynamicObjectType, CustomValidationHook.class)
                     .withSuperclass(DynamicObjectInstance.class)
                     .withInvocationHandler(new InvokeDynamicInvocationHandler(dynamicObjectType))
                     .build();

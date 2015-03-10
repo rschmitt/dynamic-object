@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 import static java.lang.String.format;
 
-public class DynamicObjectInstance<T extends DynamicObject<T>> {
+public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implements CustomValidationHook<T> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
@@ -137,7 +137,12 @@ public class DynamicObjectInstance<T extends DynamicObject<T>> {
         return self;
     }
 
+    public Object $$noop() {
+        return this;
+    }
+
     public Object $$validate() {
+        $$customValidate();
         Validation.validateInstance(this);
         return this;
     }
