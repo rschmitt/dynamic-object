@@ -37,7 +37,7 @@ public class DynamicObjects {
     private static final ConcurrentHashMap<Object, ReadHandler> fressianReadHandlers = new ConcurrentHashMap<>();
     private static final ConcurrentMap<Class, DynamicProxy> proxyCache = new ConcurrentHashMap<>();
     private static final Object EOF = Clojure.read(":eof");
-    private static final boolean USE_INVOKEDYNAMIC = true;
+    public static boolean USE_INVOKEDYNAMIC = false;
 
     static {
         Handlers.installHandler(fressianWriteHandlers, Keyword.class, "key", (w, instance) -> {
