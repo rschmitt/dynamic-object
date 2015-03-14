@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -108,12 +109,24 @@ public class DynamicObjects {
     }
 
     static <T> Stream<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
-        Iterator<T> iterator = deserializeStreamToIterator(streamReader, type);
+        Iterator<T> iterator = deserializeStreamToIterator(() -> deserialize(streamReader, type), type);
         Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.IMMUTABLE);
         return StreamSupport.stream(spliterator, false);
     }
 
-    private static <T> Iterator<T> deserializeStreamToIterator(PushbackReader streamReader, Class<T> type) {
+    static <T> Stream<T> deserializeFressianStream(InputStream is, Class<T> type) {
+        FressianReader fressianReader = new FressianReader(is, new MapLookup<>(fressianReadHandlers));
+        Iterator<T> iterator = deserializeStreamToIterator(() -> (T) fressianReader.readObject(), type);
+        Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.IMMUTABLE);
+        return StreamSupport.stream(spliterator, false);
+    }
+
+    @FunctionalInterface
+    interface IOSupplier<T> {
+        T get() throws IOException;
+    }
+
+    private static <T> Iterator<T> deserializeStreamToIterator(IOSupplier<T> streamReader, Class<T> type) {
         return new Iterator<T>() {
             private T stash = null;
             private boolean done = false;
@@ -138,9 +151,11 @@ public class DynamicObjects {
                 if (stash != null || done)
                     return;
                 try {
-                    stash = deserialize(streamReader, type);
-                } catch (NoSuchElementException ignore) {
+                    stash = streamReader.get();
+                } catch (NoSuchElementException | EOFException ignore) {
                     done = true;
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
                 }
             }
         };

@@ -97,6 +97,13 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     }
 
     /**
+     * Lazily deserialize a stream of Fressian-encoded values as the given type.
+     */
+    static <T> Stream<T> deserializeFressianStream(InputStream is, Class<T> type) {
+        return DynamicObjects.deserializeFressianStream(is, type);
+    }
+
+    /**
      * Serialize the {@code o} to {@code os}, using the Fressian binary serialization format. A Fressian footer
      * (containing an Adler32 checksum of the data) will be written, and the supplied OutputStream will be closed.
      */

@@ -1,18 +1,23 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.java.api.Clojure;
-import org.junit.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserializeStream;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.PushbackReader;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.deserializeStream;
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import clojure.java.api.Clojure;
 
 public class StreamingTest {
     @Test
@@ -66,6 +71,15 @@ public class StreamingTest {
     @Test(expected = NullPointerException.class)
     public void nilTest() {
         deserializeStream(new PushbackReader(new StringReader("nil")), StreamingType.class).collect(toList());
+    }
+
+    @Test
+    public void emptyFressianStreamTest() throws IOException {
+        List<Object> list = DynamicObject.deserializeFressianStream(
+                new ByteArrayInputStream(new byte[]{ }),
+                Object.class
+        ).collect(toList());
+        assertTrue(list.isEmpty());
     }
 
     public interface StreamingType extends DynamicObject<StreamingType> {
