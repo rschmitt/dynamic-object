@@ -72,11 +72,11 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * {@link DynamicObject#registerType} will be invoked as needed.
      */
     static String serialize(Object o) {
-        return DynamicObjects.serialize(o);
+        return EdnSerialization.serialize(o);
     }
 
     static void serialize(Object o, Writer w) {
-        DynamicObjects.serialize(o, w);
+        EdnSerialization.serialize(o, w);
     }
 
     /**
@@ -86,21 +86,21 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * @param type The type of class to deserialize. Must be an interface that extends DynamicObject.
      */
     static <T> T deserialize(String edn, Class<T> type) {
-        return DynamicObjects.deserialize(edn, type);
+        return EdnSerialization.deserialize(edn, type);
     }
 
     /**
      * Lazily deserialize a stream of top-level Edn elements as the given type.
      */
     static <T> Stream<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
-        return DynamicObjects.deserializeStream(streamReader, type);
+        return EdnSerialization.deserializeStream(streamReader, type);
     }
 
     /**
      * Lazily deserialize a stream of Fressian-encoded values as the given type.
      */
     static <T> Stream<T> deserializeFressianStream(InputStream is, Class<T> type) {
-        return DynamicObjects.deserializeFressianStream(is, type);
+        return FressianSerialization.deserializeFressianStream(is, type);
     }
 
     /**
@@ -108,7 +108,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * (containing an Adler32 checksum of the data) will be written, and the supplied OutputStream will be closed.
      */
     static void serializeToFressian(Object o, OutputStream os) {
-        DynamicObjects.serializeToFressian(o, os);
+        FressianSerialization.serializeToFressian(o, os);
     }
 
     /**
@@ -116,35 +116,35 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * will be validated and {@code is} will be closed.
      */
     static <T> T deserializeFromFressian(InputStream is) {
-        return DynamicObjects.deserializeFromFressian(is);
+        return FressianSerialization.deserializeFromFressian(is);
     }
 
     /**
      * Serialize {@code o} to binary Fressian data.
      */
     static byte[] toFressianByteArray(Object o) {
-        return DynamicObjects.toFressianByteArray(o);
+        return FressianSerialization.toFressianByteArray(o);
     }
 
     /**
      * Deserialize and return the Fressian-encoded object in {@code bytes}.
      */
     static <T> T fromFressianByteArray(byte[] bytes) {
-        return DynamicObjects.fromFressianByteArray(bytes);
+        return FressianSerialization.fromFressianByteArray(bytes);
     }
 
     /**
      * Use the supplied {@code map} to back an instance of {@code type}.
      */
     static <T extends DynamicObject<T>> T wrap(Object map, Class<T> type) {
-        return DynamicObjects.wrap(map, type);
+        return Instances.wrap(map, type);
     }
 
     /**
      * Create a "blank" instance of {@code type}, backed by an empty Clojure map. All fields will be null.
      */
     static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
-        return DynamicObjects.newInstance(type);
+        return Instances.newInstance(type);
     }
 
     /**
@@ -152,7 +152,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * Edn using reader tags.
      */
     static <T> void registerType(Class<T> type, EdnTranslator<T> translator) {
-        DynamicObjects.registerType(type, translator);
+        EdnSerialization.registerType(type, translator);
     }
 
     /**
@@ -160,7 +160,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * instances of {@code type} to be serialized to and deserialized from Fressian data.
      */
     static void registerType(Class type, String tag, ReadHandler readHandler, WriteHandler writeHandler) {
-        DynamicObjects.registerType(type, tag, readHandler, writeHandler);
+        FressianSerialization.registerType(type, tag, readHandler, writeHandler);
     }
 
     /**
@@ -168,7 +168,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * write instances of {@code type} unless another translator is registered.
      */
     static <T> void deregisterType(Class<T> type) {
-        DynamicObjects.deregisterType(type);
+        Serialization.deregisterType(type);
     }
 
     /**
@@ -176,14 +176,14 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * records.
      */
     static <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
-        DynamicObjects.registerTag(type, tag);
+        Serialization.registerTag(type, tag);
     }
 
     /**
      * Deregister the reader tag for the given DynamicObject type.
      */
     static <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
-        DynamicObjects.deregisterTag(type);
+        Serialization.deregisterTag(type);
     }
 
     /**
@@ -200,7 +200,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * throw an exception if unknown reader tags are encountered.
      */
     static <T> void setDefaultReader(BiFunction<String, Object, T> reader) {
-        DynamicObjects.setDefaultReader(reader);
+        EdnSerialization.setDefaultReader(reader);
     }
 
     /**

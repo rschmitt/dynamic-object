@@ -14,7 +14,7 @@ public class DefaultReaderTest {
 
         assertEquals("some-namespace/some-record-name", unknown.getTag());
         assertEquals(Clojure.read("{:key :value}"), unknown.getElement());
-        assertEquals(DynamicObjects.serialize(unknown), edn);
+        assertEquals(DynamicObject.serialize(unknown), edn);
     }
 
     @Test(expected = RuntimeException.class)

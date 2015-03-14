@@ -1,7 +1,7 @@
 package com.github.rschmitt.dynamicobject.benchmark;
 
 import com.github.rschmitt.dynamicobject.DynamicObject;
-import com.github.rschmitt.dynamicobject.DynamicObjects;
+import com.github.rschmitt.dynamicobject.Instances;
 import org.junit.Test;
 
 import java.util.Random;
@@ -12,10 +12,10 @@ public class DefaultMethodInvocation {
 
     @Test
     public void benchmarkDefaultMethodInvocation() {
-        DynamicObjects.USE_INVOKEDYNAMIC = false;
+        Instances.USE_INVOKEDYNAMIC = false;
         sideEffectBenchmark();
 
-        DynamicObjects.USE_INVOKEDYNAMIC = true;
+        Instances.USE_INVOKEDYNAMIC = true;
         sideEffectBenchmark();
     }
 
@@ -32,7 +32,7 @@ public class DefaultMethodInvocation {
 
         System.out.printf("Sum was %,d%n", sum);
         double time = ((double) (endTime - startTime)) / 1_000_000_000D;
-        System.out.printf("%,3.2f seconds to run; USE_INVOKEDYNAMIC = %s%n", time, DynamicObjects.USE_INVOKEDYNAMIC);
+        System.out.printf("%,3.2f seconds to run; USE_INVOKEDYNAMIC = %s%n", time, Instances.USE_INVOKEDYNAMIC);
     }
 
     public interface SideEffecter extends DynamicObject<SideEffecter> {

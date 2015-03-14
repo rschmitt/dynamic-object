@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 public class NumberTest {
     @Before
     public void setup() {
-        DynamicObjects.registerTag(ArbitraryPrecision.class, "ap");
+        DynamicObject.registerTag(ArbitraryPrecision.class, "ap");
     }
 
     @Test
