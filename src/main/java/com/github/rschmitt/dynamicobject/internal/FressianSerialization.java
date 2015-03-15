@@ -42,39 +42,33 @@ public class FressianSerialization {
         return StreamSupport.stream(spliterator, false);
     }
 
-    public static void serializeToFressian(Object o, OutputStream os) {
-        FressianWriter fressianWriter = new FressianWriter(os, new InheritanceLookup<>(new MapLookup<>(fressianWriteHandlers)));
-        try {
-            fressianWriter.writeObject(o);
-            fressianWriter.writeFooter();
-            fressianWriter.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public static FressianReader createFressianReader(InputStream is, boolean validateChecksum) {
+        return new FressianReader(is, new MapLookup<>(fressianReadHandlers), validateChecksum);
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T deserializeFromFressian(InputStream is) {
-        FressianReader fressianReader = new FressianReader(is, new MapLookup<>(fressianReadHandlers));
-        try {
-            Object o = fressianReader.readObject();
-            fressianReader.validateFooter();
-            fressianReader.close();
-            return (T) o;
+    public static FressianWriter createFressianWriter(OutputStream os) {
+        return new FressianWriter(os, new InheritanceLookup<>(new MapLookup<>(fressianWriteHandlers)));
+    }
+
+    public static byte[] toFressianByteArray(Object o) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (FressianWriter fressianWriter = DynamicObject.createFressianWriter(baos)) {
+            fressianWriter.writeObject(o);
+            fressianWriter.close();
+            return baos.toByteArray();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    public static byte[] toFressianByteArray(Object o) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        DynamicObject.serializeToFressian(o, baos);
-        return baos.toByteArray();
-    }
-
     public static <T> T fromFressianByteArray(byte[] bytes) {
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-        return DynamicObject.deserializeFromFressian(bais);
+        FressianReader fressianReader = DynamicObject.createFressianReader(bais, false);
+        try {
+            return (T) fressianReader.readObject();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public static synchronized void registerType(Class type, String tag, ReadHandler readHandler, WriteHandler writeHandler) {

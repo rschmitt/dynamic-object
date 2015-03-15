@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
+import org.fressian.FressianReader;
+import org.fressian.FressianWriter;
 import org.fressian.handlers.ReadHandler;
 import org.fressian.handlers.WriteHandler;
 
@@ -102,30 +104,7 @@ public interface DynamicObject<D extends DynamicObject<D>> {
     }
 
     /**
-     * Lazily deserialize a stream of Fressian-encoded values as the given type.
-     */
-    static <T> Stream<T> deserializeFressianStream(InputStream is, Class<T> type) {
-        return FressianSerialization.deserializeFressianStream(is, type);
-    }
-
-    /**
-     * Serialize the {@code o} to {@code os}, using the Fressian binary serialization format. A Fressian footer
-     * (containing an Adler32 checksum of the data) will be written, and the supplied OutputStream will be closed.
-     */
-    static void serializeToFressian(Object o, OutputStream os) {
-        FressianSerialization.serializeToFressian(o, os);
-    }
-
-    /**
-     * Read a Fressian-serialized object from the supplied InputStream. After the object is read, the Fressian footer
-     * will be validated and {@code is} will be closed.
-     */
-    static <T> T deserializeFromFressian(InputStream is) {
-        return FressianSerialization.deserializeFromFressian(is);
-    }
-
-    /**
-     * Serialize {@code o} to binary Fressian data.
+     * Serialize a single object {@code o} to binary Fressian data.
      */
     static byte[] toFressianByteArray(Object o) {
         return FressianSerialization.toFressianByteArray(o);
@@ -136,6 +115,37 @@ public interface DynamicObject<D extends DynamicObject<D>> {
      */
     static <T> T fromFressianByteArray(byte[] bytes) {
         return FressianSerialization.fromFressianByteArray(bytes);
+    }
+
+    /**
+     * Create a {@link FressianReader} instance to read from {@code is}. The reader will be created with support for all
+     * the basic Java and Clojure types, all DynamicObject types registered by calling {@link #registerTag(Class,
+     * String)}, and any other types registered by calling {@link #registerType(Class, String, ReadHandler,
+     * WriteHandler)}. If {@code validateChecksum} is true, the data will be checksummed as it is read; this checksum
+     * can later be compared to the expected checksum in the Fressian footer by calling {@link
+     * FressianReader#validateFooter()}.
+     */
+    static FressianReader createFressianReader(InputStream is, boolean validateChecksum) {
+        return FressianSerialization.createFressianReader(is, validateChecksum);
+    }
+
+    /**
+     * Create a {@link FressianWriter} instance to write to {@code os}. The writer will be created with support for all
+     * the basic Java and Clojure types, all DynamicObject types registered by calling {@link #registerTag(Class,
+     * String)}, and any other types registered by calling {@link #registerType(Class, String, ReadHandler,
+     * WriteHandler)}. If desired, a Fressian footer (containing an Adler32 checksum of all data written) can be written
+     * by calling {@link FressianWriter#writeFooter()}.
+     */
+    static FressianWriter createFressianWriter(OutputStream os) {
+        return FressianSerialization.createFressianWriter(os);
+    }
+
+    /**
+     * Lazily deserialize a stream of Fressian-encoded values as the given type. A Fressian footer, if encountered, will
+     * be validated.
+     */
+    static <T> Stream<T> deserializeFressianStream(InputStream is, Class<T> type) {
+        return FressianSerialization.deserializeFressianStream(is, type);
     }
 
     /**
