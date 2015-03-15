@@ -202,22 +202,4 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     static <T> void setDefaultReader(BiFunction<String, Object, T> reader) {
         EdnSerialization.setDefaultReader(reader);
     }
-
-    /**
-     * Obtain a Fressian {@link org.fressian.handlers.ReadHandler} for the specified DynamicObject {@code type}. This
-     * is only recommended if you want to roll your own {@link org.fressian.FressianReader} for maximum flexibility.
-     * Otherwise, it is recommended to use {@link #fromFressianByteArray} or {@link #deserializeFromFressian} instead.
-     */
-    static <T extends DynamicObject<T>> ReadHandler getFressianReadHandler(Class<T> type) {
-        return new FressianReadHandler(type);
-    }
-
-    /**
-     * Obtain a Fressian {@link org.fressian.handlers.WriteHandler} for the specified DynamicObject {@code type}. This
-     * is only recommended if you want to roll your own {@link org.fressian.FressianWriter} for maximum flexibility.
-     * Otherwise, it is recommended to use {@link #toFressianByteArray} or {@link #serializeToFressian} instead.
-     */
-    static <T extends DynamicObject<T>> WriteHandler getFressianWriteHandler(String tag, Class<T> type) {
-        return new FressianWriteHandler(type, tag);
-    }
 }
