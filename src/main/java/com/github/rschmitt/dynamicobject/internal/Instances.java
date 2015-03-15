@@ -11,7 +11,7 @@ import net.fushizen.invokedynamic.proxy.DynamicProxy;
 
 public class Instances {
     private static final ConcurrentMap<Class, DynamicProxy> proxyCache = new ConcurrentHashMap<>();
-    public static boolean USE_INVOKEDYNAMIC = false;
+    public static boolean USE_INVOKEDYNAMIC = true;
 
     public static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
         return wrap(Metadata.withTypeMetadata(EmptyMap, type), type);
