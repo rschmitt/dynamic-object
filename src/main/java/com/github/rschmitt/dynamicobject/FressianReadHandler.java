@@ -8,13 +8,11 @@ import java.util.List;
 
 import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
 
-class FressianReadHandler implements ReadHandler {
+public class FressianReadHandler implements ReadHandler {
     private final Class type;
-    private final String tag;
 
-    FressianReadHandler(Class type, String tag) {
+    FressianReadHandler(Class type) {
         this.type = type;
-        this.tag = tag;
     }
 
     @Override

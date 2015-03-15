@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-class FressianWriteHandler implements WriteHandler {
+public class FressianWriteHandler implements WriteHandler {
     private final Class type;
     private final String tag;
 

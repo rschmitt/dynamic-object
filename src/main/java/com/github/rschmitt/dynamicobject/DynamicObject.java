@@ -208,8 +208,8 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * is only recommended if you want to roll your own {@link org.fressian.FressianReader} for maximum flexibility.
      * Otherwise, it is recommended to use {@link #fromFressianByteArray} or {@link #deserializeFromFressian} instead.
      */
-    static <T extends DynamicObject<T>> ReadHandler getFressianReadHandler(String tag, Class<T> type) {
-        return new FressianReadHandler(type, tag);
+    static <T extends DynamicObject<T>> ReadHandler getFressianReadHandler(Class<T> type) {
+        return new FressianReadHandler(type);
     }
 
     /**
