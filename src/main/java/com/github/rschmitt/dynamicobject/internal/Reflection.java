@@ -1,4 +1,6 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
+
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.cachedRead;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -10,7 +12,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.github.rschmitt.dynamicobject.ClojureStuff.cachedRead;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import com.github.rschmitt.dynamicobject.Key;
+import com.github.rschmitt.dynamicobject.Meta;
+import com.github.rschmitt.dynamicobject.Required;
 
 class Reflection {
     static <T extends DynamicObject<T>> Collection<Method> requiredFields(Class<T> type) {

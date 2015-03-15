@@ -1,13 +1,10 @@
-package com.github.rschmitt.dynamicobject;
-
-import static com.github.rschmitt.dynamicobject.ClojureStuff.Bigint;
+package com.github.rschmitt.dynamicobject.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Spliterator;
@@ -24,8 +21,9 @@ import org.fressian.impl.Handlers;
 import org.fressian.impl.InheritanceLookup;
 import org.fressian.impl.MapLookup;
 
-import clojure.lang.BigInt;
-import clojure.lang.Keyword;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import com.github.rschmitt.dynamicobject.FressianReadHandler;
+import com.github.rschmitt.dynamicobject.FressianWriteHandler;
 
 public class FressianSerialization {
     private static final ConcurrentHashMap<Class, Map<String, WriteHandler>> fressianWriteHandlers = new ConcurrentHashMap<>();
@@ -37,14 +35,14 @@ public class FressianSerialization {
         fressianReadHandlers.putAll(ClojureStuff.clojureReadHandlers);
     }
 
-    static <T> Stream<T> deserializeFressianStream(InputStream is, Class<T> type) {
+    public static <T> Stream<T> deserializeFressianStream(InputStream is, Class<T> type) {
         FressianReader fressianReader = new FressianReader(is, new MapLookup<>(fressianReadHandlers));
         Iterator<T> iterator = Serialization.deserializeStreamToIterator(() -> (T) fressianReader.readObject(), type);
         Spliterator<T> spliterator = Spliterators.spliteratorUnknownSize(iterator, Spliterator.IMMUTABLE);
         return StreamSupport.stream(spliterator, false);
     }
 
-    static void serializeToFressian(Object o, OutputStream os) {
+    public static void serializeToFressian(Object o, OutputStream os) {
         FressianWriter fressianWriter = new FressianWriter(os, new InheritanceLookup<>(new MapLookup<>(fressianWriteHandlers)));
         try {
             fressianWriter.writeObject(o);
@@ -56,7 +54,7 @@ public class FressianSerialization {
     }
 
     @SuppressWarnings("unchecked")
-    static <T> T deserializeFromFressian(InputStream is) {
+    public static <T> T deserializeFromFressian(InputStream is) {
         FressianReader fressianReader = new FressianReader(is, new MapLookup<>(fressianReadHandlers));
         try {
             Object o = fressianReader.readObject();
@@ -79,7 +77,7 @@ public class FressianSerialization {
         return DynamicObject.deserializeFromFressian(bais);
     }
 
-    static synchronized void registerType(Class type, String tag, ReadHandler readHandler, WriteHandler writeHandler) {
+    public static synchronized void registerType(Class type, String tag, ReadHandler readHandler, WriteHandler writeHandler) {
         binaryTagCache.put(type, tag);
         Handlers.installHandler(fressianWriteHandlers, type, tag, writeHandler);
         fressianReadHandlers.putIfAbsent(tag, readHandler);

@@ -1,4 +1,4 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
 
 import java.util.HashMap;
 import java.util.Map;

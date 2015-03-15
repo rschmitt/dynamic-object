@@ -1,12 +1,14 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static org.junit.Assert.assertEquals;
 
 import java.time.Instant;
 import java.util.Date;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.*;
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 public class InstantTest {
     @Test

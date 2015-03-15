@@ -1,4 +1,4 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
+import com.github.rschmitt.dynamicobject.DynamicObject;
 
 class Conversions {
     /*
@@ -31,9 +31,9 @@ class Conversions {
         else if (val instanceof Instant)
             return java.util.Date.from((Instant) val);
         else if (val instanceof List)
-            return convertCollectionToClojureTypes((Collection<?>) val, EmptyVector);
+            return convertCollectionToClojureTypes((Collection<?>) val, ClojureStuff.EmptyVector);
         else if (val instanceof Set)
-            return convertCollectionToClojureTypes((Collection<?>) val, EmptySet);
+            return convertCollectionToClojureTypes((Collection<?>) val, ClojureStuff.EmptySet);
         else if (val instanceof Map)
             return convertMapToClojureTypes((Map<?, ?>) val);
         else if (val instanceof Optional) {
@@ -53,17 +53,17 @@ class Conversions {
     }
 
     private static Object convertCollectionToClojureTypes(Collection<?> val, Object empty) {
-        Object ret = Transient.invoke(empty);
+        Object ret = ClojureStuff.Transient.invoke(empty);
         for (Object o : val)
-            ret = ConjBang.invoke(ret, javaToClojure(o));
-        return Persistent.invoke(ret);
+            ret = ClojureStuff.ConjBang.invoke(ret, javaToClojure(o));
+        return ClojureStuff.Persistent.invoke(ret);
     }
 
     private static Object convertMapToClojureTypes(Map<?, ?> map) {
-        Object ret = Transient.invoke(EmptyMap);
+        Object ret = ClojureStuff.Transient.invoke(ClojureStuff.EmptyMap);
         for (Map.Entry<?, ?> entry : map.entrySet())
-            ret = AssocBang.invoke(ret, javaToClojure(entry.getKey()), javaToClojure(entry.getValue()));
-        return Persistent.invoke(ret);
+            ret = ClojureStuff.AssocBang.invoke(ret, javaToClojure(entry.getKey()), javaToClojure(entry.getValue()));
+        return ClojureStuff.Persistent.invoke(ret);
     }
 
     /*
@@ -100,9 +100,9 @@ class Conversions {
         }
 
         if (obj instanceof List)
-            return convertCollectionToJavaTypes((Collection<?>) obj, EmptyVector, genericReturnType);
+            return convertCollectionToJavaTypes((Collection<?>) obj, ClojureStuff.EmptyVector, genericReturnType);
         else if (obj instanceof Set)
-            return convertCollectionToJavaTypes((Collection<?>) obj, EmptySet, genericReturnType);
+            return convertCollectionToJavaTypes((Collection<?>) obj, ClojureStuff.EmptySet, genericReturnType);
         else if (obj instanceof Map)
             return convertMapToJavaTypes((Map<?, ?>) obj, genericReturnType);
         else
@@ -110,10 +110,10 @@ class Conversions {
     }
 
     private static Object convertCollectionToJavaTypes(Collection<?> coll, Object empty, Type genericReturnType) {
-        Object ret = Transient.invoke(empty);
+        Object ret = ClojureStuff.Transient.invoke(empty);
         for (Object o : coll)
-            ret = ConjBang.invoke(ret, convertCollectionElementToJavaTypes(o, genericReturnType));
-        return Persistent.invoke(ret);
+            ret = ClojureStuff.ConjBang.invoke(ret, convertCollectionElementToJavaTypes(o, genericReturnType));
+        return ClojureStuff.Persistent.invoke(ret);
     }
 
     private static Object convertCollectionElementToJavaTypes(Object element, Type genericCollectionType) {
@@ -136,9 +136,9 @@ class Conversions {
         } else {
             keyType = valType = Object.class;
         }
-        Object ret = Transient.invoke(EmptyMap);
+        Object ret = ClojureStuff.Transient.invoke(ClojureStuff.EmptyMap);
         for (Map.Entry<?, ?> entry : unwrappedMap.entrySet())
-            ret = AssocBang.invoke(ret, clojureToJava(entry.getKey(), keyType), clojureToJava(entry.getValue(), valType));
-        return Persistent.invoke(ret);
+            ret = ClojureStuff.AssocBang.invoke(ret, clojureToJava(entry.getKey(), keyType), clojureToJava(entry.getValue(), valType));
+        return ClojureStuff.Persistent.invoke(ret);
     }
 }

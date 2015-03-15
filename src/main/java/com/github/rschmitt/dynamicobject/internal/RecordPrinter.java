@@ -1,11 +1,11 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
+
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.PrOn;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.WithMeta;
+import static java.lang.String.format;
 
 import java.io.IOException;
 import java.io.Writer;
-
-import static com.github.rschmitt.dynamicobject.ClojureStuff.PrOn;
-import static com.github.rschmitt.dynamicobject.ClojureStuff.WithMeta;
-import static java.lang.String.format;
 
 public final class RecordPrinter {
     /**

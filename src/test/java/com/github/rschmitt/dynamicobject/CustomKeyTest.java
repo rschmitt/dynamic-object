@@ -1,10 +1,10 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.Test;
-
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 public class CustomKeyTest {
     @Test

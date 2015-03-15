@@ -1,12 +1,5 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.*;
-import java.util.Random;
-
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static java.util.Arrays.asList;
@@ -15,6 +8,17 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.IntStream.range;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class CollectionsTest {
     private static final Random Random = new Random();

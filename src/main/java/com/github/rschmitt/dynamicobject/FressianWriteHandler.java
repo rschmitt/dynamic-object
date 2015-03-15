@@ -1,18 +1,18 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.fressian.Writer;
-import org.fressian.handlers.WriteHandler;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.fressian.Writer;
+import org.fressian.handlers.WriteHandler;
+
 public class FressianWriteHandler implements WriteHandler {
     private final Class type;
     private final String tag;
 
-    FressianWriteHandler(Class type, String tag) {
+    public FressianWriteHandler(Class type, String tag) {
         this.type = type;
         this.tag = tag;
     }

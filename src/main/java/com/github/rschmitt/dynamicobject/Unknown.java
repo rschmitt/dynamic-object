@@ -5,6 +5,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
 
+import com.github.rschmitt.dynamicobject.internal.ClojureStuff;
+
 /**
  * A generic container for tagged Edn elements. This class preserves everything the Edn reader sees when an unknown
  * reader tag is encountered.

@@ -1,12 +1,12 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static org.junit.Assert.assertEquals;
 
 import java.util.UUID;
 import java.util.function.BiFunction;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 public class MethodHandleTest {
     private static final UUID ReceiptHandle = UUID.randomUUID();

@@ -1,10 +1,11 @@
 package com.github.rschmitt.dynamicobject.benchmark;
 
-import com.github.rschmitt.dynamicobject.DynamicObject;
-import com.github.rschmitt.dynamicobject.Instances;
+import java.util.Random;
+
 import org.junit.Test;
 
-import java.util.Random;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import com.github.rschmitt.dynamicobject.internal.Instances;
 
 public class DefaultMethodInvocation {
     public static long sum = 0;

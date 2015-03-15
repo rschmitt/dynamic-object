@@ -1,14 +1,21 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.*;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deregisterTag;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
+import static com.github.rschmitt.dynamicobject.DynamicObject.registerTag;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static org.junit.Assert.assertNull;
 
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.*;
-import static org.junit.Assert.assertNull;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class ValidationTest {
     @BeforeClass

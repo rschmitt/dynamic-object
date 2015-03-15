@@ -1,6 +1,7 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,8 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 public class NestingTest {
     @Test

@@ -1,5 +1,6 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
 
+import com.github.rschmitt.dynamicobject.DynamicObject;
 import clojure.lang.AFn;
 
 public final class RecordReader<T extends DynamicObject<T>> extends AFn {

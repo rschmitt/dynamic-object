@@ -1,9 +1,10 @@
-package com.github.rschmitt.dynamicobject;
-
-import clojure.lang.AFn;
+package com.github.rschmitt.dynamicobject.internal;
 
 import java.io.IOException;
 import java.io.Writer;
+
+import com.github.rschmitt.dynamicobject.EdnTranslator;
+import clojure.lang.AFn;
 
 final class EdnTranslatorAdapter<T> extends AFn {
     private final EdnTranslator<T> ednTranslator;

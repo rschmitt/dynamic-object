@@ -1,7 +1,8 @@
 package com.github.rschmitt.dynamicobject.benchmark;
 
-import com.github.rschmitt.dynamicobject.DynamicObject;
 import org.junit.Test;
+
+import com.github.rschmitt.dynamicobject.DynamicObject;
 
 public class StringFieldAccess {
     private final int Iterations = 500_000;

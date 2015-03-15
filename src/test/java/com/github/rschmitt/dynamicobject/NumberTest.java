@@ -1,13 +1,17 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.Before;
-import org.junit.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.fromFressianByteArray;
+import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.toFressianByteArray;
+import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.*;
-import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
 
 public class NumberTest {
     @Before

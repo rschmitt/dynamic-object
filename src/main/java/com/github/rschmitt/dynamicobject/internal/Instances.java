@@ -1,24 +1,24 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
 
-import net.fushizen.invokedynamic.proxy.DynamicProxy;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.EmptyMap;
 
 import java.lang.reflect.Proxy;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
-import static java.lang.String.format;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import net.fushizen.invokedynamic.proxy.DynamicProxy;
 
 public class Instances {
     private static final ConcurrentMap<Class, DynamicProxy> proxyCache = new ConcurrentHashMap<>();
     public static boolean USE_INVOKEDYNAMIC = false;
 
-    static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
+    public static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
         return wrap(Metadata.withTypeMetadata(EmptyMap, type), type);
     }
 
     @SuppressWarnings("unchecked")
-    static <T> T wrap(Object map, Class<T> type) {
+    public static <T> T wrap(Object map, Class<T> type) {
         if (map == null)
             throw new NullPointerException("A null reference cannot be used as a DynamicObject");
         Class<?> typeMetadata = Metadata.getTypeMetadata(map);

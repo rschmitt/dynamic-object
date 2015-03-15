@@ -1,11 +1,17 @@
 package com.github.rschmitt.dynamicobject;
 
 
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.fromFressianByteArray;
+import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.toFressianByteArray;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import static com.github.rschmitt.dynamicobject.DynamicObject.*;
-import static org.junit.Assert.*;
 
 public class RecursionTest {
     @Before

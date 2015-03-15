@@ -1,15 +1,17 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.List;
 import java.util.Set;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
-import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class DiffTest {
     @Before

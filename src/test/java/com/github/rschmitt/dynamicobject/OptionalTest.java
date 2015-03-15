@@ -1,17 +1,17 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.Test;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.Test;
 
 public class OptionalTest {
     @Test

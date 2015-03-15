@@ -1,9 +1,9 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+
+import org.junit.Test;
 
 public class MetadataTest {
     private static final AnnotatedData AnnotatedData = DynamicObject.deserialize("{:value \"regular data\"}", AnnotatedData.class);

@@ -1,12 +1,17 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import com.github.rschmitt.dynamicobject.Key;
+import com.github.rschmitt.dynamicobject.Meta;
+import com.github.rschmitt.dynamicobject.Required;
 
 public class ReflectionTest {
     @Test

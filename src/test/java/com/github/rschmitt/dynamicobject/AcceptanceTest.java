@@ -1,16 +1,16 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static java.util.UUID.randomUUID;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class AcceptanceTest {
     @Before

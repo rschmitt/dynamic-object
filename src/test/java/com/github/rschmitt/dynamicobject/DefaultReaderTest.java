@@ -1,9 +1,10 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.java.api.Clojure;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import clojure.java.api.Clojure;
 
 public class DefaultReaderTest {
     @Test

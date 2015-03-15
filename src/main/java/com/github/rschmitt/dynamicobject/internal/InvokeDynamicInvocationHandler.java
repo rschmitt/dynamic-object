@@ -1,16 +1,20 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
 
-import net.fushizen.invokedynamic.proxy.DynamicInvocationHandler;
+import static java.lang.invoke.MethodType.methodType;
 
-import java.lang.invoke.*;
+import java.lang.invoke.CallSite;
+import java.lang.invoke.ConstantCallSite;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.github.rschmitt.dynamicobject.Reflection.*;
-import static java.lang.invoke.MethodType.methodType;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import net.fushizen.invokedynamic.proxy.DynamicInvocationHandler;
 
 public class InvokeDynamicInvocationHandler implements DynamicInvocationHandler {
     private static final ConcurrentMap<Class, MethodHandle> validateMethodHandleCache = new ConcurrentHashMap<>();
@@ -71,8 +75,8 @@ public class InvokeDynamicInvocationHandler implements DynamicInvocationHandler 
             Method method = dynamicObjectType.getMethod(methodName, methodType.dropParameterTypes(0, 1).parameterArray());
 
             if (isBuilderMethod(method)) {
-                Object key = getKeyForBuilder(method);
-                if (isMetadataBuilder(method)) {
+                Object key = Reflection.getKeyForBuilder(method);
+                if (Reflection.isMetadataBuilder(method)) {
                     mh = lookup.findSpecial(DynamicObjectInstance.class, "assocMeta", methodType(DynamicObject.class, Object.class, Object.class), proxyType);
                     mh = MethodHandles.insertArguments(mh, 1, key);
                     mh = mh.asType(methodType);
@@ -82,13 +86,13 @@ public class InvokeDynamicInvocationHandler implements DynamicInvocationHandler 
                     mh = mh.asType(methodType);
                 }
             } else {
-                Object key = getKeyForGetter(method);
-                if (isMetadataGetter(method)) {
+                Object key = Reflection.getKeyForGetter(method);
+                if (Reflection.isMetadataGetter(method)) {
                     mh = lookup.findSpecial(DynamicObjectInstance.class, "getMetadataFor", methodType(Object.class, Object.class), proxyType);
                     mh = MethodHandles.insertArguments(mh, 1, key);
                     mh = mh.asType(methodType);
                 } else {
-                    boolean isRequired = isRequired(method);
+                    boolean isRequired = Reflection.isRequired(method);
                     Type genericReturnType = method.getGenericReturnType();
                     mh = lookup.findSpecial(DynamicObjectInstance.class, "invokeGetter", methodType(Object.class, Object.class, boolean.class, Type.class), proxyType);
                     mh = MethodHandles.insertArguments(mh, 1, key, isRequired, genericReturnType);

@@ -1,8 +1,5 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.fressian.handlers.ReadHandler;
-import org.fressian.handlers.WriteHandler;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PushbackReader;
@@ -10,6 +7,14 @@ import java.io.Writer;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
+
+import org.fressian.handlers.ReadHandler;
+import org.fressian.handlers.WriteHandler;
+
+import com.github.rschmitt.dynamicobject.internal.EdnSerialization;
+import com.github.rschmitt.dynamicobject.internal.FressianSerialization;
+import com.github.rschmitt.dynamicobject.internal.Instances;
+import com.github.rschmitt.dynamicobject.internal.Serialization;
 
 public interface DynamicObject<T extends DynamicObject<T>> {
     /**

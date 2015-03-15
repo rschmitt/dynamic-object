@@ -1,4 +1,7 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
+
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -15,15 +18,13 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.github.rschmitt.dynamicobject.Reflection.getKeyForBuilder;
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
+import com.github.rschmitt.dynamicobject.DynamicObject;
 
 class Validation {
     static <T extends DynamicObject<T>> void validateInstance(DynamicObjectInstance<T> instance) {
         MethodObject<T> methodObject = new MethodObject<>();
         methodObject.validate(instance, m -> {
-            Object key = getKeyForBuilder(m);
+            Object key = Reflection.getKeyForBuilder(m);
             return instance.getAndCacheValueFor(key, m.getGenericReturnType());
         });
         Collection<Method> missingFields = methodObject.missingFields;

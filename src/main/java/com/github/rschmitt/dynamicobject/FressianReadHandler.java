@@ -1,17 +1,20 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.fressian.Reader;
-import org.fressian.handlers.ReadHandler;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.AssocBang;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.EmptyMap;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Persistent;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Transient;
 
 import java.io.IOException;
 import java.util.List;
 
-import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
+import org.fressian.Reader;
+import org.fressian.handlers.ReadHandler;
 
 public class FressianReadHandler implements ReadHandler {
     private final Class type;
 
-    FressianReadHandler(Class type) {
+    public FressianReadHandler(Class type) {
         this.type = type;
     }
 

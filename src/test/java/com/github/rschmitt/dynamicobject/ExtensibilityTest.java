@@ -1,5 +1,15 @@
 package com.github.rschmitt.dynamicobject;
 
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.fromFressianByteArray;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.toFressianByteArray;
+import static java.lang.String.format;
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+import java.util.List;
+
 import org.fressian.Reader;
 import org.fressian.Writer;
 import org.fressian.handlers.ReadHandler;
@@ -7,13 +17,6 @@ import org.fressian.handlers.WriteHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.List;
-
-import static com.github.rschmitt.dynamicobject.DynamicObject.*;
-import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
 
 public class ExtensibilityTest {
     private static final String Edn = "{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}";

@@ -1,4 +1,7 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
+
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Bigint;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Biginteger;
 
 import java.math.BigInteger;
 import java.util.Collections;
@@ -6,9 +9,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import static com.github.rschmitt.dynamicobject.ClojureStuff.Bigint;
-import static com.github.rschmitt.dynamicobject.ClojureStuff.Biginteger;
 
 /*
  * This class deals with the numeric types that need to be converted to and from long/double/clojure.lang.BigInt.

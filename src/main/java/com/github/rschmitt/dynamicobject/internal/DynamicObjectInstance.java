@@ -1,6 +1,6 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
 
-import clojure.lang.AFn;
+import static java.lang.String.format;
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -8,8 +8,8 @@ import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.github.rschmitt.dynamicobject.ClojureStuff.*;
-import static java.lang.String.format;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import clojure.lang.AFn;
 
 public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implements CustomValidationHook<T> {
     private static final Object Default = new Object();
@@ -53,12 +53,12 @@ public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implemen
     }
 
     public void prettyPrint() {
-        Pprint.invoke(map);
+        ClojureStuff.Pprint.invoke(map);
     }
 
     public String toFormattedString() {
         Writer w = new StringWriter();
-        Pprint.invoke(map, w);
+        ClojureStuff.Pprint.invoke(map, w);
         return w.toString();
     }
 
@@ -68,7 +68,7 @@ public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implemen
                 return (arg2 == null) ? arg1 : arg2;
             }
         };
-        Object mergedMap = MergeWith.invoke(ignoreNulls, map, other.getMap());
+        Object mergedMap = ClojureStuff.MergeWith.invoke(ignoreNulls, map, other.getMap());
         return DynamicObject.wrap(mergedMap, type);
     }
 
@@ -81,9 +81,9 @@ public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implemen
     }
 
     private T diff(T arg, int idx) {
-        Object array = Diff.invoke(map, arg.getMap());
-        Object union = Nth.invoke(array, idx);
-        if (union == null) union = EmptyMap;
+        Object array = ClojureStuff.Diff.invoke(map, arg.getMap());
+        Object union = ClojureStuff.Nth.invoke(array, idx);
+        if (union == null) union = ClojureStuff.EmptyMap;
         union = Metadata.withTypeMetadata(union, type);
         return DynamicObject.wrap(union, type);
     }
@@ -95,16 +95,16 @@ public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implemen
     public T assoc(Object key, Object value) {
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
-        return DynamicObject.wrap(Assoc.invoke(map, key, value), type);
+        return DynamicObject.wrap(ClojureStuff.Assoc.invoke(map, key, value), type);
     }
 
     public T assocMeta(Object key, Object value) {
-        return DynamicObject.wrap(VaryMeta.invoke(map, Assoc, key, value), type);
+        return DynamicObject.wrap(ClojureStuff.VaryMeta.invoke(map, ClojureStuff.Assoc, key, value), type);
     }
 
     public Object getMetadataFor(Object key) {
-        Object meta = Meta.invoke(map);
-        return Get.invoke(meta, key);
+        Object meta = ClojureStuff.Meta.invoke(map);
+        return ClojureStuff.Get.invoke(meta, key);
     }
 
     public Object invokeGetter(Object key, boolean isRequired, Type genericReturnType) {
@@ -128,7 +128,7 @@ public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implemen
     }
 
     public Object getValueFor(Object key, Type genericReturnType) {
-        Object val = Get.invoke(map, key);
+        Object val = ClojureStuff.Get.invoke(map, key);
         return Conversions.clojureToJava(val, genericReturnType);
     }
 

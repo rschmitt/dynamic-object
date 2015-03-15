@@ -1,10 +1,12 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.Test;
-
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 public class PrimitiveTest {
     private static final String Edn = "{:i 4, :d 3.14, :f 3.14, :lng 1234567890, :shrt 4, :bool true, :c \\newline, :b 127}";

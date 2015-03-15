@@ -1,9 +1,10 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.lang.PersistentHashMap;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import clojure.lang.PersistentHashMap;
 
 public class BuilderTest {
     @Test

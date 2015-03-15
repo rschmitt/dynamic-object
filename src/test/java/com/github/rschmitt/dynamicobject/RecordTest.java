@@ -1,11 +1,11 @@
 package com.github.rschmitt.dynamicobject;
 
+import static java.lang.String.format;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
 
 public class RecordTest {
     @Before

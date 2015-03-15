@@ -1,4 +1,4 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -7,9 +7,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.BiFunction;
 
-import static com.github.rschmitt.dynamicobject.Reflection.*;
+import com.github.rschmitt.dynamicobject.DynamicObject;
 
 class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
     private static final ConcurrentMap<Method, MethodHandle> methodHandleCache = new ConcurrentHashMap<>();
@@ -41,8 +40,8 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         }
 
         if (isBuilderMethod(method)) {
-            Object key = getKeyForBuilder(method);
-            if (isMetadataBuilder(method))
+            Object key = Reflection.getKeyForBuilder(method);
+            if (Reflection.isMetadataBuilder(method))
                 return (instance, p, a) -> instance.assocMeta(key, a[0]);
             return (instance, p, a) -> instance.convertAndAssoc(key, a[0]);
         }
@@ -60,10 +59,10 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             case "validate": return (instance, p, a) -> instance.validate((T) p);
             case "equals": return (instance, p, a) -> instance.equals(a[0]);
             default:
-                if (isMetadataGetter(method))
-                    return (instance, p, a) -> instance.getMetadataFor(getKeyForGetter(method));
+                if (Reflection.isMetadataGetter(method))
+                    return (instance, p, a) -> instance.getMetadataFor(Reflection.getKeyForGetter(method));
                 Object key = Reflection.getKeyForGetter(method);
-                boolean isRequired = isRequired(method);
+                boolean isRequired = Reflection.isRequired(method);
                 return (instance, p, a) -> instance.invokeGetter(key, isRequired, method.getGenericReturnType());
         }
     }

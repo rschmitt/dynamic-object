@@ -1,23 +1,25 @@
-package com.github.rschmitt.dynamicobject;
+package com.github.rschmitt.dynamicobject.internal;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.github.rschmitt.dynamicobject.DynamicObject;
+
 public class Serialization {
     @SuppressWarnings("unchecked")
-    static synchronized <T> void deregisterType(Class<T> type) {
+    public static synchronized <T> void deregisterType(Class<T> type) {
         EdnSerialization.deregisterType(type);
         FressianSerialization.deregisterType(type);
     }
 
-    static synchronized <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
+    public static synchronized <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
         EdnSerialization.registerTag(type, tag);
         FressianSerialization.registerTag(type, tag);
     }
 
-    static synchronized <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
+    public static synchronized <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
         EdnSerialization.deregisterTag(type);
         FressianSerialization.deregisterTag(type);
     }
