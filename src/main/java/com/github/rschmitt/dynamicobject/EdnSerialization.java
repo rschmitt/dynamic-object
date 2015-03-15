@@ -37,7 +37,7 @@ public class EdnSerialization {
     private static final AtomicReference<Object> translators = new AtomicReference<>(EmptyMap);
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
     private static final AtomicReference<AFn> defaultReader = new AtomicReference<>(getUnknownReader());
-    static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, String> recordTagCache = new ConcurrentHashMap<>();
     private static final Object EOF = Clojure.read(":eof");
 
     static String serialize(Object obj) {

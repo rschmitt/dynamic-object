@@ -18,8 +18,8 @@ public class Serialization {
     }
 
     static synchronized <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
-        FressianSerialization.deregisterTag(type);
         EdnSerialization.deregisterTag(type);
+        FressianSerialization.deregisterTag(type);
     }
 
     @FunctionalInterface
