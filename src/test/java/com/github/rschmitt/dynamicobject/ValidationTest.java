@@ -176,7 +176,7 @@ public class ValidationTest {
         validationFailure("{:oddsOnly 5}", Custom.class);
     }
 
-    private static <T extends DynamicObject<T>> void validationFailure(String edn, Class<T> type) {
+    private static <D extends DynamicObject<D>> void validationFailure(String edn, Class<D> type) {
         try {
             deserialize(edn, type).validate();
             Assert.fail("Expected IllegalStateException");
@@ -185,8 +185,8 @@ public class ValidationTest {
         }
     }
 
-    private static <T extends DynamicObject<T>> void validationSuccess(String edn, Class<T> type) {
-        T instance = deserialize(edn, type).validate();
+    private static <D extends DynamicObject<D>> void validationSuccess(String edn, Class<D> type) {
+        D instance = deserialize(edn, type).validate();
         Assert.assertEquals(edn, serialize(instance));
     }
 

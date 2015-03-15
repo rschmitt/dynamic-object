@@ -2,6 +2,6 @@ package com.github.rschmitt.dynamicobject.internal;
 
 import com.github.rschmitt.dynamicobject.DynamicObject;
 
-public interface CustomValidationHook<T extends DynamicObject<T>> {
-    T $$customValidate();
+public interface CustomValidationHook<D extends DynamicObject<D>> {
+    D $$customValidate();
 }

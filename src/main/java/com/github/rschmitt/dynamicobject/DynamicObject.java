@@ -16,7 +16,7 @@ import com.github.rschmitt.dynamicobject.internal.FressianSerialization;
 import com.github.rschmitt.dynamicobject.internal.Instances;
 import com.github.rschmitt.dynamicobject.internal.Serialization;
 
-public interface DynamicObject<T extends DynamicObject<T>> {
+public interface DynamicObject<D extends DynamicObject<D>> {
     /**
      * @return the underlying Clojure map backing this instance. Downcasting the return value of this method to any
      * particular Java type (e.g. IPersistentMap) is not guaranteed to work with future versions of Clojure.
@@ -27,7 +27,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * @return the apparent type of this instance. Note that {@code getClass} will return the class of the interface
      * proxy and not the interface itself.
      */
-    Class<T> getType();
+    Class<D> getType();
 
     /**
      * Invokes clojure.pprint/pprint, which writes a pretty-printed representation of the object to the currently bound
@@ -46,7 +46,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * <p/>
      * Equivalent to: {@code (merge-with (fn [a b] (if (nil? b) a b)) this other)}
      */
-    T merge(T other);
+    D merge(D other);
 
     /**
      * Recursively compares this instance with {@code other}, returning a new instance containing all of the common
@@ -55,7 +55,7 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * <p/>
      * Equivalent to: {@code (nth (clojure.data/diff this other) 2)}
      */
-    T intersect(T other);
+    D intersect(D other);
 
     /**
      * Recursively compares this instance with {@code other}, similar to {@link #intersect}, but returning the fields that
@@ -63,14 +63,14 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * <p/>
      * Equivalent to: {@code (nth (clojure.data/diff this other) 0)}
      */
-    T subtract(T other);
+    D subtract(D other);
 
     /**
      * Validate that all fields annotated with @Required are non-null, and that all present fields are of the correct
      * type. Returns the validated instance unchanged, which allows the validate method to be called at the end of a
      * fluent builder chain.
      */
-    T validate();
+    D validate();
 
     /**
      * Serialize the given object to Edn. Any {@code EdnTranslator}s that have been registered through
@@ -141,14 +141,14 @@ public interface DynamicObject<T extends DynamicObject<T>> {
     /**
      * Use the supplied {@code map} to back an instance of {@code type}.
      */
-    static <T extends DynamicObject<T>> T wrap(Object map, Class<T> type) {
+    static <D extends DynamicObject<D>> D wrap(Object map, Class<D> type) {
         return Instances.wrap(map, type);
     }
 
     /**
      * Create a "blank" instance of {@code type}, backed by an empty Clojure map. All fields will be null.
      */
-    static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
+    static <D extends DynamicObject<D>> D newInstance(Class<D> type) {
         return Instances.newInstance(type);
     }
 
@@ -180,14 +180,14 @@ public interface DynamicObject<T extends DynamicObject<T>> {
      * Register a reader tag for a DynamicObject type. This is useful for reading Edn representations of Clojure
      * records.
      */
-    static <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
+    static <D extends DynamicObject<D>> void registerTag(Class<D> type, String tag) {
         Serialization.registerTag(type, tag);
     }
 
     /**
      * Deregister the reader tag for the given DynamicObject type.
      */
-    static <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
+    static <D extends DynamicObject<D>> void deregisterTag(Class<D> type) {
         Serialization.deregisterTag(type);
     }
 

@@ -119,14 +119,14 @@ public class EdnSerialization {
         translatorCache.remove(type);
     }
 
-    public static synchronized <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
+    public static synchronized <D extends DynamicObject<D>> void registerTag(Class<D> type, String tag) {
         recordTagCache.put(type, tag);
         translators.getAndUpdate(translators -> ClojureStuff.Assoc.invoke(translators, ClojureStuff.cachedRead(
                 tag), new RecordReader<>(type)));
         definePrintMethod(":" + type.getTypeName(), "RecordPrinter/printRecord", tag);
     }
 
-    public static synchronized <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
+    public static synchronized <D extends DynamicObject<D>> void deregisterTag(Class<D> type) {
         String tag = recordTagCache.get(type);
         translators.getAndUpdate(translators -> ClojureStuff.Dissoc.invoke(translators, ClojureStuff.cachedRead(tag)));
         recordTagCache.remove(type);

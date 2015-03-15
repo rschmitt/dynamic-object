@@ -13,7 +13,7 @@ public class Instances {
     private static final ConcurrentMap<Class, DynamicProxy> proxyCache = new ConcurrentHashMap<>();
     public static boolean USE_INVOKEDYNAMIC = true;
 
-    public static <T extends DynamicObject<T>> T newInstance(Class<T> type) {
+    public static <D extends DynamicObject<D>> D newInstance(Class<D> type) {
         return wrap(Metadata.withTypeMetadata(EmptyMap, type), type);
     }
 
@@ -44,14 +44,14 @@ public class Instances {
         }
     }
 
-    private static <T, U extends DynamicObject<U>> T createReflectionProxy(Object map, Class<T> type) {
-        DynamicObjectInstance<U> instance = new DynamicObjectInstance<U>() {
+    private static <T, D extends DynamicObject<D>> T createReflectionProxy(Object map, Class<T> type) {
+        DynamicObjectInstance<D> instance = new DynamicObjectInstance<D>() {
             @Override
-            public U $$customValidate() {
+            public D $$customValidate() {
                 return null;
             }
         };
-        instance.type = (Class<U>) type;
+        instance.type = (Class<D>) type;
         instance.map = map;
         return (T) Proxy.newProxyInstance(
                 Thread.currentThread().getContextClassLoader(),

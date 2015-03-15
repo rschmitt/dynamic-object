@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 import com.github.rschmitt.dynamicobject.DynamicObject;
 
 class Validation {
-    static <T extends DynamicObject<T>> void validateInstance(DynamicObjectInstance<T> instance) {
-        MethodObject<T> methodObject = new MethodObject<>();
+    static <D extends DynamicObject<D>> void validateInstance(DynamicObjectInstance<D> instance) {
+        MethodObject<D> methodObject = new MethodObject<>();
         methodObject.validate(instance, m -> {
             Object key = Reflection.getKeyForBuilder(m);
             return instance.getAndCacheValueFor(key, m.getGenericReturnType());
@@ -33,13 +33,13 @@ class Validation {
             throw new IllegalStateException(methodObject.getValidationErrorMessage());
     }
 
-    static class MethodObject<T extends DynamicObject<T>> {
+    static class MethodObject<D extends DynamicObject<D>> {
         private final Collection<Method> missingFields = new LinkedHashSet<>();
         private final Map<Method, Class<?>> mismatchedFields = new HashMap<>();
         private Function<Method, Object> getter;
 
         void validate(
-                DynamicObjectInstance<T> instance,
+                DynamicObjectInstance<D> instance,
                 Function<Method, Object> getter
         ) {
             Collection<Method> fields = Reflection.fieldGetters(instance.getType());

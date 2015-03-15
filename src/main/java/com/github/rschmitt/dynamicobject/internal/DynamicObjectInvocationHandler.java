@@ -10,13 +10,13 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.github.rschmitt.dynamicobject.DynamicObject;
 
-class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements InvocationHandler {
+class DynamicObjectInvocationHandler<D extends DynamicObject<D>> implements InvocationHandler {
     private static final ConcurrentMap<Method, MethodHandle> methodHandleCache = new ConcurrentHashMap<>();
     private static final ConcurrentMap<Method, Invokee> invocationCache = new ConcurrentHashMap<>();
 
-    private final DynamicObjectInstance<T> instance;
+    private final DynamicObjectInstance<D> instance;
 
-    DynamicObjectInvocationHandler(DynamicObjectInstance<T> instance) {
+    DynamicObjectInvocationHandler(DynamicObjectInstance<D> instance) {
         this.instance = instance;
     }
 
@@ -32,7 +32,7 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
         if (method.isDefault()) {
             if (methodName.equals("validate")) {
                 return (instance, p, a) -> {
-                    instance.validate((T) p);
+                    instance.validate((D) p);
                     return invokeDefaultMethod(p, method, a);
                 };
             }
@@ -53,10 +53,10 @@ class DynamicObjectInvocationHandler<T extends DynamicObject<T>> implements Invo
             case "hashCode": return (instance, p, a) -> instance.hashCode();
             case "prettyPrint": return (instance, p, a) -> { instance.prettyPrint(); return null; };
             case "toFormattedString": return (instance, p, a) -> instance.toFormattedString();
-            case "merge": return (instance, p, a) -> instance.merge((T) a[0]);
-            case "intersect": return (instance, p, a) -> instance.intersect((T) a[0]);
-            case "subtract": return (instance, p, a) -> instance.subtract((T) a[0]);
-            case "validate": return (instance, p, a) -> instance.validate((T) p);
+            case "merge": return (instance, p, a) -> instance.merge((D) a[0]);
+            case "intersect": return (instance, p, a) -> instance.intersect((D) a[0]);
+            case "subtract": return (instance, p, a) -> instance.subtract((D) a[0]);
+            case "validate": return (instance, p, a) -> instance.validate((D) p);
             case "equals": return (instance, p, a) -> instance.equals(a[0]);
             default:
                 if (Reflection.isMetadataGetter(method))

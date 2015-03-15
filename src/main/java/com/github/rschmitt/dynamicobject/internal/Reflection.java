@@ -18,12 +18,12 @@ import com.github.rschmitt.dynamicobject.Meta;
 import com.github.rschmitt.dynamicobject.Required;
 
 class Reflection {
-    static <T extends DynamicObject<T>> Collection<Method> requiredFields(Class<T> type) {
+    static <D extends DynamicObject<D>> Collection<Method> requiredFields(Class<D> type) {
         Collection<Method> fields = fieldGetters(type);
         return fields.stream().filter(Reflection::isRequired).collect(Collectors.toSet());
     }
 
-    static <T extends DynamicObject<T>> Collection<Method> fieldGetters(Class<T> type) {
+    static <D extends DynamicObject<D>> Collection<Method> fieldGetters(Class<D> type) {
         Collection<Method> ret = new LinkedHashSet<>();
         for (Method method : type.getDeclaredMethods())
             if (method.getParameterCount() == 0 && !method.isDefault() && !isMetadataGetter(method))

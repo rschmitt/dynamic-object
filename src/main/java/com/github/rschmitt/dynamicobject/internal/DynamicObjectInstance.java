@@ -11,18 +11,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.github.rschmitt.dynamicobject.DynamicObject;
 import clojure.lang.AFn;
 
-public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implements CustomValidationHook<T> {
+public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements CustomValidationHook<D> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
     Object map;
-    Class<T> type;
+    Class<D> type;
     private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
 
     public DynamicObjectInstance() {
     }
 
-    DynamicObjectInstance(Object map, Class<T> type) {
+    DynamicObjectInstance(Object map, Class<D> type) {
         this.map = map;
         this.type = type;
     }
@@ -31,7 +31,7 @@ public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implemen
         return (Map) map;
     }
 
-    public Class<T> getType() {
+    public Class<D> getType() {
         return type;
     }
 
@@ -62,7 +62,7 @@ public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implemen
         return w.toString();
     }
 
-    public T merge(T other) {
+    public D merge(D other) {
         AFn ignoreNulls = new AFn() {
             public Object invoke(Object arg1, Object arg2) {
                 return (arg2 == null) ? arg1 : arg2;
@@ -72,15 +72,15 @@ public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implemen
         return DynamicObject.wrap(mergedMap, type);
     }
 
-    public T intersect(T arg) {
+    public D intersect(D arg) {
         return diff(arg, 2);
     }
 
-    public T subtract(T arg) {
+    public D subtract(D arg) {
         return diff(arg, 0);
     }
 
-    private T diff(T arg, int idx) {
+    private D diff(D arg, int idx) {
         Object array = ClojureStuff.Diff.invoke(map, arg.getMap());
         Object union = ClojureStuff.Nth.invoke(array, idx);
         if (union == null) union = ClojureStuff.EmptyMap;
@@ -88,17 +88,17 @@ public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implemen
         return DynamicObject.wrap(union, type);
     }
 
-    public T convertAndAssoc(Object key, Object value) {
+    public D convertAndAssoc(Object key, Object value) {
         return assoc(key, Conversions.javaToClojure(value));
     }
 
-    public T assoc(Object key, Object value) {
+    public D assoc(Object key, Object value) {
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
         return DynamicObject.wrap(ClojureStuff.Assoc.invoke(map, key, value), type);
     }
 
-    public T assocMeta(Object key, Object value) {
+    public D assocMeta(Object key, Object value) {
         return DynamicObject.wrap(ClojureStuff.VaryMeta.invoke(map, ClojureStuff.Assoc, key, value), type);
     }
 
@@ -132,7 +132,7 @@ public abstract class DynamicObjectInstance<T extends DynamicObject<T>> implemen
         return Conversions.clojureToJava(val, genericReturnType);
     }
 
-    public T validate(T self) {
+    public D validate(D self) {
         Validation.validateInstance(this);
         return self;
     }

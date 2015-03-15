@@ -3,10 +3,10 @@ package com.github.rschmitt.dynamicobject.internal;
 import com.github.rschmitt.dynamicobject.DynamicObject;
 import clojure.lang.AFn;
 
-public final class RecordReader<T extends DynamicObject<T>> extends AFn {
-    private final Class<T> type;
+public final class RecordReader<D extends DynamicObject<D>> extends AFn {
+    private final Class<D> type;
 
-    RecordReader(Class<T> type) {
+    RecordReader(Class<D> type) {
         this.type = type;
     }
 

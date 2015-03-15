@@ -14,12 +14,12 @@ public class Serialization {
         FressianSerialization.deregisterType(type);
     }
 
-    public static synchronized <T extends DynamicObject<T>> void registerTag(Class<T> type, String tag) {
+    public static synchronized <D extends DynamicObject<D>> void registerTag(Class<D> type, String tag) {
         EdnSerialization.registerTag(type, tag);
         FressianSerialization.registerTag(type, tag);
     }
 
-    public static synchronized <T extends DynamicObject<T>> void deregisterTag(Class<T> type) {
+    public static synchronized <D extends DynamicObject<D>> void deregisterTag(Class<D> type) {
         EdnSerialization.deregisterTag(type);
         FressianSerialization.deregisterTag(type);
     }
