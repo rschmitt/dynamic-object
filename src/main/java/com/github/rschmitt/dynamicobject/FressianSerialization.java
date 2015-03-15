@@ -33,28 +33,8 @@ public class FressianSerialization {
     private static final ConcurrentHashMap<Class<?>, String> binaryTagCache = new ConcurrentHashMap<>();
 
     static {
-        Handlers.installHandler(fressianWriteHandlers, Keyword.class, "key", (w, instance) -> {
-            Keyword keyword = (Keyword) instance;
-            w.writeTag("key", 2);
-            w.writeObject(keyword.getNamespace(), true);
-            w.writeObject(keyword.getName(), true);
-        });
-
-        fressianReadHandlers.put("key", (r, tag, componentCount) -> {
-            String ns = (String) r.readObject();
-            String name = (String) r.readObject();
-            return Keyword.intern(ns, name);
-        });
-
-        Handlers.installHandler(fressianWriteHandlers, BigInt.class, "bigint", (w, instance) -> {
-            w.writeTag("bigint", 1);
-            w.writeBytes(((BigInt) instance).toBigInteger().toByteArray());
-        });
-
-        fressianReadHandlers.put("bigint", (r, tag, componentCount) -> {
-            BigInteger bigInteger = new BigInteger((byte[]) r.readObject());
-            return Bigint.invoke(bigInteger);
-        });
+        fressianWriteHandlers.putAll(ClojureStuff.clojureWriteHandlers);
+        fressianReadHandlers.putAll(ClojureStuff.clojureReadHandlers);
     }
 
     static <T> Stream<T> deserializeFressianStream(InputStream is, Class<T> type) {

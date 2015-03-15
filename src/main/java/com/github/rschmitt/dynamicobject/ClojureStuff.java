@@ -1,9 +1,11 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.lang.IFn;
-
 import static clojure.java.api.Clojure.read;
 import static clojure.java.api.Clojure.var;
+
+import java.util.Map;
+
+import clojure.lang.IFn;
 
 class ClojureStuff {
     static final Object EmptyMap = read("{}");
@@ -41,13 +43,20 @@ class ClojureStuff {
     static final IFn Pprint;
     static final IFn Diff;
 
+    static final Map clojureReadHandlers;
+    static final Map clojureWriteHandlers;
+
     static {
         IFn require = var("clojure.core/require");
         require.invoke(read("clojure.pprint"));
         require.invoke(read("clojure.data"));
+        require.invoke(read("clojure.data.fressian"));
 
         Pprint = var("clojure.pprint/pprint");
         Diff = var("clojure.data/diff");
+
+        clojureReadHandlers = (Map) Deref.invoke(var("clojure.data.fressian/clojure-read-handlers"));
+        clojureWriteHandlers = (Map) Deref.invoke(var("clojure.data.fressian/clojure-write-handlers"));
     }
 
     static Object cachedRead(String edn) {
