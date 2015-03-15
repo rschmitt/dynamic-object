@@ -9,7 +9,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -44,33 +43,13 @@ public class InvokeDynamicInvocationHandler implements DynamicInvocationHandler 
                     validateMethodHandleCache.put(dynamicObjectType, mh);
             } else return new ConstantCallSite(mh);
         }
-        if ("getMap".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "getMap", methodType(Map.class), proxyType).asType(methodType);
-        } else if ("getType".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "getType", methodType(Class.class), proxyType).asType(methodType);
-        } else if ("toString".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "toString", methodType(String.class), proxyType).asType(methodType);
-        } else if ("hashCode".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "toString", methodType(int.class), proxyType).asType(methodType);
-        } else if ("prettyPrint".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "pprint", methodType(Void.TYPE), proxyType).asType(methodType);
-        } else if ("toFormattedString".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "toFormattedString", methodType(String.class), proxyType).asType(methodType);
-        } else if ("merge".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "merge", methodType(Object.class, Object.class), proxyType).asType(methodType);
-        } else if ("intersect".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "intersect", methodType(Object.class, Object.class), proxyType).asType(methodType);
-        } else if ("subtract".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "subtract", methodType(Object.class, Object.class), proxyType).asType(methodType);
-        } else if ("validate".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "$$validate", methodType(Object.class), proxyType).asType(methodType);
+        if ("validate".equals(methodName)) {
+            mh = lookup.findSpecial(DynamicObjectInstance.class, "$$validate", methodType(Object.class, new Class[]{ }), proxyType).asType(methodType);
         } else if ("$$customValidate".equals(methodName)) {
             mh = validateMethodHandleCache.getOrDefault(
                     dynamicObjectType,
                     lookup.findSpecial(DynamicObjectInstance.class, "$$noop", methodType(Object.class), proxyType).asType(methodType)
             );
-        } else if ("equals".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "equals", methodType(boolean.class, Object.class), proxyType).asType(methodType);
         } else {
             Method method = dynamicObjectType.getMethod(methodName, methodType.dropParameterTypes(0, 1).parameterArray());
 
