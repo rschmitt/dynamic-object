@@ -18,10 +18,10 @@ This data can be made directly available to Java code with a `DynamicObject` sch
 
 ```java
 public interface Album extends DynamicObject<Album> {
-  String artist();
-  String album();
-  int tracks();
-  int year();
+  @Key(":artist") String getArtist();
+  @Key(":album")  String getAlbum();
+  @Key(":tracks") int getTracks();
+  @Key(":year")   int getYear();
 }
 ```
 
@@ -30,6 +30,7 @@ The data is deserialized like so:
 ```java
 String edn = "{:artist \"Meshuggah\", :album \"Chaosphere\", :tracks 8, :year 1998}";
 Album album = DynamicObject.deserialize(edn, Album.class);
+album.getArtist(); // => "Meshuggah"
 ```
 
 ## Features
@@ -174,18 +175,22 @@ DynamicObject.deserialize("{:oddsOnly 5}", Custom.class).validate();
 
 ### Persistent Modification
 
-dynamic-object makes it easy to leverage Clojure's immutable persistent data structures, which use structural sharing to enable cheap copying and "modification." A `DynamicObject` can declare builder methods, which are backed by [`assoc`](http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/assoc). For example:
+dynamic-object makes it easy to leverage Clojure's immutable persistent data structures, which use structural sharing to enable cheap copying and "modification." A `DynamicObject` can declare builder methods, which are backed by [`assoc`](http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/assoc). These methods perform a functional update of the data structure, returning an updated instance and leaving the current instance unchanged. For example:
 
 ```java
 interface Buildable extends DynamicObject<Buildable> {
-  String str();
-  Buildable str(String str);
+  @Key(":hello") String getHello();
+  @Key(":hello") Buildable withHello(String hello);
 }
 
 @Test
 public void invokeBuilderMethod() {
-  Buildable obj = DynamicObject.newInstance(Buildable.class).str("string");
-  assertEquals("{:str \"string\"}", DynamicObject.serialize(obj));
+  Buildable hw = DynamicObject.newInstance(Buildable.class).withHello("world");
+  assertEquals("{:hello \"world\"}", DynamicObject.serialize(hw)); // This is the original value
+
+  Buildable hk = hw.withHello("kitty"); // Build a new value from the old one
+  assertEquals("{:hello \"kitty\"}", DynamicObject.serialize(hk));
+  assertEquals("{:hello \"world\"}", DynamicObject.serialize(hw)); // The original value is unchanged
 }
 
 ```
@@ -239,6 +244,17 @@ String camelCase(); // corresponds to the :camelCase field
 
 This is particularly useful for Clojure interop, where kebab-case, rather than Java's camelCase, is idiomatic.
 
+These annotations can also be used on builder methods, in order to facilitate familiar POJO naming conventions such as getter/setter and getter/wither:
+
+```java
+public interface MyType extends DynamicObject<MyType> {
+  @Key(":flubber")    String getFlubber();     // Pretty standard for field access in Java...
+  @Key(":is-flubbed") boolean isFlubbed();     // ...except for booleans, which generally use "is" and not "get"
+  @Key(":flubber") MyType setFlubber(String flubber);   // You can prefix these with "set" if you want...
+  @Key(":flubber") MyType withFlubber(String flubber);  // ...but "with" makes more sense for persistent updates
+}
+```
+
 ## Guidelines
 
 * Always register a reader tag for any `DynamicObject` that will be serialized. This reader tag should be namespaced with some appropriate prefix (e.g. a Java package name), as all unprefixed reader tags are reserved for future use by the Edn specification.
@@ -252,7 +268,7 @@ This is particularly useful for Clojure interop, where kebab-case, rather than J
 
 ## Constraints and Limitations
 
-* Only keyword keys are supported. Map entries that are keyed off of a different type (e.g. a symbol, a string, a vector) cannot be exposed through a `DynamicObject` schema, although they can still be transparently round tripped.
+* Only keyword and string keys are supported. Map entries that are keyed off of a different type (e.g. a symbol, a string, a vector) cannot be exposed through a `DynamicObject` schema, although they can still be transparently round tripped. Those fields can also be accessed directly by calling `getMap()` to obtain the underlying map.
 * dynamic-object only deals with values. The time semantics of Clojure--`atom`, `ref`, `agent` and so on--are currently considered out of scope for this library.
 * There is currently no way to distinguish between an explicit null value and a missing entry. It is not at all clear that exposing this distinction would be a good idea.
 * Since unboxed primitives cannot be null, any attempt to dereference an unboxed primitive field whose underlying value is null or missing will result in a `NullPointerException`.
