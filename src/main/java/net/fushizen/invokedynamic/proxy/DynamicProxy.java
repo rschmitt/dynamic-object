@@ -5,13 +5,16 @@ import org.objectweb.asm.*;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -25,6 +28,7 @@ public class DynamicProxy {
     public static final String BOOTSTRAP_DYNAMIC_METHOD_DESCRIPTOR
             = "(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;ILjava/lang/invoke/MethodHandle;)Ljava/lang/invoke/CallSite;";
     public static final String INIT_PROXY_METHOD_NAME = "$$initProxy";
+
     private final Class<?> proxyClass;
     private final MethodHandle constructor;
 
@@ -49,6 +53,22 @@ public class DynamicProxy {
         return constructor;
     }
 
+    /**
+     *
+     * @return A Supplier that will construct an instance of this proxy.
+     */
+    public Supplier<Object> supplier() {
+        return () -> {
+            try {
+                return constructor().invoke();
+            } catch (Error | RuntimeException e) {
+                throw e;
+            } catch (Throwable t) {
+                throw new UndeclaredThrowableException(t);
+            }
+        };
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -58,11 +78,34 @@ public class DynamicProxy {
         private ArrayList<Class<?>> interfaces = new ArrayList<>();
         private DynamicInvocationHandler invocationHandler = new DefaultInvocationHandler();
         private boolean hasFinalizer = false;
+        private String packageName;
 
         public Builder withInterfaces(Class<?>... interfaces) {
+            for (Class<?> klass : interfaces) {
+                if (!klass.isInterface()) throw new IllegalArgumentException("" + klass + " is not an interface");
+
+                if ((klass.getModifiers() & Modifier.PUBLIC) == 0) {
+                    packageFromClass(klass);
+                }
+            }
+
             this.interfaces.addAll(Arrays.asList(interfaces));
 
             return this;
+        }
+
+        private void packageFromClass(Class<?> klass) {
+            if ((klass.getModifiers() & Modifier.PRIVATE) != 0) {
+                throw new IllegalArgumentException("Cannot extend private interface or superclass " + klass);
+            }
+
+            String klassPackage = klass.getPackage().getName();
+
+            if (packageName != null && !packageName.equals(klassPackage)) {
+                throw new IllegalArgumentException("Cannot access private interfaces or superclasses from multiple packages");
+            }
+
+            packageName = klassPackage;
         }
 
         public Builder withInvocationHandler(DynamicInvocationHandler handler) {
@@ -87,9 +130,24 @@ public class DynamicProxy {
          * @param klass
          * @return
          * @throws NoSuchMethodException If a suitable constructor is not found
+         * @throws java.lang.IllegalArgumentException if klass is not a class
          */
         public Builder withSuperclass(Class<?> klass) throws NoSuchMethodException {
-            klass.getConstructor();
+            if (klass.isInterface()) throw new IllegalArgumentException("" + klass + " is an interface");
+            if ((klass.getModifiers() & Modifier.FINAL) != 0) throw new IllegalArgumentException("" + klass + " is final");
+
+            if ((klass.getModifiers() & Modifier.PUBLIC) == 0) {
+                packageFromClass(klass);
+            }
+
+            Constructor ctor = klass.getDeclaredConstructor();
+            if ((ctor.getModifiers() & Modifier.PUBLIC) == 0) {
+                if ((ctor.getModifiers() & Modifier.PRIVATE) != 0) {
+                    throw new IllegalArgumentException("Constructor " + ctor + " is private");
+                }
+
+                packageFromClass(klass);
+            }
 
             superclass = klass;
 
@@ -115,8 +173,13 @@ public class DynamicProxy {
     private static Class<?> generateProxyClass(Builder builder) {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
-        String classInternalName = String.format("net/fushizen/invokedynamic/proxy/generated/Proxy$%d",
-                CLASS_COUNT.incrementAndGet());
+        String packageInternalName = builder.packageName;
+        if (packageInternalName == null) {
+            packageInternalName = "net.fushizen.invokedynamic.proxy.generated";
+        }
+        packageInternalName = packageInternalName.replaceAll("\\.", "/");
+
+        String classInternalName = String.format("%s/Proxy$%d", packageInternalName, CLASS_COUNT.incrementAndGet());
         String superclassName = Type.getInternalName(builder.superclass);
         String[] interfaceNames = new String[builder.interfaces.size()];
         for (int i = 0; i < builder.interfaces.size(); i++) {
