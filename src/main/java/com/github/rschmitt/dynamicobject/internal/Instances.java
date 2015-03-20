@@ -33,15 +33,11 @@ public class Instances {
     }
 
     private static <T> T createIndyProxy(Object map, Class<T> type) {
-        try {
-            T t = (T) proxyCache.computeIfAbsent(type, Instances::createProxy).constructor().invoke();
-            DynamicObjectInstance i = (DynamicObjectInstance) t;
-            i.map = map;
-            i.type = type;
-            return t;
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
-        }
+        T t = (T) proxyCache.computeIfAbsent(type, Instances::createProxy).supplier().get();
+        DynamicObjectInstance i = (DynamicObjectInstance) t;
+        i.map = map;
+        i.type = type;
+        return t;
     }
 
     private static <T, D extends DynamicObject<D>> T createReflectionProxy(Object map, Class<T> type) {
