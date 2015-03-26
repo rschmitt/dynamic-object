@@ -5,10 +5,10 @@ import java.io.IOException;
 import org.fressian.Reader;
 import org.fressian.handlers.ReadHandler;
 
-public class FressianReadHandler implements ReadHandler {
-    private final Class type;
+public class FressianReadHandler<D extends DynamicObject<D>> implements ReadHandler {
+    private final Class<D> type;
 
-    public FressianReadHandler(Class type) {
+    public FressianReadHandler(Class<D> type) {
         this.type = type;
     }
 

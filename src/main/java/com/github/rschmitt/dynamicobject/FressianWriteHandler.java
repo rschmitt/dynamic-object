@@ -5,11 +5,11 @@ import java.io.IOException;
 import org.fressian.Writer;
 import org.fressian.handlers.WriteHandler;
 
-public class FressianWriteHandler implements WriteHandler {
-    private final Class type;
+public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHandler {
+    private final Class<D> type;
     private final String tag;
 
-    public FressianWriteHandler(Class type, String tag) {
+    public FressianWriteHandler(Class<D> type, String tag) {
         this.type = type;
         this.tag = tag;
     }
