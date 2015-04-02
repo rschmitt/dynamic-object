@@ -15,11 +15,13 @@ import com.github.rschmitt.dynamicobject.DynamicObject;
 import clojure.lang.AFn;
 import clojure.lang.Associative;
 import clojure.lang.IMapEntry;
+import clojure.lang.IObj;
 import clojure.lang.IPersistentCollection;
+import clojure.lang.IPersistentMap;
 import clojure.lang.ISeq;
 import clojure.lang.Seqable;
 
-public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements Map, Associative, CustomValidationHook<D> {
+public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements Map, IPersistentMap, IObj, CustomValidationHook<D> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
@@ -102,7 +104,7 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
     }
 
     @Override
-    public Associative assoc(Object key, Object value) {
+    public IPersistentMap assoc(Object key, Object value) {
         return (DynamicObjectInstance) DynamicObject.wrap((Map) ClojureStuff.Assoc.invoke(map, key, value), type);
     }
 
@@ -253,5 +255,28 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
     @Override
     public ISeq seq() {
         return ((Seqable) map).seq();
+    }
+
+    @Override
+    public IPersistentMap assocEx(Object key, Object val) {
+        Object newMap = ((IPersistentMap) map).assocEx(key, val);
+        return (DynamicObjectInstance) DynamicObject.wrap((Map) newMap, type);
+    }
+
+    @Override
+    public IPersistentMap without(Object key) {
+        Object newMap = ((IPersistentMap) map).without(key);
+        return (DynamicObjectInstance) DynamicObject.wrap((Map) newMap, type);
+    }
+
+    @Override
+    public IPersistentMap meta() {
+        return (IPersistentMap) ClojureStuff.Meta.invoke(map);
+    }
+
+    @Override
+    public IObj withMeta(IPersistentMap meta) {
+        Object newMap = ClojureStuff.VaryMeta.invoke(map, meta);
+        return (DynamicObjectInstance) DynamicObject.wrap((Map) newMap, type);
     }
 }
