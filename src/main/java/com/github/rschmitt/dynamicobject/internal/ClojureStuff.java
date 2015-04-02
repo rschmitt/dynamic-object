@@ -8,7 +8,7 @@ import java.util.Map;
 import clojure.lang.IFn;
 
 public class ClojureStuff {
-    public static final Object EmptyMap = read("{}");
+    public static final Map EmptyMap = (Map) read("{}");
     public static final Object EmptySet = read("#{}");
     public static final Object EmptyVector = read("[]");
     public static final Object Type = read(":type");

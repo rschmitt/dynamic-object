@@ -242,7 +242,7 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
 
     @Override
     public IPersistentCollection empty() {
-        return (DynamicObjectInstance) DynamicObject.wrap((Map) ClojureStuff.EmptyMap, type);
+        return (DynamicObjectInstance) DynamicObject.wrap(ClojureStuff.EmptyMap, type);
     }
 
     @Override
