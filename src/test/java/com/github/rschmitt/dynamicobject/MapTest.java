@@ -16,6 +16,7 @@ import clojure.lang.PersistentHashMap;
 public class MapTest {
     static final String SimpleEdn = "{:str \"expected value\", :i 4, :d 3.14}";
     static final String NestedEdn = format("{:version 1, :simple %s}", SimpleEdn);
+    static final String TaggedEdn = format("#eo%s", NestedEdn);
 
     @Before
     public void setup() {
@@ -29,7 +30,7 @@ public class MapTest {
 
     @Test
     public void getMapReturnsBackingMap() {
-        EmptyObject object = deserialize(NestedEdn, EmptyObject.class);
+        EmptyObject object = deserialize(TaggedEdn, EmptyObject.class);
         Object map = EdnReader.readString(NestedEdn, PersistentHashMap.EMPTY);
         assertEquals(map, object.getMap());
         binaryRoundTrip(object);
@@ -46,9 +47,9 @@ public class MapTest {
 
     @Test
     public void unknownFieldsAreSerialized() {
-        EmptyObject nestedObj = deserialize(NestedEdn, EmptyObject.class);
+        EmptyObject nestedObj = deserialize(TaggedEdn, EmptyObject.class);
         String actualEdn = serialize(nestedObj);
-        assertEquals(NestedEdn, actualEdn);
+        assertEquals(TaggedEdn, actualEdn);
     }
 
     private void binaryRoundTrip(Object expected) {

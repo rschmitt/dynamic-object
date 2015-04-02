@@ -21,6 +21,8 @@ public class Instances {
     public static <T> T wrap(Map map, Class<T> type) {
         if (map == null)
             throw new NullPointerException("A null reference cannot be used as a DynamicObject");
+        if (map instanceof DynamicObject)
+            return type.cast(map);
         Class<?> typeMetadata = Metadata.getTypeMetadata(map);
         if (typeMetadata != null && !type.equals(typeMetadata))
             throw new ClassCastException(String.format("Attempted to wrap a map tagged as %s in type %s",

@@ -39,10 +39,7 @@ public class EdnSerialization {
     }
 
     public static void serialize(Object object,  Writer writer) {
-        if (object instanceof DynamicObject)
-            ClojureStuff.PrOn.invoke(((DynamicObject) object).getMap(), writer);
-        else
-            ClojureStuff.PrOn.invoke(object, writer);
+        ClojureStuff.PrOn.invoke(object, writer);
         try {
             writer.flush();
         } catch (IOException ex) {
@@ -61,9 +58,10 @@ public class EdnSerialization {
         Object obj = ClojureStuff.Read.invoke(opts, streamReader);
         if (EOF.equals(obj))
             throw new NoSuchElementException();
-        if (DynamicObject.class.isAssignableFrom(type))
+        if (DynamicObject.class.isAssignableFrom(type) && !(obj instanceof DynamicObject)) {
             return Instances.wrap((Map) obj, type);
-        return (T) obj;
+        }
+        return type.cast(obj);
     }
 
     public static <T> Stream<T> deserializeStream(PushbackReader streamReader, Class<T> type) {
@@ -126,6 +124,7 @@ public class EdnSerialization {
         translators.getAndUpdate(translators -> ClojureStuff.Assoc.invoke(translators, ClojureStuff.cachedRead(
                 tag), new RecordReader<>(type)));
         definePrintMethod(":" + type.getTypeName(), "RecordPrinter/printRecord", tag);
+        definePrintMethod(type.getTypeName(), "RecordPrinter/printRecord", tag);
     }
 
     public static synchronized <D extends DynamicObject<D>> void deregisterTag(Class<D> type) {
@@ -135,6 +134,7 @@ public class EdnSerialization {
 
         Object dispatchVal = ClojureStuff.cachedRead(":" + type.getTypeName());
         ClojureStuff.RemoveMethod.invoke(ClojureStuff.PrintMethod, dispatchVal);
+        ClojureStuff.RemoveMethod.invoke(ClojureStuff.PrintMethod, type);
     }
 
     private static void definePrintMethod(String dispatchVal, String method, String arg) {

@@ -17,7 +17,6 @@ class Conversions {
     /*
      * Convert a Java object (e.g. passed in to a builder method) into the Clojure-style representation used internally.
      * This is done according to the following rules:
-     *  * DynamicObject instances will be replaced with their underlying maps, but with :type metadata attached.
      *  * Boxed and unboxed numerics, as well as BigInteger, will be losslessly converted to Long, Double, or BigInt.
      *  * Values wrapped in an Optional will be unwrapped and stored as either null or the underlying value.
      *  * Supported collection types (List, Set, Map) will have their elements converted according to these rules. This
@@ -27,7 +26,7 @@ class Conversions {
     static Object javaToClojure(Object obj) {
         Object val = Numerics.maybeUpconvert(obj);
         if (val instanceof DynamicObject)
-            return unwrapAndAnnotateDynamicObject((DynamicObject<?>) obj);
+            return obj;
         else if (val instanceof Instant)
             return java.util.Date.from((Instant) val);
         else if (val instanceof List)
@@ -44,12 +43,6 @@ class Conversions {
                 return null;
         } else
             return val;
-    }
-
-    private static Object unwrapAndAnnotateDynamicObject(DynamicObject<?> dynamicObject) {
-        Object map = dynamicObject.getMap();
-        map = Metadata.withTypeMetadata(map, dynamicObject.getType());
-        return map;
     }
 
     private static Object convertCollectionToClojureTypes(Collection<?> val, Object empty) {

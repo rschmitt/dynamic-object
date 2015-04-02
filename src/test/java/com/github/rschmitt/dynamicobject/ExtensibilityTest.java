@@ -20,7 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ExtensibilityTest {
-    private static final String Edn = "{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}";
+    private static final String Edn = "#dh{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}";
 
     @Before
     public void setup() {

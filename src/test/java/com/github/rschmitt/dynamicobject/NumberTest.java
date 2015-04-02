@@ -21,7 +21,7 @@ public class NumberTest {
 
     @Test
     public void BigDecimal() {
-        String edn = "{:bigDecimal 3.14159M}";
+        String edn = "#ap{:bigDecimal 3.14159M}";
 
         ArbitraryPrecision arbitraryPrecision = deserialize(edn, ArbitraryPrecision.class);
 
@@ -32,7 +32,7 @@ public class NumberTest {
 
     @Test
     public void BigInteger() {
-        String edn = "{:bigInteger 9234812039419082756912384500123N}";
+        String edn = "#ap{:bigInteger 9234812039419082756912384500123N}";
 
         ArbitraryPrecision arbitraryPrecision = deserialize(edn, ArbitraryPrecision.class);
 

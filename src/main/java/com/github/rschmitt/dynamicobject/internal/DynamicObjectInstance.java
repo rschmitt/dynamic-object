@@ -13,8 +13,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.github.rschmitt.dynamicobject.DynamicObject;
 
 import clojure.lang.AFn;
+import clojure.lang.Associative;
+import clojure.lang.IMapEntry;
+import clojure.lang.IPersistentCollection;
+import clojure.lang.ISeq;
+import clojure.lang.Seqable;
 
-public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements Map, CustomValidationHook<D> {
+public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements Map, Associative, CustomValidationHook<D> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
@@ -207,5 +212,45 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
     @Override
     public Set<Entry> entrySet() {
         return map.entrySet();
+    }
+
+    @Override
+    public IMapEntry entryAt(Object key) {
+        return ((Associative) map).entryAt(key);
+    }
+
+    @Override
+    public Object valAt(Object key) {
+        return ((Associative) map).valAt(key);
+    }
+
+    @Override
+    public Object valAt(Object key, Object notFound) {
+        return ((Associative) map).valAt(key, notFound);
+    }
+
+    @Override
+    public int count() {
+        return ((IPersistentCollection) map).count();
+    }
+
+    @Override
+    public IPersistentCollection cons(Object o) {
+        return ((IPersistentCollection) map).cons(o);
+    }
+
+    @Override
+    public IPersistentCollection empty() {
+        return DynamicObject.wrap((Map) ClojureStuff.EmptyMap, type);
+    }
+
+    @Override
+    public boolean equiv(Object o) {
+        return ((IPersistentCollection) map).equiv(o);
+    }
+
+    @Override
+    public ISeq seq() {
+        return ((Seqable) map).seq();
     }
 }
