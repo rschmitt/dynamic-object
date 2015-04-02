@@ -5,14 +5,16 @@ import static java.lang.String.format;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.github.rschmitt.dynamicobject.DynamicObject;
 
 import clojure.lang.AFn;
 
-public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements CustomValidationHook<D> {
+public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements Map, CustomValidationHook<D> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
@@ -46,6 +48,7 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
         return map.hashCode();
     }
 
+    @Override
     public boolean equals(Object other) {
         if (other instanceof DynamicObject)
             return map.equals(((DynamicObject) other).getMap());
@@ -146,5 +149,65 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
         $$customValidate();
         Validation.validateInstance(this);
         return this;
+    }
+
+    @Override
+    public int size() {
+        return map.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return map.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return map.containsValue(value);
+    }
+
+    @Override
+    public Object get(Object key) {
+        return map.get(key);
+    }
+
+    @Override
+    public Object put(Object key, Object value) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object remove(Object key) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void putAll(Map m) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void clear() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Set keySet() {
+        return map.keySet();
+    }
+
+    @Override
+    public Collection values() {
+        return map.values();
+    }
+
+    @Override
+    public Set<Entry> entrySet() {
+        return map.entrySet();
     }
 }

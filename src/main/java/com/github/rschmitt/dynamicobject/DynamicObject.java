@@ -18,7 +18,7 @@ import com.github.rschmitt.dynamicobject.internal.FressianSerialization;
 import com.github.rschmitt.dynamicobject.internal.Instances;
 import com.github.rschmitt.dynamicobject.internal.Serialization;
 
-public interface DynamicObject<D extends DynamicObject<D>> {
+public interface DynamicObject<D extends DynamicObject<D>> extends Map {
     /**
      * @return the underlying Clojure map backing this instance. Downcasting the return value of this method to any
      * particular Java type (e.g. IPersistentMap) is not guaranteed to work with future versions of Clojure.
