@@ -151,7 +151,7 @@ public interface DynamicObject<D extends DynamicObject<D>> {
     /**
      * Use the supplied {@code map} to back an instance of {@code type}.
      */
-    static <D extends DynamicObject<D>> D wrap(Object map, Class<D> type) {
+    static <D extends DynamicObject<D>> D wrap(Map map, Class<D> type) {
         return Instances.wrap(map, type);
     }
 

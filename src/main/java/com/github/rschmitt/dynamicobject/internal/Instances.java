@@ -2,6 +2,7 @@ package com.github.rschmitt.dynamicobject.internal;
 
 import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.EmptyMap;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -13,11 +14,11 @@ public class Instances {
     private static final ConcurrentMap<Class, DynamicProxy> proxyCache = new ConcurrentHashMap<>();
 
     public static <D extends DynamicObject<D>> D newInstance(Class<D> type) {
-        return wrap(Metadata.withTypeMetadata(EmptyMap, type), type);
+        return wrap((Map) Metadata.withTypeMetadata(EmptyMap, type), type);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T wrap(Object map, Class<T> type) {
+    public static <T> T wrap(Map map, Class<T> type) {
         if (map == null)
             throw new NullPointerException("A null reference cannot be used as a DynamicObject");
         Class<?> typeMetadata = Metadata.getTypeMetadata(map);
@@ -28,7 +29,7 @@ public class Instances {
         return createIndyProxy(map, type);
     }
 
-    private static <T> T createIndyProxy(Object map, Class<T> type) {
+    private static <T> T createIndyProxy(Map map, Class<T> type) {
         T t = (T) proxyCache.computeIfAbsent(type, Instances::createProxy).supplier().get();
         DynamicObjectInstance i = (DynamicObjectInstance) t;
         i.map = map;

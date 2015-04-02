@@ -9,26 +9,27 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.github.rschmitt.dynamicobject.DynamicObject;
+
 import clojure.lang.AFn;
 
 public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements CustomValidationHook<D> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
-    Object map;
+    Map map;
     Class<D> type;
     private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
 
     public DynamicObjectInstance() {
     }
 
-    DynamicObjectInstance(Object map, Class<D> type) {
+    DynamicObjectInstance(Map map, Class<D> type) {
         this.map = map;
         this.type = type;
     }
 
     public Map getMap() {
-        return (Map) map;
+        return map;
     }
 
     public Class<D> getType() {
@@ -68,7 +69,7 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
                 return (arg2 == null) ? arg1 : arg2;
             }
         };
-        Object mergedMap = ClojureStuff.MergeWith.invoke(ignoreNulls, map, other.getMap());
+        Map mergedMap = (Map) ClojureStuff.MergeWith.invoke(ignoreNulls, map, other.getMap());
         return DynamicObject.wrap(mergedMap, type);
     }
 
@@ -85,7 +86,7 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
         Object union = ClojureStuff.Nth.invoke(array, idx);
         if (union == null) union = ClojureStuff.EmptyMap;
         union = Metadata.withTypeMetadata(union, type);
-        return DynamicObject.wrap(union, type);
+        return DynamicObject.wrap((Map) union, type);
     }
 
     public D convertAndAssoc(Object key, Object value) {
@@ -95,11 +96,11 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
     public D assoc(Object key, Object value) {
         if (value instanceof DynamicObject)
             value = ((DynamicObject) value).getMap();
-        return DynamicObject.wrap(ClojureStuff.Assoc.invoke(map, key, value), type);
+        return DynamicObject.wrap((Map) ClojureStuff.Assoc.invoke(map, key, value), type);
     }
 
     public D assocMeta(Object key, Object value) {
-        return DynamicObject.wrap(ClojureStuff.VaryMeta.invoke(map, ClojureStuff.Assoc, key, value), type);
+        return DynamicObject.wrap((Map) ClojureStuff.VaryMeta.invoke(map, ClojureStuff.Assoc, key, value), type);
     }
 
     public Object getMetadataFor(Object key) {

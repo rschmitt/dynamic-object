@@ -96,7 +96,7 @@ class Conversions {
             if (Instant.class.equals(returnType))
                 return ((Date) obj).toInstant();
             if (DynamicObject.class.isAssignableFrom(returnType))
-                return DynamicObject.wrap(obj, (Class<? extends DynamicObject>) returnType);
+                return DynamicObject.wrap((Map) obj, (Class<? extends DynamicObject>) returnType);
         }
 
         if (obj instanceof List)

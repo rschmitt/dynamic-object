@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.fressian.Reader;
 import org.fressian.Writer;
@@ -88,7 +89,7 @@ public class ExtensibilityTest {
 class DumbClassTranslator implements EdnTranslator<DumbClass> {
     @Override
     public DumbClass read(Object obj) {
-        DumbClassProxy proxy = DynamicObject.wrap(obj, DumbClassProxy.class);
+        DumbClassProxy proxy = DynamicObject.wrap((Map) obj, DumbClassProxy.class);
         return new DumbClass(proxy.version(), proxy.str());
     }
 

@@ -8,6 +8,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -20,6 +21,7 @@ import java.util.stream.StreamSupport;
 import com.github.rschmitt.dynamicobject.DynamicObject;
 import com.github.rschmitt.dynamicobject.EdnTranslator;
 import com.github.rschmitt.dynamicobject.Unknown;
+
 import clojure.java.api.Clojure;
 import clojure.lang.AFn;
 
@@ -60,7 +62,7 @@ public class EdnSerialization {
         if (EOF.equals(obj))
             throw new NoSuchElementException();
         if (DynamicObject.class.isAssignableFrom(type))
-            return Instances.wrap(obj, type);
+            return Instances.wrap((Map) obj, type);
         return (T) obj;
     }
 
