@@ -2,16 +2,15 @@ package com.github.rschmitt.dynamicobject.internal;
 
 import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.EmptyMap;
 
-import java.lang.reflect.Proxy;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.github.rschmitt.dynamicobject.DynamicObject;
+
 import net.fushizen.invokedynamic.proxy.DynamicProxy;
 
 public class Instances {
     private static final ConcurrentMap<Class, DynamicProxy> proxyCache = new ConcurrentHashMap<>();
-    public static boolean USE_INVOKEDYNAMIC = true;
 
     public static <D extends DynamicObject<D>> D newInstance(Class<D> type) {
         return wrap(Metadata.withTypeMetadata(EmptyMap, type), type);
@@ -26,10 +25,7 @@ public class Instances {
             throw new ClassCastException(String.format("Attempted to wrap a map tagged as %s in type %s",
                     typeMetadata.getSimpleName(), type.getSimpleName()));
 
-        if (USE_INVOKEDYNAMIC)
-            return createIndyProxy(map, type);
-        else
-            return createReflectionProxy(map, type);
+        return createIndyProxy(map, type);
     }
 
     private static <T> T createIndyProxy(Object map, Class<T> type) {
@@ -38,22 +34,6 @@ public class Instances {
         i.map = map;
         i.type = type;
         return t;
-    }
-
-    private static <T, D extends DynamicObject<D>> T createReflectionProxy(Object map, Class<T> type) {
-        DynamicObjectInstance<D> instance = new DynamicObjectInstance<D>() {
-            @Override
-            public D $$customValidate() {
-                return null;
-            }
-        };
-        instance.type = (Class<D>) type;
-        instance.map = map;
-        return (T) Proxy.newProxyInstance(
-                Thread.currentThread().getContextClassLoader(),
-                new Class<?>[]{type},
-                new DynamicObjectInvocationHandler<>(instance)
-        );
     }
 
     private static DynamicProxy createProxy(Class dynamicObjectType) {
