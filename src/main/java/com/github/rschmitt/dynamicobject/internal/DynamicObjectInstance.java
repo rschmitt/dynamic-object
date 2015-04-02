@@ -98,11 +98,12 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
     }
 
     public D convertAndAssoc(Object key, Object value) {
-        return assoc(key, Conversions.javaToClojure(value));
+        return (D) assoc(key, Conversions.javaToClojure(value));
     }
 
-    public D assoc(Object key, Object value) {
-        return DynamicObject.wrap((Map) ClojureStuff.Assoc.invoke(map, key, value), type);
+    @Override
+    public Associative assoc(Object key, Object value) {
+        return (DynamicObjectInstance) DynamicObject.wrap((Map) ClojureStuff.Assoc.invoke(map, key, value), type);
     }
 
     public D assocMeta(Object key, Object value) {
@@ -241,7 +242,7 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
 
     @Override
     public IPersistentCollection empty() {
-        return DynamicObject.wrap((Map) ClojureStuff.EmptyMap, type);
+        return (DynamicObjectInstance) DynamicObject.wrap((Map) ClojureStuff.EmptyMap, type);
     }
 
     @Override
