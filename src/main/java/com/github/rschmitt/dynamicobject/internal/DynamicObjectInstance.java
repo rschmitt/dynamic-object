@@ -97,8 +97,6 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
     }
 
     public D assoc(Object key, Object value) {
-        if (value instanceof DynamicObject)
-            value = ((DynamicObject) value).getMap();
         return DynamicObject.wrap((Map) ClojureStuff.Assoc.invoke(map, key, value), type);
     }
 
