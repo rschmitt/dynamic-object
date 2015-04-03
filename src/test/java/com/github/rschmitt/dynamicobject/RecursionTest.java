@@ -114,12 +114,12 @@ public class RecursionTest {
         if (binary)
             assertEquals(linkedList, fromFressianByteArray(toFressianByteArray(linkedList)));
     }
+}
 
-    public interface LinkedList extends DynamicObject<LinkedList> {
-        long value();
-        LinkedList next();
+interface LinkedList extends DynamicObject<LinkedList> {
+    long value();
+    LinkedList next();
 
-        LinkedList value(long value);
-        LinkedList next(LinkedList linkedList);
-    }
+    LinkedList value(long value);
+    LinkedList next(LinkedList linkedList);
 }
