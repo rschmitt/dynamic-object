@@ -30,6 +30,7 @@ public class ClojureStuff {
     public static final IFn Name = var("clojure.core/name");
     public static final IFn Nth = var("clojure.core/nth");
     public static final IFn Persistent = var("clojure.core/persistent!");
+    public static final IFn PreferMethod = var("clojure.core/prefer-method");
     public static final IFn PrOn = var("clojure.core/pr-on");
     public static final IFn Read = var("clojure.edn/read");
     public static final IFn ReadString = var("clojure.edn/read-string");

@@ -1,5 +1,9 @@
 package com.github.rschmitt.dynamicobject.internal;
 
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Eval;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.PreferMethod;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.PrintMethod;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.ReadString;
 import static java.lang.String.format;
 
 import java.io.IOException;
@@ -25,14 +29,16 @@ import com.github.rschmitt.dynamicobject.Unknown;
 import clojure.java.api.Clojure;
 import clojure.lang.AFn;
 import clojure.lang.IPersistentMap;
-import clojure.lang.MultiFn;
 
 public class EdnSerialization {
     static {
-        MultiFn printMethod = (MultiFn) ClojureStuff.PrintMethod;
-        printMethod.addMethod(DynamicObjectPrintHook.class, new DynamicObjectPrintMethod());
-        printMethod.preferMethod(DynamicObjectPrintHook.class, IPersistentMap.class);
-        printMethod.preferMethod(DynamicObjectPrintHook.class, Map.class);
+        String clojureCode =
+        "(defmethod print-method com.github.rschmitt.dynamicobject.internal.DynamicObjectPrintHook " +
+                "[o, ^java.io.Writer w]" +
+                "(com.github.rschmitt.dynamicobject.internal.EdnSerialization/invokePrintMethod o w))";
+        Eval.invoke(ReadString.invoke(clojureCode));
+        PreferMethod.invoke(PrintMethod, DynamicObjectPrintHook.class, IPersistentMap.class);
+        PreferMethod.invoke(PrintMethod, DynamicObjectPrintHook.class, Map.class);
     }
 
     public static class DynamicObjectPrintMethod extends AFn {
@@ -54,6 +60,7 @@ public class EdnSerialization {
         }
     }
 
+    private static final DynamicObjectPrintMethod dynamicObjectPrintMethod = new DynamicObjectPrintMethod();
     private static final AtomicReference<Object> translators = new AtomicReference<>(ClojureStuff.EmptyMap);
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
     private static final AtomicReference<AFn> defaultReader = new AtomicReference<>(getUnknownReader());
@@ -148,7 +155,7 @@ public class EdnSerialization {
         EdnTranslatorAdapter<T> adapter = (EdnTranslatorAdapter<T>) translatorCache.get(type);
         translators.getAndUpdate(translators -> ClojureStuff.Dissoc.invoke(translators, ClojureStuff.cachedRead(
                 adapter.getTag())));
-        ClojureStuff.RemoveMethod.invoke(ClojureStuff.PrintMethod, adapter);
+        ClojureStuff.RemoveMethod.invoke(PrintMethod, adapter);
         translatorCache.remove(type);
     }
 
@@ -169,5 +176,9 @@ public class EdnSerialization {
         EdnTranslatorAdapter translator = (EdnTranslatorAdapter<?>) ClojureStuff.Get.invoke(translators.get(), ClojureStuff
                 .cachedRead(tag));
         return translator.invoke(obj, writer);
+    }
+
+    public static Object invokePrintMethod(Object arg1, Object arg2) {
+        return dynamicObjectPrintMethod.invoke(arg1, arg2);
     }
 }
