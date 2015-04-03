@@ -11,7 +11,6 @@ public class ClojureStuff {
     public static final Map EmptyMap = (Map) read("{}");
     public static final Object EmptySet = read("#{}");
     public static final Object EmptyVector = read("[]");
-    public static final Object Type = read(":type");
     public static final Object Readers = read(":readers");
     public static final Object Default = read(":default");
 
@@ -27,7 +26,6 @@ public class ClojureStuff {
     public static final IFn Memoize = var("clojure.core/memoize");
     public static final IFn MergeWith = var("clojure.core/merge-with");
     public static final IFn Meta = var("clojure.core/meta");
-    public static final IFn Name = var("clojure.core/name");
     public static final IFn Nth = var("clojure.core/nth");
     public static final IFn Persistent = var("clojure.core/persistent!");
     public static final IFn PreferMethod = var("clojure.core/prefer-method");
@@ -36,7 +34,6 @@ public class ClojureStuff {
     public static final IFn ReadString = var("clojure.edn/read-string");
     public static final IFn RemoveMethod = var("clojure.core/remove-method");
     public static final IFn Transient = var("clojure.core/transient");
-    public static final IFn WithMeta = var("clojure.core/with-meta");
     public static final IFn VaryMeta = var("clojure.core/vary-meta");
 
     public static final Object PrintMethod = Deref.invoke(var("clojure.core/print-method"));
