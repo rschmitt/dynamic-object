@@ -14,6 +14,7 @@ import com.github.rschmitt.dynamicobject.DynamicObject;
 
 import clojure.lang.AFn;
 import clojure.lang.Associative;
+import clojure.lang.IHashEq;
 import clojure.lang.IMapEntry;
 import clojure.lang.IObj;
 import clojure.lang.IPersistentCollection;
@@ -22,7 +23,7 @@ import clojure.lang.ISeq;
 import clojure.lang.MapEquivalence;
 import clojure.lang.Seqable;
 
-public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements Map, IPersistentMap, IObj, MapEquivalence, DynamicObjectPrintHook, CustomValidationHook<D> {
+public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends AFn implements Map, IPersistentMap, IObj, MapEquivalence, IHashEq, DynamicObjectPrintHook, CustomValidationHook<D> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
@@ -278,5 +279,20 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
     public IObj withMeta(IPersistentMap meta) {
         Object newMap = ClojureStuff.VaryMeta.invoke(map, meta);
         return (DynamicObjectInstance) DynamicObject.wrap((Map) newMap, type);
+    }
+
+    @Override
+    public int hasheq() {
+        return ((IHashEq) map).hasheq();
+    }
+
+    @Override
+    public Object invoke(Object arg1) {
+        return valAt(arg1);
+    }
+
+    @Override
+    public Object invoke(Object arg1, Object notFound) {
+        return valAt(arg1, notFound);
     }
 }
