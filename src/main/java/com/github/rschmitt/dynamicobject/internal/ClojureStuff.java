@@ -39,6 +39,7 @@ public class ClojureStuff {
     public static final Object PrintMethod = Deref.invoke(var("clojure.core/print-method"));
     public static final IFn CachedRead = (IFn) Memoize.invoke(var("clojure.edn/read-string"));
     public static final IFn Pprint;
+    public static final IFn SimpleDispatch;
     public static final IFn Diff;
 
     public static final Map clojureReadHandlers;
@@ -52,6 +53,8 @@ public class ClojureStuff {
 
         Pprint = var("clojure.pprint/pprint");
         Diff = var("clojure.data/diff");
+
+        SimpleDispatch = (IFn) Deref.invoke(var("clojure.pprint/simple-dispatch"));
 
         clojureReadHandlers = (Map) Deref.invoke(var("clojure.data.fressian/clojure-read-handlers"));
         clojureWriteHandlers = (Map) Deref.invoke(var("clojure.data.fressian/clojure-write-handlers"));

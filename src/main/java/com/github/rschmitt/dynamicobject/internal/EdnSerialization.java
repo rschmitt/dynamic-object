@@ -1,9 +1,11 @@
 package com.github.rschmitt.dynamicobject.internal;
 
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Deref;
 import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Eval;
 import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.PreferMethod;
 import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.PrintMethod;
 import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.ReadString;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.SimpleDispatch;
 import static java.lang.String.format;
 
 import java.io.IOException;
@@ -33,12 +35,20 @@ import clojure.lang.IPersistentMap;
 public class EdnSerialization {
     static {
         String clojureCode =
-        "(defmethod print-method com.github.rschmitt.dynamicobject.internal.DynamicObjectPrintHook " +
-                "[o, ^java.io.Writer w]" +
-                "(com.github.rschmitt.dynamicobject.internal.EdnSerialization/invokePrintMethod o w))";
+                "(defmethod print-method com.github.rschmitt.dynamicobject.internal.DynamicObjectPrintHook " +
+                        "[o, ^java.io.Writer w]" +
+                        "(com.github.rschmitt.dynamicobject.internal.EdnSerialization/invokePrintMethod o w))";
         Eval.invoke(ReadString.invoke(clojureCode));
         PreferMethod.invoke(PrintMethod, DynamicObjectPrintHook.class, IPersistentMap.class);
         PreferMethod.invoke(PrintMethod, DynamicObjectPrintHook.class, Map.class);
+
+        clojureCode =
+                "(defmethod clojure.pprint/simple-dispatch com.github.rschmitt.dynamicobject.internal.DynamicObjectPrintHook " +
+                        "[o] " +
+                        "(com.github.rschmitt.dynamicobject.internal.EdnSerialization/invokePrettyPrint o))";
+        Eval.invoke(ReadString.invoke(clojureCode));
+        PreferMethod.invoke(SimpleDispatch, DynamicObjectPrintHook.class, IPersistentMap.class);
+        PreferMethod.invoke(SimpleDispatch, DynamicObjectPrintHook.class, Map.class);
     }
 
     public static class DynamicObjectPrintMethod extends AFn {
@@ -60,6 +70,27 @@ public class EdnSerialization {
         }
     }
 
+    public static class DynamicObjectPrettyPrint extends AFn {
+        @Override
+        public Object invoke(Object arg1) {
+            Object arg2 = Deref.invoke(Clojure.var("clojure.core/*out*"));
+            DynamicObject dynamicObject = (DynamicObject) arg1;
+            Writer writer = (Writer) arg2;
+            String tag = recordTagCache.getOrDefault(dynamicObject.getType(), null);
+            try {
+                if (tag != null) {
+                    writer.write("#");
+                    writer.write(tag);
+                }
+                SimpleDispatch.invoke(dynamicObject.getMap());
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            return null;
+        }
+    }
+
+    private static final DynamicObjectPrettyPrint dynamicObjectPrettyPrint = new DynamicObjectPrettyPrint();
     private static final DynamicObjectPrintMethod dynamicObjectPrintMethod = new DynamicObjectPrintMethod();
     private static final AtomicReference<Object> translators = new AtomicReference<>(ClojureStuff.EmptyMap);
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
@@ -180,5 +211,9 @@ public class EdnSerialization {
 
     public static Object invokePrintMethod(Object arg1, Object arg2) {
         return dynamicObjectPrintMethod.invoke(arg1, arg2);
+    }
+
+    public static Object invokePrettyPrint(Object o) {
+        return dynamicObjectPrettyPrint.invoke(o);
     }
 }
