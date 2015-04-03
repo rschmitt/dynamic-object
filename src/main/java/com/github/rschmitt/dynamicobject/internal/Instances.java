@@ -41,6 +41,8 @@ public class Instances {
                     .withInterfaces(dynamicObjectType, CustomValidationHook.class)
                     .withSuperclass(DynamicObjectInstance.class)
                     .withInvocationHandler(new InvokeDynamicInvocationHandler(dynamicObjectType))
+                    .withProxyNameHint(dynamicObjectType.getSimpleName())
+                    .withPackageName(dynamicObjectType.getPackage().getName())
                     .build();
         } catch (Exception e) {
             throw new RuntimeException(e);

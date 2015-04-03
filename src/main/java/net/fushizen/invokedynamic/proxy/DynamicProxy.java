@@ -79,6 +79,17 @@ public class DynamicProxy {
         private DynamicInvocationHandler invocationHandler = new DefaultInvocationHandler();
         private boolean hasFinalizer = false;
         private String packageName;
+        public String proxyNameHint;
+
+        public Builder withProxyNameHint(String proxyNameHint) {
+            this.proxyNameHint = proxyNameHint;
+            return this;
+        }
+
+        public Builder withPackageName(String packageName) {
+            this.packageName = packageName;
+            return this;
+        }
 
         public Builder withInterfaces(Class<?>... interfaces) {
             for (Class<?> klass : interfaces) {
@@ -178,8 +189,10 @@ public class DynamicProxy {
             packageInternalName = "net.fushizen.invokedynamic.proxy.generated";
         }
         packageInternalName = packageInternalName.replaceAll("\\.", "/");
+        String proxyNameHint = builder.proxyNameHint;
+        if (proxyNameHint == null) proxyNameHint = "";
 
-        String classInternalName = String.format("%s/Proxy$%d", packageInternalName, CLASS_COUNT.incrementAndGet());
+        String classInternalName = String.format("%s/%sProxy$%d", packageInternalName, proxyNameHint, CLASS_COUNT.incrementAndGet());
         String superclassName = Type.getInternalName(builder.superclass);
         String[] interfaceNames = new String[builder.interfaces.size()];
         for (int i = 0; i < builder.interfaces.size(); i++) {
