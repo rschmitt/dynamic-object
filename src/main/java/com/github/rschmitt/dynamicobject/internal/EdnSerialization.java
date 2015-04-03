@@ -24,8 +24,36 @@ import com.github.rschmitt.dynamicobject.Unknown;
 
 import clojure.java.api.Clojure;
 import clojure.lang.AFn;
+import clojure.lang.IPersistentMap;
+import clojure.lang.MultiFn;
 
 public class EdnSerialization {
+    static {
+        MultiFn printMethod = (MultiFn) ClojureStuff.PrintMethod;
+        printMethod.addMethod(DynamicObjectPrintHook.class, new DynamicObjectPrintMethod());
+        printMethod.preferMethod(DynamicObjectPrintHook.class, IPersistentMap.class);
+        printMethod.preferMethod(DynamicObjectPrintHook.class, Map.class);
+    }
+
+    public static class DynamicObjectPrintMethod extends AFn {
+        @Override
+        public Object invoke(Object arg1, Object arg2) {
+            DynamicObject dynamicObject = (DynamicObject) arg1;
+            Writer writer = (Writer) arg2;
+            String tag = recordTagCache.getOrDefault(dynamicObject.getType(), null);
+            try {
+                if (tag != null) {
+                    writer.write("#");
+                    writer.write(tag);
+                }
+                ClojureStuff.PrOn.invoke(dynamicObject.getMap(), writer);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            return null;
+        }
+    }
+
     private static final AtomicReference<Object> translators = new AtomicReference<>(ClojureStuff.EmptyMap);
     private static final ConcurrentHashMap<Class<?>, EdnTranslatorAdapter<?>> translatorCache = new ConcurrentHashMap<>();
     private static final AtomicReference<AFn> defaultReader = new AtomicReference<>(getUnknownReader());
@@ -123,18 +151,12 @@ public class EdnSerialization {
         recordTagCache.put(type, tag);
         translators.getAndUpdate(translators -> ClojureStuff.Assoc.invoke(translators, ClojureStuff.cachedRead(
                 tag), new RecordReader<>(type)));
-        definePrintMethod(":" + type.getTypeName(), "RecordPrinter/printRecord", tag);
-        definePrintMethod(type.getTypeName(), "RecordPrinter/printRecord", tag);
     }
 
     public static synchronized <D extends DynamicObject<D>> void deregisterTag(Class<D> type) {
         String tag = recordTagCache.get(type);
         translators.getAndUpdate(translators -> ClojureStuff.Dissoc.invoke(translators, ClojureStuff.cachedRead(tag)));
         recordTagCache.remove(type);
-
-        Object dispatchVal = ClojureStuff.cachedRead(":" + type.getTypeName());
-        ClojureStuff.RemoveMethod.invoke(ClojureStuff.PrintMethod, dispatchVal);
-        ClojureStuff.RemoveMethod.invoke(ClojureStuff.PrintMethod, type);
     }
 
     private static void definePrintMethod(String dispatchVal, String method, String arg) {

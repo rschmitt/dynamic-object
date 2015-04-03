@@ -22,7 +22,7 @@ import clojure.lang.ISeq;
 import clojure.lang.MapEquivalence;
 import clojure.lang.Seqable;
 
-public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements Map, IPersistentMap, IObj, MapEquivalence, CustomValidationHook<D> {
+public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements Map, IPersistentMap, IObj, MapEquivalence, DynamicObjectPrintHook, CustomValidationHook<D> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
