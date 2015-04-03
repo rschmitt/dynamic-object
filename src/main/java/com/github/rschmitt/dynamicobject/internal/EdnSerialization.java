@@ -136,7 +136,12 @@ public class EdnSerialization {
         translatorCache.put(type, adapter);
         translators.getAndUpdate(translators -> ClojureStuff.Assoc.invoke(translators, ClojureStuff.cachedRead(
                 translator.getTag()), adapter));
-        definePrintMethod(type.getTypeName(), "EdnSerialization/invokeWriter", translator.getTag());
+        String clojureCode = format(
+                "(defmethod print-method %s " +
+                        "[o, ^java.io.Writer w] " +
+                        "(com.github.rschmitt.dynamicobject.internal.EdnSerialization/invokeWriter o w \"%s\"))",
+                type.getTypeName(), translator.getTag());
+        ClojureStuff.Eval.invoke(ClojureStuff.ReadString.invoke(clojureCode));
     }
 
     public static synchronized <T> void deregisterType(Class<T> type) {
@@ -157,13 +162,6 @@ public class EdnSerialization {
         String tag = recordTagCache.get(type);
         translators.getAndUpdate(translators -> ClojureStuff.Dissoc.invoke(translators, ClojureStuff.cachedRead(tag)));
         recordTagCache.remove(type);
-    }
-
-    private static void definePrintMethod(String dispatchVal, String method, String arg) {
-        String clojureCode = format(
-                "(defmethod print-method %s [o, ^java.io.Writer w] (com.github.rschmitt.dynamicobject.internal.%s o w \"%s\"))",
-                dispatchVal, method, arg);
-        ClojureStuff.Eval.invoke(ClojureStuff.ReadString.invoke(clojureCode));
     }
 
     @SuppressWarnings("unused")
