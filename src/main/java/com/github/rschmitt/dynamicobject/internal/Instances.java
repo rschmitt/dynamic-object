@@ -14,7 +14,7 @@ public class Instances {
     private static final ConcurrentMap<Class, DynamicProxy> proxyCache = new ConcurrentHashMap<>();
 
     public static <D extends DynamicObject<D>> D newInstance(Class<D> type) {
-        return wrap((Map) Metadata.withTypeMetadata(EmptyMap, type), type);
+        return wrap(EmptyMap, type);
     }
 
     @SuppressWarnings("unchecked")
@@ -23,10 +23,6 @@ public class Instances {
             throw new NullPointerException("A null reference cannot be used as a DynamicObject");
         if (map instanceof DynamicObject)
             return type.cast(map);
-        Class<?> typeMetadata = Metadata.getTypeMetadata(map);
-        if (typeMetadata != null && !type.equals(typeMetadata))
-            throw new ClassCastException(String.format("Attempted to wrap a map tagged as %s in type %s",
-                    typeMetadata.getSimpleName(), type.getSimpleName()));
 
         return createIndyProxy(map, type);
     }

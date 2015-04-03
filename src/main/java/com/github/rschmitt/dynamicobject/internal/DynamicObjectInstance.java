@@ -96,7 +96,6 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implemen
         Object array = ClojureStuff.Diff.invoke(map, arg.getMap());
         Object union = ClojureStuff.Nth.invoke(array, idx);
         if (union == null) union = ClojureStuff.EmptyMap;
-        union = Metadata.withTypeMetadata(union, type);
         return DynamicObject.wrap((Map) union, type);
     }
 

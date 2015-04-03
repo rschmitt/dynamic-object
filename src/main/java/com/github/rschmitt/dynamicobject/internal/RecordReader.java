@@ -18,7 +18,6 @@ public final class RecordReader<D extends DynamicObject<D>> extends AFn {
      */
     @Override
     public Object invoke(Object map) {
-        Object mapWithMeta = Metadata.withTypeMetadata(map, type);
-        return DynamicObject.wrap((Map) mapWithMeta, type);
+        return DynamicObject.wrap((Map) map, type);
     }
 }
