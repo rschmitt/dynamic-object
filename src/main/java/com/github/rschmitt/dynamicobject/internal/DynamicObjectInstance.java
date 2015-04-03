@@ -19,9 +19,10 @@ import clojure.lang.IObj;
 import clojure.lang.IPersistentCollection;
 import clojure.lang.IPersistentMap;
 import clojure.lang.ISeq;
+import clojure.lang.MapEquivalence;
 import clojure.lang.Seqable;
 
-public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements Map, IPersistentMap, IObj, CustomValidationHook<D> {
+public abstract class DynamicObjectInstance<D extends DynamicObject<D>> implements Map, IPersistentMap, IObj, MapEquivalence, CustomValidationHook<D> {
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
