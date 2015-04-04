@@ -153,8 +153,8 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
     }
 
     public Object $$validate() {
-        $$customValidate();
         Validation.validateInstance(this);
+        $$customValidate();
         return this;
     }
 
