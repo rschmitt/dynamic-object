@@ -143,11 +143,6 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
         return Conversions.clojureToJava(val, genericReturnType);
     }
 
-    public D validate(D self) {
-        Validation.validateInstance(this);
-        return self;
-    }
-
     public Object $$noop() {
         return this;
     }

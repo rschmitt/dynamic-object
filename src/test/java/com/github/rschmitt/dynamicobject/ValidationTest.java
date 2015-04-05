@@ -169,11 +169,27 @@ public class ValidationTest {
         instance.x();
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void customValidation() {
         validationSuccess("{:oddsOnly 5, :required 0}", Custom.class);
+        DynamicObject.deserialize("{:oddsOnly 4, :required 0}", Custom.class).validate();
         validationFailure("{:oddsOnly 4, :required 0}", Custom.class);
         validationFailure("{:oddsOnly 5}", Custom.class);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void customValidationRunsLast() {
+        newInstance(Custom2.class).validate();
+    }
+
+    @Test(expected = CustomException.class)
+    public void customExceptionsArePropagated() {
+        newInstance(Custom2.class).str("value").validate();
+    }
+
+    @Test(expected = CustomException.class)
+    public void customExceptionsArePropagated2() {
+        DynamicObject.deserialize("{:str \"value\"}", Custom2.class).validate();
     }
 
     private static <D extends DynamicObject<D>> void validationFailure(String edn, Class<D> type) {
@@ -254,11 +270,21 @@ public class ValidationTest {
         @Required int oddsOnly();
         @Required int required();
 
-        @Override
         default Custom validate() {
             if (oddsOnly() % 2 == 0)
                 throw new IllegalStateException("Odd number expected");
             return this;
         }
     }
+
+    public interface Custom2 extends DynamicObject<Custom2> {
+        @Required String str();
+        Custom2 str(String str);
+
+        default Custom2 validate() {
+            throw new CustomException();
+        }
+    }
+
+    public static class CustomException extends RuntimeException {}
 }

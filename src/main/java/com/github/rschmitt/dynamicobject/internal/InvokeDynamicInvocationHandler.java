@@ -9,15 +9,12 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import com.github.rschmitt.dynamicobject.DynamicObject;
+
 import net.fushizen.invokedynamic.proxy.DynamicInvocationHandler;
 
 public class InvokeDynamicInvocationHandler implements DynamicInvocationHandler {
-    private static final ConcurrentMap<Class, MethodHandle> validateMethodHandleCache = new ConcurrentHashMap<>();
-
     private final Class dynamicObjectType;
 
     public InvokeDynamicInvocationHandler(Class dynamicObjectType) {
@@ -34,22 +31,19 @@ public class InvokeDynamicInvocationHandler implements DynamicInvocationHandler 
     ) throws Throwable {
         Class proxyType = methodType.parameterArray()[0];
         MethodHandle mh;
-        if (superMethod != null) {
+        if (superMethod != null && !"validate".equals(methodName)) {
             mh = superMethod.asType(methodType);
-            if ("validate".equals(methodName)) {
-                if (mh.type().returnType().equals(dynamicObjectType))
-                    return new ConstantCallSite(mh);
-                else
-                    validateMethodHandleCache.put(dynamicObjectType, mh);
-            } else return new ConstantCallSite(mh);
+            return new ConstantCallSite(mh);
         }
         if ("validate".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "$$validate", methodType(Object.class, new Class[]{ }), proxyType).asType(methodType);
+            mh = lookup.findSpecial(DynamicObjectInstance.class, "$$validate", methodType(Object.class, new Class[]{}), proxyType).asType(methodType);
         } else if ("$$customValidate".equals(methodName)) {
-            mh = validateMethodHandleCache.getOrDefault(
-                    dynamicObjectType,
-                    lookup.findSpecial(DynamicObjectInstance.class, "$$noop", methodType(Object.class), proxyType).asType(methodType)
-            );
+            try {
+                mh = lookup.findSpecial(dynamicObjectType, "validate", methodType(dynamicObjectType), proxyType);
+            } catch (NoSuchMethodException ex) {
+                mh = lookup.findSpecial(DynamicObjectInstance.class, "$$noop", methodType(Object.class, new Class[]{}), proxyType);
+            }
+            mh = mh.asType(methodType);
         } else {
             Method method = dynamicObjectType.getMethod(methodName, methodType.dropParameterTypes(0, 1).parameterArray());
 
