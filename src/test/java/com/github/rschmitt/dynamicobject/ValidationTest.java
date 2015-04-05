@@ -5,6 +5,7 @@ import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static com.github.rschmitt.dynamicobject.DynamicObject.registerTag;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.math.BigInteger;
@@ -192,6 +193,14 @@ public class ValidationTest {
         DynamicObject.deserialize("{:str \"value\"}", Custom2.class).validate();
     }
 
+    @Test
+    public void mutatingValidators() {
+        MutatingValidator before = newInstance(MutatingValidator.class);
+        MutatingValidator after = before.validate();
+        assertEquals("value", after.str());
+        assertEquals("value", newInstance(MutatingValidator.class).validate().str());
+    }
+
     private static <D extends DynamicObject<D>> void validationFailure(String edn, Class<D> type) {
         try {
             deserialize(edn, type).validate();
@@ -203,7 +212,7 @@ public class ValidationTest {
 
     private static <D extends DynamicObject<D>> void validationSuccess(String edn, Class<D> type) {
         D instance = deserialize(edn, type).validate();
-        Assert.assertEquals(edn, serialize(instance));
+        assertEquals(edn, serialize(instance));
     }
 
 
@@ -283,6 +292,17 @@ public class ValidationTest {
 
         default Custom2 validate() {
             throw new CustomException();
+        }
+    }
+
+    public interface MutatingValidator extends DynamicObject<MutatingValidator> {
+        String str();
+        MutatingValidator str(String str);
+
+        default MutatingValidator validate() {
+            if (size() == 0) {
+                return str("value");
+            } else return this;
         }
     }
 
