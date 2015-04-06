@@ -31,10 +31,10 @@ public class RecordTest {
     }
 
     @Test
-    public void pprintOmitsReaderTag() {
+    public void pprintIncludesReaderTag() {
         String edn = "#com.github.rschmitt.dynamicobject.Defrecord{:str \"a string\"}";
         Defrecord record = DynamicObject.deserialize(edn, Defrecord.class);
-        assertEquals(format("{:str \"a string\"}%n"), record.toFormattedString());
+        assertEquals(format("%s%n", edn), record.toFormattedString());
     }
 
     @Test(expected = ClassCastException.class)

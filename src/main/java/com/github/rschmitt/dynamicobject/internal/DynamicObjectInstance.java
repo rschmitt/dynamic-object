@@ -66,12 +66,12 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
     }
 
     public void prettyPrint() {
-        ClojureStuff.Pprint.invoke(map);
+        ClojureStuff.Pprint.invoke(this);
     }
 
     public String toFormattedString() {
         Writer w = new StringWriter();
-        ClojureStuff.Pprint.invoke(map, w);
+        ClojureStuff.Pprint.invoke(this, w);
         return w.toString();
     }
 

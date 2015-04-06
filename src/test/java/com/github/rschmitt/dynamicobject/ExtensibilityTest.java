@@ -67,7 +67,7 @@ public class ExtensibilityTest {
     @Test
     public void prettyPrint() {
         DumbClassHolder holder = deserialize(Edn, DumbClassHolder.class);
-        String expectedFormattedString = format("{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}%n");
+        String expectedFormattedString = format("#dh{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}%n");
         assertEquals(expectedFormattedString, holder.toFormattedString());
     }
 
