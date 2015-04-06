@@ -170,12 +170,16 @@ public class ValidationTest {
         instance.x();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void customValidation() {
         validationSuccess("{:oddsOnly 5, :required 0}", Custom.class);
-        DynamicObject.deserialize("{:oddsOnly 4, :required 0}", Custom.class).validate();
         validationFailure("{:oddsOnly 4, :required 0}", Custom.class);
         validationFailure("{:oddsOnly 5}", Custom.class);
+
+        try {
+            DynamicObject.deserialize("{:oddsOnly 4, :required 0}", Custom.class).validate();
+            Assert.fail();
+        } catch (IllegalStateException expected) {}
     }
 
     @Test(expected = IllegalStateException.class)
