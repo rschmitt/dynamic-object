@@ -2,9 +2,9 @@
 
 DynamicObject is a library that makes Clojure's powerful data modeling capabilities available to Java developers in an idiomatic way with minimal boilerplate. It reflects the belief that [values](http://www.infoq.com/presentations/Value-Values) should be immutable, cheap to specify, powerful to work with, and easy to convey to other processes.
 
-Get it from [Maven](http://search.maven.org/#artifactdetails|com.github.rschmitt|dynamic-object|1.4.0|jar):
+Get it from [Maven](http://search.maven.org/#artifactdetails|com.github.rschmitt|dynamic-object|1.4.1|jar):
 
-`com.github.rschmitt:dynamic-object:1.4.0`
+`com.github.rschmitt:dynamic-object:1.4.1`
 
 ## The Problem
 
@@ -430,7 +430,6 @@ head
 => #LL{:next #LL{:next #LL{:value 19, :next nil}, :value 2}, :value 1}
 
 ; DynamicObject validation can be used from Clojure for runtime type checking:
-=> #LL{:next 4, :value 1}
 (.validate (assoc head :next 4))
 IllegalStateException The following fields had the wrong type:
   next (expected LinkedList, got Long)
