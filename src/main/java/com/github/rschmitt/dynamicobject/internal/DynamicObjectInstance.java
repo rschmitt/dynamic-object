@@ -234,7 +234,8 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
 
     @Override
     public IPersistentCollection cons(Object o) {
-        return ((IPersistentCollection) map).cons(o);
+        Map newMap = (Map) ((IPersistentCollection) map).cons(o);
+        return (DynamicObjectInstance) DynamicObject.wrap(newMap, type);
     }
 
     @Override

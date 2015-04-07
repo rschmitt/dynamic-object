@@ -458,40 +458,6 @@ IllegalStateException The following fields had the wrong type:
 => #LL{:next #LL{:next #LL{:value 3, :next nil}, :value 2}, :value 1}
 ```
 
-It is important to note that some Clojure functions only return plain Clojure maps.
-
-```clojure
-; What about Clojure functions that are hard-coded to return plain Clojure maps?
-(conj tail [:key :value])
-=> {:key :value, :value 3, :next nil}
-(class *1)
-=> clojure.lang.PersistentArrayMap
-
-; In this case, the returned map can simply be wrapped again:
-(DynamicObject/wrap *1 RecursionTest$LinkedList)
-=> #LL{:key :value, :value 3, :next nil}
-(.getType *1)
-=> com.github.rschmitt.dynamicobject.RecursionTest$LinkedList
-
-; Some functions recurse over the data and return nested maps:
-(def new-head (assoc-in head [:next :next :value] 19))
-=> #'user/new-head
-(def list-diff (clojure.data/diff head new-head))
-=> #'user/list-diff
-(pprint list-diff)
-({:next {:next {:value 3}}}
- {:next {:next {:value 19}}}
- {:next {:next {:next nil}, :value 2}, :value 1})
-
-; However, DynamicObject's getter methods will restore the stripped type information just in time:
-(DynamicObject/wrap (nth list-diff 2) RecursionTest$LinkedList)
-=> #LL{:next {:next {:next nil}, :value 2}, :value 1}
-(.next *1)
-=> #LL{:next {:next nil}, :value 2}
-(.next *1)
-=> #LL{:next nil}
-```
-
 ## Guidelines
 
 * Always register a reader tag for any `DynamicObject` that will be serialized. This reader tag should be namespaced with some appropriate prefix (e.g. a Java package name), as all unprefixed reader tags are reserved for future use by the Edn specification.
