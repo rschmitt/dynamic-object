@@ -118,14 +118,14 @@ public class EdnSerialization {
     }
 
     @SuppressWarnings("unchecked")
-    static <T> T deserialize(PushbackReader streamReader, Class<T> type) {
+    static <T, D extends DynamicObject<D>> T deserialize(PushbackReader streamReader, Class<T> type) {
         Object opts = getReadOptions();
         opts = ClojureStuff.Assoc.invoke(opts, EOF, EOF);
         Object obj = ClojureStuff.Read.invoke(opts, streamReader);
         if (EOF.equals(obj))
             throw new NoSuchElementException();
         if (DynamicObject.class.isAssignableFrom(type) && !(obj instanceof DynamicObject)) {
-            return Instances.wrap((Map) obj, type);
+            obj = Instances.wrap((Map) obj, (Class<D>) type);
         }
         return type.cast(obj);
     }

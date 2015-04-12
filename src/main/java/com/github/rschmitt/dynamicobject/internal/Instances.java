@@ -18,7 +18,7 @@ public class Instances {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T wrap(Map map, Class<T> type) {
+    public static <D extends DynamicObject<D>> D wrap(Map map, Class<D> type) {
         if (map == null)
             throw new NullPointerException("A null reference cannot be used as a DynamicObject");
         if (map instanceof DynamicObject)
@@ -27,14 +27,14 @@ public class Instances {
         return createIndyProxy(map, type);
     }
 
-    private static <T> T createIndyProxy(Map map, Class<T> type) {
+    private static <D extends DynamicObject<D>> D createIndyProxy(Map map, Class<D> type) {
         try {
             Object proxy = proxyCache.computeIfAbsent(type, Instances::createProxy)
                     .constructor()
                     .invoke(map, type);
             return type.cast(proxy);
-        } catch (Throwable ex) {
-            throw new RuntimeException(ex);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
         }
     }
 
