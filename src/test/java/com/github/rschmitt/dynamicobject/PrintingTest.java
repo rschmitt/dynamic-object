@@ -26,9 +26,9 @@ public class PrintingTest {
 
     @Test
     public void toStringTest() {
-        assertEquals("{}", emptyTagged.toString());
+        assertEquals("#Tagged{}", emptyTagged.toString());
         assertEquals("{}", emptyUntagged.toString());
-        assertEquals("{:untagged {}, :tagged #Tagged{}}", nestedTagged.toString());
+        assertEquals("#Tagged{:untagged {}, :tagged #Tagged{}}", nestedTagged.toString());
         assertEquals("{:untagged {}, :tagged #Tagged{}}", nestedUntagged.toString());
     }
 

@@ -46,7 +46,7 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
 
     @Override
     public String toString() {
-        return map.toString();
+        return DynamicObject.serialize(this);
     }
 
     @Override
