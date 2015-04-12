@@ -39,12 +39,16 @@ public class Instances {
     }
 
     private static DynamicProxy createProxy(Class dynamicObjectType) {
+        String[] slices = dynamicObjectType.getName().split("\\.");
+        String name = slices[slices.length - 1] + "Impl";
         try {
             return DynamicProxy.builder()
                     .withInterfaces(dynamicObjectType, CustomValidationHook.class)
                     .withSuperclass(DynamicObjectInstance.class)
                     .withInvocationHandler(new InvokeDynamicInvocationHandler(dynamicObjectType))
                     .withConstructor(Map.class, Class.class)
+                    .withPackageName(dynamicObjectType.getPackage().getName())
+                    .withClassName(name)
                     .build();
         } catch (Exception e) {
             throw new RuntimeException(e);

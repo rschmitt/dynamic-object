@@ -31,7 +31,7 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
     private final Class<D> type;
     private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
 
-    DynamicObjectInstance(Map map, Class<D> type) {
+    public DynamicObjectInstance(Map map, Class<D> type) {
         this.map = map;
         this.type = type;
     }
