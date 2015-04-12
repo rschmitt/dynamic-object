@@ -125,7 +125,7 @@ public class EdnSerialization {
         if (EOF.equals(obj))
             throw new NoSuchElementException();
         if (DynamicObject.class.isAssignableFrom(type) && !(obj instanceof DynamicObject)) {
-            obj = Instances.wrap((Map) obj, (Class<D>) type);
+            obj = Instances.wrap((Map) obj, (Class<D>) type).afterDeserialization();
         }
         return type.cast(obj);
     }

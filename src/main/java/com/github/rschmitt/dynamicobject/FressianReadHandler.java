@@ -15,6 +15,6 @@ public class FressianReadHandler<D extends DynamicObject<D>> implements ReadHand
 
     @Override
     public Object read(Reader r, Object tag, int componentCount) throws IOException {
-        return DynamicObject.wrap((Map) r.readObject(), type);
+        return DynamicObject.wrap((Map) r.readObject(), type).afterDeserialization();
     }
 }

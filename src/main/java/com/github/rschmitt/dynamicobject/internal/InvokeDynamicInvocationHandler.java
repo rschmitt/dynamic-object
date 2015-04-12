@@ -44,6 +44,8 @@ public class InvokeDynamicInvocationHandler implements DynamicInvocationHandler 
                 mh = lookup.findSpecial(DynamicObjectInstance.class, "$$noop", methodType(Object.class, new Class[]{}), proxyType);
             }
             mh = mh.asType(methodType);
+        } else if ("afterDeserialization".equals(methodName)) {
+            mh = lookup.findSpecial(DynamicObjectInstance.class, "$$noop", methodType(Object.class, new Class[]{}), proxyType).asType(methodType);
         } else {
             Method method = dynamicObjectType.getMethod(methodName, methodType.dropParameterTypes(0, 1).parameterArray());
 

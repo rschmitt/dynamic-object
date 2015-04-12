@@ -18,6 +18,6 @@ public final class RecordReader<D extends DynamicObject<D>> extends AFn {
      */
     @Override
     public Object invoke(Object map) {
-        return DynamicObject.wrap((Map) map, type);
+        return DynamicObject.wrap((Map) map, type).afterDeserialization();
     }
 }

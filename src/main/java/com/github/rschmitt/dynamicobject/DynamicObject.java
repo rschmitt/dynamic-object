@@ -75,6 +75,18 @@ public interface DynamicObject<D extends DynamicObject<D>> extends Map {
     D validate();
 
     /**
+     * Post-deserialization hook. The intended use of this method is to facilitate format upgrades. For example, if a
+     * new field has been added to a DynamicObject schema, this method can be implemented to add that field (with
+     * some appropriate default value) to older data upon deserialization.
+     * <p/>
+     * If not implemented, this method does nothing.
+     * <p/>
+     * @deprecated This method is experimental.
+     */
+    @Deprecated
+    D afterDeserialization();
+
+    /**
      * Serialize the given object to Edn. Any {@code EdnTranslator}s that have been registered through
      * {@link DynamicObject#registerType} will be invoked as needed.
      */
