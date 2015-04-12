@@ -28,11 +28,14 @@ public class Instances {
     }
 
     private static <T> T createIndyProxy(Map map, Class<T> type) {
-        T t = (T) proxyCache.computeIfAbsent(type, Instances::createProxy).supplier().get();
-        DynamicObjectInstance i = (DynamicObjectInstance) t;
-        i.map = map;
-        i.type = type;
-        return t;
+        try {
+            Object proxy = proxyCache.computeIfAbsent(type, Instances::createProxy)
+                    .constructor()
+                    .invoke(map, type);
+            return type.cast(proxy);
+        } catch (Throwable ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     private static DynamicProxy createProxy(Class dynamicObjectType) {
@@ -41,6 +44,7 @@ public class Instances {
                     .withInterfaces(dynamicObjectType, CustomValidationHook.class)
                     .withSuperclass(DynamicObjectInstance.class)
                     .withInvocationHandler(new InvokeDynamicInvocationHandler(dynamicObjectType))
+                    .withConstructor(Map.class, Class.class)
                     .build();
         } catch (Exception e) {
             throw new RuntimeException(e);

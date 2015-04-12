@@ -27,12 +27,9 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
     private static final Object Default = new Object();
     private static final Object Null = new Object();
 
-    Map map;
-    Class<D> type;
+    private final Map map;
+    private final Class<D> type;
     private final ConcurrentHashMap valueCache = new ConcurrentHashMap();
-
-    public DynamicObjectInstance() {
-    }
 
     DynamicObjectInstance(Map map, Class<D> type) {
         this.map = map;
