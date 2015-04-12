@@ -44,10 +44,6 @@ public class Numerics {
         return numericTypes.contains(type);
     }
 
-    static Class<?> canonicalNumericType(Class<?> type) {
-        return numericConversions.getOrDefault(type, type);
-    }
-
     static Object maybeDownconvert(Class type, Object val) {
         if (val == null) return null;
         if (type.equals(int.class) || type.equals(Integer.class)) return ((Long) val).intValue();
