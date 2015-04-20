@@ -1,12 +1,11 @@
 package com.github.rschmitt.dynamicobject;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
-import static com.github.rschmitt.dynamicobject.DynamicObject.registerTag;
-import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static com.github.rschmitt.dynamicobject.DynamicObject.*;
+import static java.lang.String.format;
+import static org.junit.Assert.assertEquals;
 
 public class PrintingTest {
     static Tagged emptyTagged;
@@ -34,10 +33,10 @@ public class PrintingTest {
 
     @Test
     public void toFormattedStringTest() {
-        assertEquals("#Tagged{}\n", emptyTagged.toFormattedString());
-        assertEquals("{}\n", emptyUntagged.toFormattedString());
-        assertEquals("#Tagged{:untagged {}, :tagged #Tagged{}}\n", nestedTagged.toFormattedString());
-        assertEquals("{:untagged {}, :tagged #Tagged{}}\n", nestedUntagged.toFormattedString());
+        assertEquals(format("#Tagged{}%n"), emptyTagged.toFormattedString());
+        assertEquals(format("{}%n"), emptyUntagged.toFormattedString());
+        assertEquals(format("#Tagged{:untagged {}, :tagged #Tagged{}}%n"), nestedTagged.toFormattedString());
+        assertEquals(format("{:untagged {}, :tagged #Tagged{}}%n"), nestedUntagged.toFormattedString());
     }
 
     @Test
