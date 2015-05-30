@@ -1,3 +1,5 @@
+[![Build Status](http://img.shields.io/travis/rschmitt/dynamic-object.svg)](https://travis-ci.org/rschmitt/dynamic-object)
+
 # DynamicObject
 
 DynamicObject is a library that makes Clojure's powerful data modeling capabilities available to Java developers in an idiomatic way with minimal boilerplate. It reflects the belief that [values](http://www.infoq.com/presentations/Value-Values) should be immutable, cheap to specify, powerful to work with, and easy to convey to other processes.
