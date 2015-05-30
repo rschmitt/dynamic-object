@@ -1,4 +1,6 @@
 language: java
 jdk: oraclejdk8
-script: mvn test
+script:
+  - mvn clean test
+  - mvn clean test -f pom-1.7.xml
 install: mvn install -DskipTests=true -Dgpg.skip=true
