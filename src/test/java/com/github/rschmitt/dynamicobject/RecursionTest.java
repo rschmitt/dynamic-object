@@ -2,10 +2,10 @@ package com.github.rschmitt.dynamicobject;
 
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.*;
+import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
 import static org.junit.Assert.*;
 
 public class RecursionTest {
@@ -17,7 +17,6 @@ public class RecursionTest {
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void recursion() {
         LinkedList tail = newInstance(LinkedList.class).value(3);
         LinkedList middle = newInstance(LinkedList.class).value(2).next(tail);
@@ -32,13 +31,12 @@ public class RecursionTest {
         assertEquals(3, head.next().next().value());
         assertNull(head.next().next().next());
 
-        assertEquals("{:next {:next {:value 3}, :value 2}, :value 1}", serialize(head));
-        assertEquals("{:next {:value 3}, :value 2}", serialize(middle));
-        assertEquals("{:value 3}", serialize(tail));
+        assertEquivalent("{:next {:next {:value 3}, :value 2}, :value 1}", serialize(head));
+        assertEquivalent("{:next {:value 3}, :value 2}", serialize(middle));
+        assertEquivalent("{:value 3}", serialize(tail));
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void taggedRecursion() {
         DynamicObject.registerTag(LinkedList.class, "LinkedList");
 
@@ -49,13 +47,12 @@ public class RecursionTest {
         roundTrip(tail, true);
         roundTrip(middle, true);
         roundTrip(head, true);
-        assertEquals("#LinkedList{:value 3}", serialize(tail));
-        assertEquals("#LinkedList{:next #LinkedList{:value 3}, :value 2}", serialize(middle));
-        assertEquals("#LinkedList{:next #LinkedList{:next #LinkedList{:value 3}, :value 2}, :value 1}", serialize(head));
+        assertEquivalent("#LinkedList{:value 3}", serialize(tail));
+        assertEquivalent("#LinkedList{:next #LinkedList{:value 3}, :value 2}", serialize(middle));
+        assertEquivalent("#LinkedList{:next #LinkedList{:next #LinkedList{:value 3}, :value 2}, :value 1}", serialize(head));
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void registeringTheTagAddsItToSerializedOutput() {
         LinkedList tail = newInstance(LinkedList.class).value(3);
         LinkedList middle = newInstance(LinkedList.class).value(2).next(tail);
@@ -66,13 +63,12 @@ public class RecursionTest {
         roundTrip(tail, true);
         roundTrip(middle, true);
         roundTrip(head, true);
-        assertEquals("#LinkedList{:value 3}", serialize(tail));
-        assertEquals("#LinkedList{:next #LinkedList{:value 3}, :value 2}", serialize(middle));
-        assertEquals("#LinkedList{:next #LinkedList{:next #LinkedList{:value 3}, :value 2}, :value 1}", serialize(head));
+        assertEquivalent("#LinkedList{:value 3}", serialize(tail));
+        assertEquivalent("#LinkedList{:next #LinkedList{:value 3}, :value 2}", serialize(middle));
+        assertEquivalent("#LinkedList{:next #LinkedList{:next #LinkedList{:value 3}, :value 2}, :value 1}", serialize(head));
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void deregisteringTheTagRemovesItFromSerializedOutput() {
         DynamicObject.registerTag(LinkedList.class, "LinkedList");
 
@@ -86,9 +82,9 @@ public class RecursionTest {
         roundTrip(middle, false);
         roundTrip(head, false);
 
-        assertEquals("{:next {:next {:value 3}, :value 2}, :value 1}", serialize(head));
-        assertEquals("{:next {:value 3}, :value 2}", serialize(middle));
-        assertEquals("{:value 3}", serialize(tail));
+        assertEquivalent("{:next {:next {:value 3}, :value 2}, :value 1}", serialize(head));
+        assertEquivalent("{:next {:value 3}, :value 2}", serialize(middle));
+        assertEquivalent("{:value 3}", serialize(tail));
     }
 
     @Test

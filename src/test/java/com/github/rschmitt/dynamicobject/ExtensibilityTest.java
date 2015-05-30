@@ -6,7 +6,6 @@ import org.fressian.handlers.ReadHandler;
 import org.fressian.handlers.WriteHandler;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -14,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.*;
+import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
 import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
 
@@ -34,29 +34,26 @@ public class ExtensibilityTest {
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void roundTrip() {
         DumbClassHolder holder = deserialize(Edn, DumbClassHolder.class);
 
         String serialized = serialize(holder);
 
-        assertEquals(Edn, serialized);
+        assertEquivalent(Edn, serialized);
         assertEquals(new DumbClass(1, "str"), holder.dumb().get(0));
         assertEquals(holder, fromFressianByteArray(toFressianByteArray(holder)));
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void serializeRegisteredType() {
         DumbClass dumbClass = new DumbClass(24, "twenty-four");
 
         String serialized = serialize(dumbClass);
 
-        assertEquals("#MyDumbClass{:version 24, :str \"twenty-four\"}", serialized);
+        assertEquivalent("#MyDumbClass{:version 24, :str \"twenty-four\"}", serialized);
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void deserializeRegisteredType() {
         String edn = "#MyDumbClass{:version 24, :str \"twenty-four\"}";
 
@@ -66,11 +63,10 @@ public class ExtensibilityTest {
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void prettyPrint() {
         DumbClassHolder holder = deserialize(Edn, DumbClassHolder.class);
         String expectedFormattedString = format("#dh{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}%n");
-        assertEquals(expectedFormattedString, holder.toFormattedString());
+        assertEquivalent(expectedFormattedString, holder.toFormattedString());
     }
 
     @Test

@@ -1,10 +1,10 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
 import static org.junit.Assert.*;
 
 public class PrimitiveTest {
@@ -67,7 +67,6 @@ public class PrimitiveTest {
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void unboxedNullBuilders() {
         String edn = "{:b nil, :c nil, :bool nil, :shrt nil, :lng nil, :f nil, :d nil, :i nil}";
         Boxed boxed = DynamicObject.newInstance(Boxed.class)
@@ -81,9 +80,9 @@ public class PrimitiveTest {
                 .b(null);
 
         assertEquals(boxed, deserialize(edn, Boxed.class));
-        assertEquals(edn, serialize(boxed));
+        assertEquivalent(edn, serialize(boxed));
         assertEquals(deserialize(edn, Boxed.class), boxed);
-        assertEquals(serialize(boxed), edn);
+        assertEquivalent(serialize(boxed), edn);
         assertNull(boxed.shrt());
         assertNull(boxed.i());
         assertNull(boxed.lng());

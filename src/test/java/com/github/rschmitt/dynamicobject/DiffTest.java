@@ -2,7 +2,6 @@ package com.github.rschmitt.dynamicobject;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.Set;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
 import static org.junit.Assert.*;
 
 public class DiffTest {
@@ -24,7 +24,6 @@ public class DiffTest {
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void union() {
         Diffable a = deserialize("#D{:a \"a\", :b \"b\"}", Diffable.class);
         Diffable b = deserialize("#D{:a \"a\", :b \"b\", :c \"c\"}", Diffable.class);
@@ -33,7 +32,7 @@ public class DiffTest {
 
         assertEquals(c, a);
         assertNotEquals(c, b);
-        assertEquals("#D{:a \"a\", :b \"b\"}", serialize(c));
+        assertEquivalent("#D{:a \"a\", :b \"b\"}", serialize(c));
     }
 
     @Test

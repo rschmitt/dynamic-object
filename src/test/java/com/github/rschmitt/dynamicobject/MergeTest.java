@@ -2,9 +2,9 @@ package com.github.rschmitt.dynamicobject;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
 import static org.junit.Assert.assertEquals;
 
 public class MergeTest {
@@ -49,14 +49,13 @@ public class MergeTest {
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void mergeOutputSerializesCorrectly() {
         Mergeable a = DynamicObject.deserialize("#M{:a \"outer\"}", Mergeable.class);
         Mergeable b = DynamicObject.deserialize("#M{:m #M{:a \"inner\"}}", Mergeable.class);
 
         Mergeable c = a.merge(b);
 
-        assertEquals("#M{:m #M{:a \"inner\"}, :a \"outer\"}", DynamicObject.serialize(c));
+        assertEquivalent("#M{:m #M{:a \"inner\"}, :a \"outer\"}", DynamicObject.serialize(c));
     }
 
     public interface Mergeable extends DynamicObject<Mergeable> {

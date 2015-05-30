@@ -1,12 +1,10 @@
 package com.github.rschmitt.dynamicobject;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.*;
-import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
+import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
 
 public class PrintingTest {
     static Tagged emptyTagged;
@@ -25,30 +23,27 @@ public class PrintingTest {
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void toStringTest() {
-        assertEquals("#Tagged{}", emptyTagged.toString());
-        assertEquals("{}", emptyUntagged.toString());
-        assertEquals("#Tagged{:untagged {}, :tagged #Tagged{}}", nestedTagged.toString());
-        assertEquals("{:untagged {}, :tagged #Tagged{}}", nestedUntagged.toString());
+        assertEquivalent("#Tagged{}", emptyTagged.toString());
+        assertEquivalent("{}", emptyUntagged.toString());
+        assertEquivalent("#Tagged{:untagged {}, :tagged #Tagged{}}", nestedTagged.toString());
+        assertEquivalent("{:untagged {}, :tagged #Tagged{}}", nestedUntagged.toString());
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void toFormattedStringTest() {
-        assertEquals(format("#Tagged{}%n"), emptyTagged.toFormattedString());
-        assertEquals(format("{}%n"), emptyUntagged.toFormattedString());
-        assertEquals(format("#Tagged{:untagged {}, :tagged #Tagged{}}%n"), nestedTagged.toFormattedString());
-        assertEquals(format("{:untagged {}, :tagged #Tagged{}}%n"), nestedUntagged.toFormattedString());
+        assertEquivalent("#Tagged{}", emptyTagged.toFormattedString());
+        assertEquivalent("{}", emptyUntagged.toFormattedString());
+        assertEquivalent("#Tagged{:untagged {}, :tagged #Tagged{}}", nestedTagged.toFormattedString());
+        assertEquivalent("{:untagged {}, :tagged #Tagged{}}", nestedUntagged.toFormattedString());
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void serializeTest() {
-        assertEquals("#Tagged{}", serialize(emptyTagged));
-        assertEquals("{}", serialize(emptyUntagged));
-        assertEquals("#Tagged{:untagged {}, :tagged #Tagged{}}", serialize(nestedTagged));
-        assertEquals("{:untagged {}, :tagged #Tagged{}}", serialize(nestedUntagged));
+        assertEquivalent("#Tagged{}", serialize(emptyTagged));
+        assertEquivalent("{}", serialize(emptyUntagged));
+        assertEquivalent("#Tagged{:untagged {}, :tagged #Tagged{}}", serialize(nestedTagged));
+        assertEquivalent("{:untagged {}, :tagged #Tagged{}}", serialize(nestedUntagged));
     }
 }
 

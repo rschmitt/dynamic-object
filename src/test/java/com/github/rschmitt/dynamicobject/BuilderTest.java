@@ -1,9 +1,9 @@
 package com.github.rschmitt.dynamicobject;
 
 import clojure.lang.PersistentHashMap;
-import org.junit.Ignore;
 import org.junit.Test;
 
+import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
 import static org.junit.Assert.assertEquals;
 
 public class BuilderTest {
@@ -22,10 +22,9 @@ public class BuilderTest {
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void invokeBuilderWithPrimitive() {
         Buildable obj = DynamicObject.newInstance(Buildable.class).i(4).s((short) 127).l(Long.MAX_VALUE).d(3.14).f((float) 3.14);
-        assertEquals("{:f 3.14, :d 3.14, :l 9223372036854775807, :s 127, :i 4}", DynamicObject.serialize(obj));
+        assertEquivalent("{:f 3.14, :d 3.14, :l 9223372036854775807, :s 127, :i 4}", DynamicObject.serialize(obj));
         assertEquals(4, obj.i());
         assertEquals(127, obj.s());
         assertEquals(Long.MAX_VALUE, obj.l());
