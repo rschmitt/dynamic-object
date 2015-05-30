@@ -1,14 +1,13 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.EmptyMap;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import net.fushizen.invokedynamic.proxy.DynamicProxy;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.github.rschmitt.dynamicobject.DynamicObject;
-
-import net.fushizen.invokedynamic.proxy.DynamicProxy;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.EmptyMap;
 
 public class Instances {
     private static final ConcurrentMap<Class, DynamicProxy> proxyCache = new ConcurrentHashMap<>();
@@ -42,14 +41,18 @@ public class Instances {
         String[] slices = dynamicObjectType.getName().split("\\.");
         String name = slices[slices.length - 1] + "Impl";
         try {
-            return DynamicProxy.builder()
+            DynamicProxy.Builder builder = DynamicProxy.builder()
                     .withInterfaces(dynamicObjectType, CustomValidationHook.class)
                     .withSuperclass(DynamicObjectInstance.class)
                     .withInvocationHandler(new InvokeDynamicInvocationHandler(dynamicObjectType))
                     .withConstructor(Map.class, Class.class)
                     .withPackageName(dynamicObjectType.getPackage().getName())
-                    .withClassName(name)
-                    .build();
+                    .withClassName(name);
+            try {
+                Class<?> iMapIterable = Class.forName("clojure.lang.IMapIterable");
+                builder = builder.withInterfaces(iMapIterable);
+            } catch (ClassNotFoundException ignore) {}
+            return builder.build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

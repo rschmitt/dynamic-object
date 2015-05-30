@@ -49,7 +49,6 @@ public class DiffTest {
     }
 
     @Test
-    @Ignore("Breaks on Clojure 1.7.0-RC1")
     public void mapSubdiff() {
         Diffable a = deserialize("#D{:d #D{:a \"inner\"},                 :a \"a\", :b \"?\"}", Diffable.class);
         Diffable b = deserialize("#D{:d #D{:a \"inner\", :b \"ignored\"}, :a \"a\", :b \"!\"}", Diffable.class);

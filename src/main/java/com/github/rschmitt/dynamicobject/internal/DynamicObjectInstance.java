@@ -1,27 +1,18 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import static java.lang.String.format;
+import clojure.lang.*;
+import com.github.rschmitt.dynamicobject.DynamicObject;
 
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.github.rschmitt.dynamicobject.DynamicObject;
-
-import clojure.lang.AFn;
-import clojure.lang.Associative;
-import clojure.lang.IHashEq;
-import clojure.lang.IMapEntry;
-import clojure.lang.IObj;
-import clojure.lang.IPersistentCollection;
-import clojure.lang.IPersistentMap;
-import clojure.lang.ISeq;
-import clojure.lang.MapEquivalence;
-import clojure.lang.Seqable;
+import static java.lang.String.format;
 
 public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends AFn implements Map, IPersistentMap, IObj, MapEquivalence, IHashEq, DynamicObjectPrintHook, CustomValidationHook<D> {
     private static final Object Default = new Object();
@@ -286,5 +277,15 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
     @Override
     public Object invoke(Object arg1, Object notFound) {
         return valAt(arg1, notFound);
+    }
+
+    public Iterator valIterator() throws ReflectiveOperationException {
+        Class<? extends Map> aClass = map.getClass();
+        return (Iterator) aClass.getMethod("valIterator").invoke(map);
+    }
+
+    public Iterator keyIterator() throws ReflectiveOperationException {
+        Class<? extends Map> aClass = map.getClass();
+        return (Iterator) aClass.getMethod("keyIterator").invoke(map);
     }
 }
