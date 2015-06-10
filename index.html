@@ -1,1 +1,537 @@
-Hello, world
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>DynamicObject by rschmitt</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/rschmitt/dynamic-object">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/rschmitt/dynamic-object/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/rschmitt/dynamic-object/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>DynamicObject</h1>
+          <p>Lightweight data modeling for Java, powered by Clojure.</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/rschmitt">rschmitt</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <p><a href="https://travis-ci.org/rschmitt/dynamic-object"><img src="http://img.shields.io/travis/rschmitt/dynamic-object.svg" alt="Build Status"></a>
+<a href="https://maven-badges.herokuapp.com/maven-central/com.github.rschmitt/dynamic-object"><img src="https://img.shields.io/maven-central/v/com.github.rschmitt/dynamic-object.svg" alt="Maven Central"></a>
+<a href="https://creativecommons.org/about/cc0"><img src="https://img.shields.io/github/license/rschmitt/dynamic-object.svg" alt="License"></a></p>
+
+<h1>
+<a id="dynamicobject" class="anchor" href="#dynamicobject" aria-hidden="true"><span class="octicon octicon-link"></span></a>DynamicObject</h1>
+
+<p>DynamicObject is a library that makes Clojure's powerful data modeling capabilities available to Java developers in an idiomatic way with minimal boilerplate. It reflects the belief that <a href="http://www.infoq.com/presentations/Value-Values">values</a> should be immutable, cheap to specify, powerful to work with, and easy to convey to other processes.</p>
+
+<p>Get it from <a href="http://search.maven.org/#artifactdetails%7Ccom.github.rschmitt%7Cdynamic-object%7C1.4.2%7Cjar">Maven</a>:</p>
+
+<p><code>com.github.rschmitt:dynamic-object:1.4.2</code></p>
+
+<h2>
+<a id="the-problem" class="anchor" href="#the-problem" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Problem</h2>
+
+<p>The Java programming language is flawlessly incompetent at representing data. Classes are the main programming language construct in Java, and the entire point of classes is to <em>combine</em> data and code such that data is "encapsulated" and can only be accessed through an operational interface, if at all. Creating a class that does nothing but hold data requires the creation of <em>pages</em> of boilerplate--getters, setters, constructors, <code>clone</code>, <code>equals</code>, <code>hashCode</code>, <code>toString</code>, and so on. Not only is this labor-intensive to do by hand, it's surprisingly error prone: copy and paste can result in getters/setters touching the wrong fields, methods like <code>equals</code> can be overlooked when a new field is added, pervasive unmoderated mutability is the default, the <code>equals</code>/<code>hashCode</code>/<code>compareTo</code> contract is far more subtle than most realize, implementation inheritance is almost intractably complex, and concurrency and serialization have to be figured out from scratch.</p>
+
+<p>There have been countless attempts to address various subsets (or supersets) of these problems: IDE code generation, compile-time code generation, object mapping, test case generators, annotation processors, public fields, and so on. These tools are usually helpful in the right context, but they're really only workarounds for a fundamentally broken approach to working with data. Instead of trying to fix a broken approach, why not switch to a better one altogether?</p>
+
+<p>Anyone who has used Clojure's <a href="http://clojure.org/data_structures">data structures</a> knows that there is a night-and-day difference between the Java and Clojure approaches to modeling data, and that Clojure's approach yields dramatically more leverage. One reason for Clojure's flexibility and power in working with data is its philosophy that <em>data belongs in maps</em>. Immutable persistent maps can be safely shared, compose well, can be sent to other programs (serialized and deserialized), are expressive enough to model almost anything, and can be generically processed by a collections library, which makes for excellent code reuse. Unfortunately, Clojure is radically different from what most developers are familiar with, in both superficial and profound ways. As a consequence, Clojure adoption is usually an uphill battle at best, and outright impossible at worst. But is it possible to get the benefits of Clojure without writing a line of Clojure code?</p>
+
+<p>Because Clojure targets the JVM, it is possible for Java shops to use Clojure data without actually writing any Clojure code. However, there is a significant impedance mismatch between the two languages, and trying to call Clojure directly from Java results in a number of ergonomic problems, such as loss of type information, pervasive downcasting, and a Java API that is largely internal and undocumented. The goal of DynamicObject is to bridge the gap between the two languages and retain the advantages of both.</p>
+
+<h2>
+<a id="a-simple-example" class="anchor" href="#a-simple-example" aria-hidden="true"><span class="octicon octicon-link"></span></a>A Simple Example</h2>
+
+<p>Consider a Clojure map that describes an album:</p>
+
+<div class="highlight highlight-clojure"><pre>{<span class="pl-c1">:artist</span> <span class="pl-s"><span class="pl-pds">"</span>Meshuggah<span class="pl-pds">"</span></span>, <span class="pl-c1">:album</span> <span class="pl-s"><span class="pl-pds">"</span>Chaosphere<span class="pl-pds">"</span></span>, <span class="pl-c1">:tracks</span> <span class="pl-c1">8</span>, <span class="pl-c1">:year</span> <span class="pl-c1">1998</span>}</pre></div>
+
+<p>Getting access to this data from Java is kind of a mess if you go directly through the Clojure runtime. It might look something like this:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">String</span> edn <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>{:artist <span class="pl-cce">\"</span>Meshuggah<span class="pl-cce">\"</span>, :album <span class="pl-cce">\"</span>Chaosphere<span class="pl-cce">\"</span>, :tracks 8, :year 1998}<span class="pl-pds">"</span></span>;
+<span class="pl-smi">Map</span> albumDescription <span class="pl-k">=</span> (<span class="pl-smi">Map</span>) <span class="pl-smi">Clojure</span><span class="pl-k">.</span>var(<span class="pl-s"><span class="pl-pds">"</span>clojure.edn/read-string<span class="pl-pds">"</span></span>)<span class="pl-k">.</span>invoke(edn);
+<span class="pl-smi">String</span> album <span class="pl-k">=</span> (<span class="pl-smi">String</span>) albumDescription<span class="pl-k">.</span>get(<span class="pl-smi">Clojure</span><span class="pl-k">.</span>read(<span class="pl-s"><span class="pl-pds">"</span>:album<span class="pl-pds">"</span></span>));</pre></div>
+
+<p>This is where DynamicObject comes in. The first thing to do is to create an <code>Album</code> type:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">Album</span> <span class="pl-k">extends</span> <span class="pl-e">DynamicObject&lt;<span class="pl-smi">Album</span>&gt;</span> {
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:artist<span class="pl-pds">"</span></span>) <span class="pl-smi">String</span> <span class="pl-en">getArtist</span>();
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:album<span class="pl-pds">"</span></span>)  <span class="pl-smi">String</span> <span class="pl-en">getAlbum</span>();
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:tracks<span class="pl-pds">"</span></span>) <span class="pl-k">int</span> <span class="pl-en">getTracks</span>();
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:year<span class="pl-pds">"</span></span>)   <span class="pl-k">int</span> <span class="pl-en">getYear</span>();
+
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:artist<span class="pl-pds">"</span></span>) <span class="pl-smi">Album</span> <span class="pl-en">withArtist</span>(<span class="pl-smi">String</span> <span class="pl-v">artist</span>);
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:album<span class="pl-pds">"</span></span>)  <span class="pl-smi">Album</span> <span class="pl-en">withAlbum</span>(<span class="pl-smi">String</span> <span class="pl-v">album</span>);
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:tracks<span class="pl-pds">"</span></span>) <span class="pl-smi">Album</span> <span class="pl-en">withTracks</span>(<span class="pl-k">int</span> <span class="pl-v">tracks</span>);
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:year<span class="pl-pds">"</span></span>)   <span class="pl-smi">Album</span> <span class="pl-en">withYear</span>(<span class="pl-k">int</span> <span class="pl-v">year</span>);
+}</pre></div>
+
+<p>The purpose of this type is not to create a class that laboriously defines operations on data, but rather to establish a <em>schema</em> that tells DynamicObject which types are associated with each key. With DynamicObject, the above deserialization example looks like this:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">String</span> edn <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>{:artist <span class="pl-cce">\"</span>Meshuggah<span class="pl-cce">\"</span>, :album <span class="pl-cce">\"</span>Chaosphere<span class="pl-cce">\"</span>, :tracks 8, :year 1998}<span class="pl-pds">"</span></span>;
+<span class="pl-smi">Album</span> album <span class="pl-k">=</span> <span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>deserialize(edn, <span class="pl-smi">Album</span><span class="pl-k">.</span>class);
+<span class="pl-smi">String</span> artist <span class="pl-k">=</span> album<span class="pl-k">.</span>getArtist();
+assertEquals(<span class="pl-s"><span class="pl-pds">"</span>Meshuggah<span class="pl-pds">"</span></span>, artist);</pre></div>
+
+<p>DynamicObjects can also be constructed in-memory through the use of builder methods (prefixed with <code>with-</code> in the above schema).</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">Album</span> album <span class="pl-k">=</span> <span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>newInstance(<span class="pl-smi">Album</span><span class="pl-k">.</span>class)
+                           .withArtist(<span class="pl-s"><span class="pl-pds">"</span>Meshuggah<span class="pl-pds">"</span></span>)
+                           .withAlbum(<span class="pl-s"><span class="pl-pds">"</span>Chaosphere<span class="pl-pds">"</span></span>)
+                           .withTracks(<span class="pl-c1">8</span>)
+                           .withYear(<span class="pl-c1">1998</span>);
+album<span class="pl-k">.</span>prettyPrint();
+<span class="pl-c">// {:year 1998, :tracks 8, :album "Chaosphere", :artist "Meshuggah"}</span></pre></div>
+
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>
+<strong>Serialization.</strong> Thanks to Clojure and the Edn data language, serialization is simple, reliable, extensible, and language-agnostic.</li>
+<li>
+<img src="http://leaguecraft.com/images/core/theme-v4/icons/new-icon.png" alt="NEW"> <strong>Binary serialization.</strong> In addition to the human-readable Edn format, DynamicObject now offers full support for <a href="https://github.com/Datomic/fressian/wiki/Rationale">Fressian</a>, a self-describing, high-performance, language-independent binary data encoding.</li>
+<li>
+<strong>Immutability.</strong> Because <code>DynamicObjects</code> are built out of <a href="http://clojure.org/data_structures">Clojure's data structures</a>, they are not just immutable and thread-safe, but also <a href="http://en.wikipedia.org/wiki/Persistent_data_structure">persistent</a>, which makes copying and modification cheap.</li>
+<li>
+<strong>Composability.</strong> DynamicObjects compose correctly. Different types can be aggregated without losing serializability, equality semantics, or any of the other benefits of Clojure data. DynamicObjects even support structural recursion, such as this <a href="https://github.com/rschmitt/dynamic-object/blob/master/src/test/java/com/github/rschmitt/dynamicobject/RecursionTest.java">example</a> of a linked list implemented as a DynamicObject.</li>
+<li>
+<strong>Schema validation.</strong> DynamicObject offers basic schema validation à la carte. The <code>validate</code> method will verify that all of an instance's fields are of the correct type, and that any fields annotated with <code>@Required</code> are not null. Additionally, validation can be extended by the end user in order to validate arbitrary constraints.</li>
+<li>
+<strong>Clojure metadata.</strong> Fields that are annotated with <code>@Meta</code> are stored internally as <a href="http://clojure.org/metadata">Clojure metadata</a>. These fields allow data to be annotated in arbitrary ways without actually changing the structure or semantics of the data itself. Metadata does not affect equality: two objects that differ only in metadata are considered equal.</li>
+<li>
+<strong>User-defined methods.</strong> A DynamicObject can declare methods just like an ordinary class can. This is particularly helpful for supporting high-quality code completion.</li>
+<li>
+<strong>Copy-on-write support.</strong> DynamicObject supports builder methods, which are similar to Lombok <a href="http://projectlombok.org/features/experimental/Wither.html"><code>@Wither</code></a> methods: they are used to create a clone of an instance that has a single field changed. They are backed by Clojure's <code>assoc</code> function, which is extremely performant, thanks to Clojure's sophisticated immutable data structures.</li>
+<li>
+<strong>Easy to work with.</strong> The DynamicObject API has a very small surface area, and using DynamicObject productively does not require any new tools: there is no Vim plugin, no Emacs minor mode, no Eclipse update site, no Gradle plugin, no special test runner. DynamicObject works for you, not the other way around.</li>
+<li>
+<img src="http://leaguecraft.com/images/core/theme-v4/icons/new-icon.png" alt="NEW"> <strong>Seamless Clojure interop.</strong> DynamicObjects implement all of Clojure's map abstractions, such as <code>IPersistentMap</code>. This means that DynamicObjects have excellent ergonomics in both languages: the same DynamicObject instance looks and works like a Clojure map or record from Clojure code, and like an immutable POJO from Java code. Advanced functions from Clojure's collections library, such as <code>update-in</code> and <code>diff</code>, work exactly as expected.</li>
+</ul>
+
+<h2>
+<a id="some-more-examples" class="anchor" href="#some-more-examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Some More Examples</h2>
+
+<h3>
+<a id="creating-dynamicobject-types" class="anchor" href="#creating-dynamicobject-types" aria-hidden="true"><span class="octicon octicon-link"></span></a>Creating DynamicObject types</h3>
+
+<p>A DynamicObject type is a Java interface. The simplest possible DynamicObject type is this:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">Empty</span> <span class="pl-k">extends</span> <span class="pl-e">DynamicObject&lt;<span class="pl-smi">Empty</span>&gt;</span> {}</pre></div>
+
+<p>Although this type doesn't declare any particular fields, it is still usable as a map. For example:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">Empty</span> empty <span class="pl-k">=</span> <span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>deserialize(<span class="pl-s"><span class="pl-pds">"</span>{144 233}<span class="pl-pds">"</span></span>, <span class="pl-smi">Empty</span><span class="pl-k">.</span>class);
+
+assertTrue(empty <span class="pl-k">instanceof</span> <span class="pl-smi">Map</span>);
+assertEquals(<span class="pl-smi">Long</span><span class="pl-k">.</span>valueOf(<span class="pl-c1">233</span>), empty<span class="pl-k">.</span>get(<span class="pl-c1">144</span>));
+assertEquals(<span class="pl-c1">1</span>, empty<span class="pl-k">.</span>size());</pre></div>
+
+<p>In addition to the interface itself, it is strongly recommended that reader tags be created for each DynamicObject type that will be serialized. Otherwise, serialized DynamicObjects look indistinguishable from regular maps, and the full type information cannot be recovered without some additional out-of-band information (such as the second argument to <code>deserialize</code>).</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">T1</span> <span class="pl-k">extends</span> <span class="pl-e">DynamicObject&lt;<span class="pl-smi">T1</span>&gt;</span> {}
+<span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">T2</span> <span class="pl-k">extends</span> <span class="pl-e">DynamicObject&lt;<span class="pl-smi">T2</span>&gt;</span> {}
+
+<span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>registerTag(<span class="pl-smi">T1</span><span class="pl-k">.</span>class, <span class="pl-s"><span class="pl-pds">"</span>T1<span class="pl-pds">"</span></span>);
+<span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>registerTag(<span class="pl-smi">T2</span><span class="pl-k">.</span>class, <span class="pl-s"><span class="pl-pds">"</span>T2<span class="pl-pds">"</span></span>);
+
+<span class="pl-c">// Note the lack of type hints given to deserialize:</span>
+assertTrue(<span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>deserialize(<span class="pl-s"><span class="pl-pds">"</span>#T1{}<span class="pl-pds">"</span></span>, <span class="pl-smi">Object</span><span class="pl-k">.</span>class) <span class="pl-k">instanceof</span> <span class="pl-c1">T1</span>);
+assertTrue(<span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>deserialize(<span class="pl-s"><span class="pl-pds">"</span>#T2{}<span class="pl-pds">"</span></span>, <span class="pl-smi">Object</span><span class="pl-k">.</span>class) <span class="pl-k">instanceof</span> <span class="pl-c1">T2</span>);</pre></div>
+
+<h3>
+<a id="extending-edn" class="anchor" href="#extending-edn" aria-hidden="true"><span class="octicon octicon-link"></span></a>Extending Edn</h3>
+
+<p>In addition to Edn's built-in data types (sets, maps, vectors, <code>#inst</code>, <code>#uuid</code>, and so forth), DynamicObject offers full support for reader tags, Edn's extension mechanism. This makes it possible to include any Java value class in a <code>DynamicObject</code> without compromising serializability or requiring any modifications to the class. This is done through the <code>EdnTranslator</code> mechanism.</p>
+
+<p>For instance, consider the following Edn data:</p>
+
+<div class="highlight highlight-clojure"><pre>{<span class="pl-c1">:name</span> <span class="pl-s"><span class="pl-pds">"</span>Mike Jones<span class="pl-pds">"</span></span>,
+ <span class="pl-c1">:phone</span> #phonenumber <span class="pl-s"><span class="pl-pds">"</span>(330) 281-8004<span class="pl-pds">"</span></span>}</pre></div>
+
+<p>The <code>:name</code> field is an ordinary string, but the <code>:phone</code> field is tagged. When we deserialize this data, we don't want the phone number to be returned as a string, but rather as an instance of the following type:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">PhoneNumber</span> {
+  <span class="pl-k">public</span> <span class="pl-k">final</span> <span class="pl-smi">String</span> areaCode;
+  <span class="pl-k">public</span> <span class="pl-k">final</span> <span class="pl-smi">String</span> firstThree;
+  <span class="pl-k">public</span> <span class="pl-k">final</span> <span class="pl-smi">String</span> lastFour;
+
+  <span class="pl-c">// constructor, etc omitted</span>
+}</pre></div>
+
+<p>To do this, we'll define a class that translates this type to and from Edn:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">PhoneNumberTranslator</span> <span class="pl-k">implements</span> <span class="pl-e">EdnTranslator&lt;<span class="pl-smi">PhoneNumber</span>&gt;</span> {
+  <span class="pl-c">// Translate the tagged Edn data (in this case, a String) to our actual type.</span>
+  <span class="pl-k">public</span> <span class="pl-smi">PhoneNumber</span> <span class="pl-en">read</span>(<span class="pl-smi">Object</span> <span class="pl-v">obj</span>) {
+    <span class="pl-smi">String</span> str <span class="pl-k">=</span> (<span class="pl-smi">String</span>) obj;
+    <span class="pl-smi">Pattern</span> pattern <span class="pl-k">=</span> <span class="pl-smi">Pattern</span><span class="pl-k">.</span>compile(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\\</span>((<span class="pl-cce">\\</span>d+)<span class="pl-cce">\\</span>) (<span class="pl-cce">\\</span>d+)-(<span class="pl-cce">\\</span>d+)<span class="pl-pds">"</span></span>);
+    <span class="pl-smi">Matcher</span> matcher <span class="pl-k">=</span> pattern<span class="pl-k">.</span>matcher(str);
+    <span class="pl-k">if</span> (<span class="pl-k">!</span>matcher<span class="pl-k">.</span>matches())
+      <span class="pl-k">throw</span> <span class="pl-k">new</span> <span class="pl-smi">IllegalArgumentException</span>(<span class="pl-s"><span class="pl-pds">"</span>Malformed phone number: <span class="pl-pds">"</span></span> <span class="pl-k">+</span> str);
+    <span class="pl-k">return</span> <span class="pl-k">new</span> <span class="pl-smi">PhoneNumber</span>(matcher<span class="pl-k">.</span>group(<span class="pl-c1">1</span>), matcher<span class="pl-k">.</span>group(<span class="pl-c1">2</span>), matcher<span class="pl-k">.</span>group(<span class="pl-c1">3</span>));
+  }
+
+  <span class="pl-c">// Return an Edn string representing the serialized phone number.</span>
+  <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">write</span>(<span class="pl-smi">PhoneNumber</span> <span class="pl-v">phoneNumber</span>) {
+    <span class="pl-k">return</span> <span class="pl-smi">String</span><span class="pl-k">.</span>format(<span class="pl-s"><span class="pl-pds">"</span><span class="pl-cce">\"</span>(%s) %s-%s<span class="pl-cce">\"</span><span class="pl-pds">"</span></span>,
+      phoneNumber<span class="pl-k">.</span>areaCode, phoneNumber<span class="pl-k">.</span>firstThree, phoneNumber<span class="pl-k">.</span>lastFour);
+  }
+
+  <span class="pl-c">// Return the reader tag associated with this type.</span>
+  <span class="pl-k">public</span> <span class="pl-smi">String</span> <span class="pl-en">getTag</span>() {
+    <span class="pl-k">return</span> <span class="pl-s"><span class="pl-pds">"</span>phonenumber<span class="pl-pds">"</span></span>;
+  }
+}</pre></div>
+
+<p>Finally, we'll register this translator with DynamicObject:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>registerType(<span class="pl-smi">PhoneNumber</span><span class="pl-k">.</span>class, <span class="pl-k">new</span> <span class="pl-smi">PhoneNumberTranslator</span>());</pre></div>
+
+<p>The <code>PhoneNumber</code> type is now fully interoperable with DynamicObject and Edn serialization. It can even be deserialized à la carte:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">PhoneNumber</span> actual <span class="pl-k">=</span> <span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>deserialize(<span class="pl-s"><span class="pl-pds">"</span>#phonenumber <span class="pl-cce">\"</span>(330) 281-8004<span class="pl-cce">\"</span><span class="pl-pds">"</span></span>, <span class="pl-smi">PhoneNumber</span><span class="pl-k">.</span>class);
+<span class="pl-smi">PhoneNumber</span> expected <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">PhoneNumber</span>(<span class="pl-s"><span class="pl-pds">"</span>330<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>281<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>8004<span class="pl-pds">"</span></span>);
+assertEquals(expected, actual);</pre></div>
+
+<h3>
+<a id="fressian-serialization" class="anchor" href="#fressian-serialization" aria-hidden="true"><span class="octicon octicon-link"></span></a>Fressian serialization</h3>
+
+<p>DynamicObject exposes Fressian's <code>FressianReader</code> and <code>FressianWriter</code> classes directly, in order to maximize flexibility. Instances of these classes are obtained by calling <code>createFressianReader</code> and <code>createFressianWriter</code>. These methods return readers and writers that understand:</p>
+
+<ul>
+<li>all of the basic Fressian and data.fressian types</li>
+<li>extension types that have been registered with DynamicObject</li>
+<li>DynamicObject types that have a registered reader tag</li>
+</ul>
+
+<p>Convenience methods are also offered: <code>toFressianByteArray</code> takes an Object and returns a byte array, and <code>fromFressianByteArray</code> does the reverse.</p>
+
+<p>Conceptually, extending Fressian is no different from extending Edn. The <code>PhoneNumber</code> class from above can be translated to and from Fressian like so:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">PhoneNumberEncoder</span> <span class="pl-k">implements</span> <span class="pl-e">ReadHandler</span>, <span class="pl-e">WriteHandler</span> {
+  <span class="pl-k">@Override</span>
+  <span class="pl-k">public</span> <span class="pl-smi">Object</span> <span class="pl-en">read</span>(<span class="pl-smi">Reader</span> <span class="pl-v">r</span>, <span class="pl-smi">Object</span> <span class="pl-v">tag</span>, <span class="pl-k">int</span> <span class="pl-v">componentCount</span>) <span class="pl-k">throws</span> <span class="pl-smi">IOException</span> {
+    <span class="pl-smi">String</span> areaCode <span class="pl-k">=</span> (<span class="pl-smi">String</span>) r<span class="pl-k">.</span>readObject();
+    <span class="pl-smi">String</span> firstThree <span class="pl-k">=</span> (<span class="pl-smi">String</span>) r<span class="pl-k">.</span>readObject();
+    <span class="pl-smi">String</span> lastFour <span class="pl-k">=</span> (<span class="pl-smi">String</span>) r<span class="pl-k">.</span>readObject();
+    <span class="pl-k">return</span> <span class="pl-k">new</span> <span class="pl-smi">PhoneNumber</span>(areaCode, firstThree, lastFour);
+  }
+
+  <span class="pl-k">@Override</span>
+  <span class="pl-k">public</span> <span class="pl-k">void</span> <span class="pl-en">write</span>(<span class="pl-smi">Writer</span> <span class="pl-v">w</span>, <span class="pl-smi">Object</span> <span class="pl-v">instance</span>) <span class="pl-k">throws</span> <span class="pl-smi">IOException</span> {
+    <span class="pl-smi">PhoneNumber</span> phoneNumber <span class="pl-k">=</span> (<span class="pl-smi">PhoneNumber</span>) instance;
+    <span class="pl-c">// In addition to the reader tag, we must specify how many fields we will write.</span>
+    w<span class="pl-k">.</span>writeTag(<span class="pl-s"><span class="pl-pds">"</span>phonenumber<span class="pl-pds">"</span></span>, <span class="pl-c1">3</span>);
+    w<span class="pl-k">.</span>writeObject(phoneNumber<span class="pl-k">.</span>areaCode);
+    w<span class="pl-k">.</span>writeObject(phoneNumber<span class="pl-k">.</span>firstThree);
+    w<span class="pl-k">.</span>writeObject(phoneNumber<span class="pl-k">.</span>lastFour);
+  }
+}</pre></div>
+
+<p>As with Edn, this type must be registered with DynamicObject:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">PhoneNumberEncoder</span> encoder <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">PhoneNumberEncoder</span>();
+<span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>registerType(<span class="pl-smi">PhoneNumber</span><span class="pl-k">.</span>class, <span class="pl-s"><span class="pl-pds">"</span>phonenumber<span class="pl-pds">"</span></span>, encoder, encoder);
+
+<span class="pl-smi">PhoneNumber</span> before <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">PhoneNumber</span>(<span class="pl-s"><span class="pl-pds">"</span>123<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>456<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>7890<span class="pl-pds">"</span></span>);
+<span class="pl-k">byte</span>[] byteArray <span class="pl-k">=</span> <span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>toFressianByteArray(<span class="pl-smi">PhoneNumber</span>);
+<span class="pl-smi">PhoneNumber</span> after <span class="pl-k">=</span> <span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>fromFressianByteArray(byteArray);
+assertEquals(before, after);</pre></div>
+
+<h3>
+<a id="schema-validation" class="anchor" href="#schema-validation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Schema Validation</h3>
+
+<p>Traditional object mappers pretend to transparently put static types on the wire. As a consequence, it is difficult to get them to accept any data that does not exactly match the object type they are expecting to see. For instance, if they see an unknown field, they will likely discard it, or they might just throw an exception, causing deserialization to fail altogether. The problem is usually not obvious right away; generally, it only becomes obvious once the software is running in production and needs to accommodate changes.</p>
+
+<p>DynamicObject takes a completely different approach in which deserialization and validation are decoupled into two separate phases, each of which is independently available to the user. Any well-formed Edn data can be deserialized into any given <code>DynamicObject</code> type, and all of the data that was present on the wire will be preserved in its entirety in memory. Validation of the data can then proceed as a separate step. (Note that validation can also be performed on objects that were created using builders, rather than deserialized. This can be a way to ensure that none of the <code>@Required</code> fields were overlooked during construction.)</p>
+
+<p>Validation checks that all <code>@Required</code> fields are present (they must not be null), and that all of the types are correct. Successful validation is a guarantee that any getter method can be invoked without resulting in a <code>ClassCastException</code>. For example, consider the following type:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">interface</span> <span class="pl-en">Validated</span> <span class="pl-k">extends</span> <span class="pl-e">DynamicObject&lt;<span class="pl-smi">Validated</span>&gt;</span> {
+  <span class="pl-k">@Required</span> <span class="pl-k">int</span> <span class="pl-en">x</span>();
+  <span class="pl-k">@Required</span> <span class="pl-k">int</span> <span class="pl-en">y</span>();
+  <span class="pl-smi">String</span> <span class="pl-en">str</span>();
+}</pre></div>
+
+<p>After deserializing instances of this type, we can use validation to ensure that they are correct. The <code>validate()</code> method will throw an exception if an instance doesn't validate. The exception message will give a detailed description of what went wrong:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>deserialize(<span class="pl-s"><span class="pl-pds">"</span>{}<span class="pl-pds">"</span></span>, <span class="pl-smi">Validated</span><span class="pl-k">.</span>class)<span class="pl-k">.</span>validate();
+<span class="pl-c">//  Exception in thread "main" java.lang.IllegalStateException: The following @Required fields were missing: x, y</span>
+
+<span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>deserialize(<span class="pl-s"><span class="pl-pds">"</span>{:x 1, :y 2, :str 3}<span class="pl-pds">"</span></span>, <span class="pl-smi">Validated</span><span class="pl-k">.</span>class)<span class="pl-k">.</span>validate();
+<span class="pl-c">//  Exception in thread "main" java.lang.IllegalStateException: The following fields had the wrong type:</span>
+<span class="pl-c">//    str (expected String, got Long)</span>
+
+<span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>deserialize(<span class="pl-s"><span class="pl-pds">"</span>{:x 1, :y 2, :str <span class="pl-cce">\"</span>hello<span class="pl-cce">\"</span>}<span class="pl-pds">"</span></span>, <span class="pl-smi">Validated</span><span class="pl-k">.</span>class)<span class="pl-k">.</span>validate();
+<span class="pl-c">//  Success!</span></pre></div>
+
+<p>It is possible to add custom validation logic to a type by implementing <code>validate()</code> as a custom method. For example:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">interface</span> <span class="pl-en">Custom</span> <span class="pl-k">extends</span> <span class="pl-e">DynamicObject&lt;<span class="pl-smi">Custom</span>&gt;</span> {
+  <span class="pl-k">@Required</span> <span class="pl-k">int</span> <span class="pl-en">oddsOnly</span>();
+
+  <span class="pl-k">@Override</span>
+  default <span class="pl-smi">Custom</span> <span class="pl-en">validate</span>() {
+    <span class="pl-k">if</span> (oddsOnly() <span class="pl-k">%</span> <span class="pl-c1">2</span> <span class="pl-k">==</span> <span class="pl-c1">0</span>)
+      <span class="pl-k">throw</span> <span class="pl-k">new</span> <span class="pl-smi">IllegalStateException</span>(<span class="pl-s"><span class="pl-pds">"</span>Odd number expected<span class="pl-pds">"</span></span>);
+    <span class="pl-k">return</span> <span class="pl-v">this</span>;
+  }
+}</pre></div>
+
+<p>This validation logic will be run in addition to the standard validation checks:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>deserialize(<span class="pl-s"><span class="pl-pds">"</span>{:oddsOnly 4}<span class="pl-pds">"</span></span>, <span class="pl-smi">Custom</span><span class="pl-k">.</span>class)<span class="pl-k">.</span>validate();
+<span class="pl-c">//  Exception in thread "main" java.lang.IllegalStateException: Odd number expected</span>
+
+<span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>deserialize(<span class="pl-s"><span class="pl-pds">"</span>{:oddsOnly nil}<span class="pl-pds">"</span></span>, <span class="pl-smi">Custom</span><span class="pl-k">.</span>class)<span class="pl-k">.</span>validate();
+<span class="pl-c">//  Exception in thread "main" java.lang.IllegalStateException: The following @Required fields were missing: oddsOnly</span>
+
+<span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>deserialize(<span class="pl-s"><span class="pl-pds">"</span>{:oddsOnly 5}<span class="pl-pds">"</span></span>, <span class="pl-smi">Custom</span><span class="pl-k">.</span>class)<span class="pl-k">.</span>validate();
+<span class="pl-c">//  Success!</span></pre></div>
+
+<h3>
+<a id="persistent-modification" class="anchor" href="#persistent-modification" aria-hidden="true"><span class="octicon octicon-link"></span></a>Persistent Modification</h3>
+
+<p>DynamicObject makes it easy to leverage Clojure's immutable persistent data structures, which use structural sharing to enable cheap copying and "modification." A DynamicObject can declare builder methods, which are backed by <a href="http://clojure.github.io/clojure/clojure.core-api.html#clojure.core/assoc"><code>assoc</code></a>. These methods perform a functional update of the data structure, returning an updated instance and leaving the current instance unchanged. For example:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">interface</span> <span class="pl-en">Buildable</span> <span class="pl-k">extends</span> <span class="pl-e">DynamicObject&lt;<span class="pl-smi">Buildable</span>&gt;</span> {
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:hello<span class="pl-pds">"</span></span>) <span class="pl-smi">String</span> <span class="pl-en">getHello</span>();
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:hello<span class="pl-pds">"</span></span>) <span class="pl-smi">Buildable</span> <span class="pl-en">withHello</span>(<span class="pl-smi">String</span> <span class="pl-v">hello</span>);
+}
+
+@<span class="pl-smi">Test</span>
+<span class="pl-k">public</span> <span class="pl-k">void</span> invokeBuilderMethod() {
+  <span class="pl-smi">Buildable</span> hw <span class="pl-k">=</span> <span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>newInstance(<span class="pl-smi">Buildable</span><span class="pl-k">.</span>class)<span class="pl-k">.</span>withHello(<span class="pl-s"><span class="pl-pds">"</span>world<span class="pl-pds">"</span></span>);
+  assertEquals(<span class="pl-s"><span class="pl-pds">"</span>{:hello <span class="pl-cce">\"</span>world<span class="pl-cce">\"</span>}<span class="pl-pds">"</span></span>, <span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>serialize(hw)); <span class="pl-c">// This is the original value</span>
+
+  <span class="pl-smi">Buildable</span> hk <span class="pl-k">=</span> hw<span class="pl-k">.</span>withHello(<span class="pl-s"><span class="pl-pds">"</span>kitty<span class="pl-pds">"</span></span>); <span class="pl-c">// Build a new value from the old one</span>
+  assertEquals(<span class="pl-s"><span class="pl-pds">"</span>{:hello <span class="pl-cce">\"</span>kitty<span class="pl-cce">\"</span>}<span class="pl-pds">"</span></span>, <span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>serialize(hk));
+  assertEquals(<span class="pl-s"><span class="pl-pds">"</span>{:hello <span class="pl-cce">\"</span>world<span class="pl-cce">\"</span>}<span class="pl-pds">"</span></span>, <span class="pl-smi">DynamicObject</span><span class="pl-k">.</span>serialize(hw)); <span class="pl-c">// The original value is unchanged</span>
+}
+</pre></div>
+
+<h3>
+<a id="metadata" class="anchor" href="#metadata" aria-hidden="true"><span class="octicon octicon-link"></span></a>Metadata</h3>
+
+<p>DynamicObject allows direct access to Clojure's metadata facilities with the <code>@Meta</code> annotation. This allows information to be annotated in arbitrary ways without this information being part of the data itself. For example, if you're using DynamicObject to communicate across processes using a distributed queue like <a href="http://aws.amazon.com/sqs/">SQS</a>, metadata is a great place to stash information about the messages themselves, such as the <a href="http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/ImportantIdentifiers.html">message receipt handle</a>:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">interface</span> <span class="pl-en">WorkerJob</span> <span class="pl-k">extends</span> <span class="pl-e">DynamicObject&lt;<span class="pl-smi">WorkerJob</span>&gt;</span> {
+  <span class="pl-smi">UUID</span> <span class="pl-en">jobId</span>();
+  <span class="pl-smi">String</span> <span class="pl-en">inputLocation</span>();
+  <span class="pl-c">// and so forth</span>
+  <span class="pl-k">@Meta</span> <span class="pl-k">long</span> <span class="pl-en">messageAgeInSeconds</span>(); <span class="pl-c">// Use this for visibility purposes (e.g. are we falling behind?)</span>
+  <span class="pl-k">@Meta</span> <span class="pl-smi">String</span> <span class="pl-en">messageReceiptHandle</span>(); <span class="pl-c">// Use this later to delete the message once the job is done</span>
+
+  <span class="pl-c">// The metadata fields can be set using builder methods:</span>
+  <span class="pl-smi">WorkerJob</span> <span class="pl-en">messageAgeInSeconds</span>(<span class="pl-k">long</span> <span class="pl-v">seconds</span>);
+  <span class="pl-smi">WorkerJob</span> <span class="pl-en">messageReceiptHandle</span>(<span class="pl-smi">String</span> <span class="pl-v">handle</span>);
+  <span class="pl-c">// Note that no redundant @Meta annotation is required on builders</span>
+}</pre></div>
+
+<p>Remember that metadata is never serialized, and is ignored for purposes of equality.</p>
+
+<h3>
+<a id="user-defined-methods" class="anchor" href="#user-defined-methods" aria-hidden="true"><span class="octicon octicon-link"></span></a>User-defined Methods</h3>
+
+<p>Thanks to Java 8's <a href="http://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html">default methods</a>, it is straightforward to declare custom methods on a <code>DynamicObject</code>, even though all <code>DynamicObject</code> types are interfaces. For example, we could extend the above <code>Album</code> example with an <code>AlbumCollection</code> type:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">AlbumCollection</span> <span class="pl-k">extends</span> <span class="pl-e">DynamicObject&lt;<span class="pl-smi">AlbumCollection</span>&gt;</span> {
+  <span class="pl-k">Set&lt;<span class="pl-smi">Album</span>&gt;</span> <span class="pl-en">albums</span>();
+
+  default <span class="pl-k">int</span> <span class="pl-en">totalTracksInCollection</span>() {
+    <span class="pl-k">return</span> albums()<span class="pl-k">.</span>stream()
+                   .mapToInt(<span class="pl-smi">Album</span><span class="pl-k">::</span>getTracks)
+                   .sum();
+  }
+}</pre></div>
+
+<h3>
+<a id="custom-keys" class="anchor" href="#custom-keys" aria-hidden="true"><span class="octicon octicon-link"></span></a>Custom Keys</h3>
+
+<p>DynamicObject does not have an elaborate system of conventions to map Java method names to Clojure map keys. By default, the name of the getter method is exactly the name of the keyword. <code>str()</code> maps to <code>:str</code>, and <code>myString()</code> maps to <code>:myString</code>, not <code>:my-string</code>. This default can be overridden with the <code>@Key</code> annotation. Suppose we want access to the following data:</p>
+
+<div class="highlight highlight-clojure"><pre>{<span class="pl-c1">:camelCase</span> <span class="pl-c1">1</span>,
+ <span class="pl-c1">:kebab-case</span> <span class="pl-c1">2</span>,
+ <span class="pl-s"><span class="pl-pds">"</span>quoted string<span class="pl-pds">"</span></span> <span class="pl-c1">3</span>}</pre></div>
+
+<p>The corresponding DynamicObject getters for each field look like this:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">long</span> camelCase(); <span class="pl-c">// corresponds to the :camelCase field</span>
+@Key(<span class="pl-s"><span class="pl-pds">"</span>:kebab-case<span class="pl-pds">"</span></span>) <span class="pl-k">long</span> kebabCase(); <span class="pl-c">// corresponds to the :kebab-case field, as opposed to the default :kebabCase</span>
+@Key(<span class="pl-s"><span class="pl-pds">"</span>quoted string<span class="pl-pds">"</span></span>) <span class="pl-k">long</span> quotedString(); <span class="pl-c">// corresponds to the "quoted string" field</span></pre></div>
+
+<p>Note the convention: an initial colon yields a Clojure keyword, and anything else yields a string.</p>
+
+<p>Custom keys have a second purpose: they decouple getters and setters. Without custom keys, the getter method for a given field must have the same name as the builder method for the same field. But if getters and builders both have <code>@Key</code> annotations, the methods can take on arbitrary names:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">MyType</span> <span class="pl-k">extends</span> <span class="pl-e">DynamicObject&lt;<span class="pl-smi">MyType</span>&gt;</span> {
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:flubber<span class="pl-pds">"</span></span>)    <span class="pl-smi">String</span> <span class="pl-en">getFlubber</span>();     <span class="pl-c">// Pretty standard for field access in Java...</span>
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:is-flubbed<span class="pl-pds">"</span></span>) <span class="pl-k">boolean</span> <span class="pl-en">isFlubbed</span>();     <span class="pl-c">// ...except for booleans, which generally use "is" and not "get"</span>
+
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:flubber<span class="pl-pds">"</span></span>) <span class="pl-smi">MyType</span> <span class="pl-en">setFlubber</span>(<span class="pl-smi">String</span> <span class="pl-v">flubber</span>);   <span class="pl-c">// You can prefix these with "set" if you want...</span>
+  <span class="pl-k">@Key</span>(<span class="pl-s"><span class="pl-pds">"</span>:flubber<span class="pl-pds">"</span></span>) <span class="pl-smi">MyType</span> <span class="pl-en">withFlubber</span>(<span class="pl-smi">String</span> <span class="pl-v">flubber</span>);  <span class="pl-c">// ...but "with" makes more sense for persistent updates</span>
+}</pre></div>
+
+<h3>
+<a id="clojure-interop" class="anchor" href="#clojure-interop" aria-hidden="true"><span class="octicon octicon-link"></span></a>Clojure Interop</h3>
+
+<p>In addition to providing a sane alternative to POJOs, DynamicObject implements the map abstractions of both Java and Clojure. This allows the same values to be sent back and forth between Java and Clojure code without wrapping, unwrapping, conversion, or reflection. Java and Clojure code can both idiomatically inspect DynamicObject values and build new ones.</p>
+
+<p>As an example, we'll use the RecursionTest's definition of a DynamicObject-based linked list:</p>
+
+<div class="highlight highlight-java"><pre><span class="pl-k">public</span> <span class="pl-k">interface</span> <span class="pl-en">LinkedList</span> <span class="pl-k">extends</span> <span class="pl-e">DynamicObject&lt;<span class="pl-smi">LinkedList</span>&gt;</span> {
+  <span class="pl-k">long</span> <span class="pl-en">value</span>();
+  <span class="pl-smi">LinkedList</span> <span class="pl-en">next</span>();
+
+  <span class="pl-smi">LinkedList</span> <span class="pl-en">value</span>(<span class="pl-k">long</span> <span class="pl-v">value</span>);
+  <span class="pl-smi">LinkedList</span> <span class="pl-en">next</span>(<span class="pl-smi">LinkedList</span> <span class="pl-v">linkedList</span>);
+}</pre></div>
+
+<p>The following REPL session shows the use of this type from Clojure (various imports omitted):</p>
+
+<div class="highlight highlight-clojure"><pre><span class="pl-c">; We'll start by creating a three-node linked list. First, let's register a reader tag:</span>
+(<span class="pl-en">DynamicObject/registerTag</span> RecursionTest$LinkedList <span class="pl-s"><span class="pl-pds">"</span>LL<span class="pl-pds">"</span></span>)
+
+<span class="pl-c">; Now we'll deserialize the tail node from Edn:</span>
+(<span class="pl-k">def</span> <span class="pl-e">tail</span> (<span class="pl-en">DynamicObject/deserialize</span> <span class="pl-s"><span class="pl-pds">"</span>#LL{:value 3, :next nil}<span class="pl-pds">"</span></span> RecursionTest$LinkedList))
+=&gt; #'user/tail
+
+<span class="pl-c">; We'll build the middle node by using standard Clojure functions:</span>
+(<span class="pl-k">def</span> <span class="pl-e">middle</span> (<span class="pl-en">-&gt;</span> tail empty (<span class="pl-en">assoc</span> <span class="pl-c1">:value</span> <span class="pl-c1">2</span>) (<span class="pl-en">assoc</span> <span class="pl-c1">:next</span> tail)))
+=&gt; #'user/middle
+
+<span class="pl-c">; Finally, we'll construct the head node using DynamicObject's builder methods:</span>
+(<span class="pl-k">def</span> <span class="pl-e">head</span> (<span class="pl-en">-&gt;</span> middle (<span class="pl-en">.value</span> <span class="pl-c1">1</span>) (<span class="pl-en">.next</span> middle)))
+=&gt; #'user/head
+
+<span class="pl-c">; Let's print the result (note the reader tags):</span>
+head
+=&gt; #LL{<span class="pl-c1">:next</span> #LL{<span class="pl-c1">:next</span> #LL{<span class="pl-c1">:value</span> <span class="pl-c1">3</span>, <span class="pl-c1">:next</span> <span class="pl-c1">nil</span>}, <span class="pl-c1">:value</span> <span class="pl-c1">2</span>}, <span class="pl-c1">:value</span> <span class="pl-c1">1</span>}
+
+<span class="pl-c">; Let's navigate around a bit, first in a Clojure style:</span>
+(<span class="pl-en">get-in</span> head [<span class="pl-c1">:next</span> <span class="pl-c1">:next</span> <span class="pl-c1">:value</span>])
+=&gt; <span class="pl-c1">3</span>
+
+<span class="pl-c">; Let's try the equivalent Java style as well:</span>
+(<span class="pl-en">-&gt;</span> head .next .next .value)
+=&gt; <span class="pl-c1">3</span>
+
+<span class="pl-c">; We can use the DynamicObject instance as a function:</span>
+(<span class="pl-en">tail</span> <span class="pl-c1">:value</span>)
+=&gt; <span class="pl-c1">3</span>
+
+<span class="pl-c">; Let's modify a deeply nested value:</span>
+(<span class="pl-en">assoc-in</span> head [<span class="pl-c1">:next</span> <span class="pl-c1">:next</span> <span class="pl-c1">:value</span>] <span class="pl-c1">19</span>)
+=&gt; #LL{<span class="pl-c1">:next</span> #LL{<span class="pl-c1">:next</span> #LL{<span class="pl-c1">:value</span> <span class="pl-c1">19</span>, <span class="pl-c1">:next</span> <span class="pl-c1">nil</span>}, <span class="pl-c1">:value</span> <span class="pl-c1">2</span>}, <span class="pl-c1">:value</span> <span class="pl-c1">1</span>}
+
+<span class="pl-c">; DynamicObject validation can be used from Clojure for runtime type checking:</span>
+(<span class="pl-en">.validate</span> (<span class="pl-en">assoc</span> head <span class="pl-c1">:next</span> <span class="pl-c1">4</span>))
+IllegalStateException The following fields had the wrong type:
+  next (<span class="pl-en">expected</span> LinkedList, got Long)
+  com.github.rschmitt.dynamicobject.internal.Validation.validateInstance (<span class="pl-en">Validation.java:33</span>)
+
+<span class="pl-c">; What about pretty printing? Let's make a value that wraps:</span>
+(<span class="pl-k">def</span> <span class="pl-e">long-list</span> (<span class="pl-en">-&gt;</span> head (<span class="pl-en">assoc</span> <span class="pl-c1">:some-long-key</span> <span class="pl-c1">:some-long-value</span> <span class="pl-c1">:another-long-key</span> <span class="pl-c1">:another-long-value</span>)))
+(<span class="pl-en">pprint</span> long-list)
+#LL{<span class="pl-c1">:another-long-key</span> :another-long-value,
+    <span class="pl-c1">:some-long-key</span> :some-long-value,
+    <span class="pl-c1">:next</span> #LL{<span class="pl-c1">:next</span> #LL{<span class="pl-c1">:value</span> <span class="pl-c1">3</span>, <span class="pl-c1">:next</span> <span class="pl-c1">nil</span>}, <span class="pl-c1">:value</span> <span class="pl-c1">2</span>},
+    <span class="pl-c1">:value</span> <span class="pl-c1">1</span>}
+
+<span class="pl-c">; Just for grins, let's round-trip the output:</span>
+(<span class="pl-en">DynamicObject/deserialize</span> (<span class="pl-en">with-out-str</span> (<span class="pl-en">pprint</span> long-list)) RecursionTest$LinkedList)
+=&gt; #LL{<span class="pl-c1">:another-long-key</span> :another-long-value, <span class="pl-c1">:some-long-key</span> :some-long-value, <span class="pl-c1">:next</span> #LL{<span class="pl-c1">:next</span> #LL{<span class="pl-c1">:value</span> <span class="pl-c1">3</span>, <span class="pl-c1">:next</span> <span class="pl-c1">nil</span>}, <span class="pl-c1">:value</span> <span class="pl-c1">2</span>}, <span class="pl-c1">:value</span> <span class="pl-c1">1</span>}
+(<span class="pl-en">=</span> *1 long-list)
+=&gt; <span class="pl-c1">true</span>
+
+<span class="pl-c">; Let's play with Fressian:</span>
+(<span class="pl-k">def</span> <span class="pl-e">head-bytes</span> (<span class="pl-en">DynamicObject/toFressianByteArray</span> head))
+=&gt; #'user/head-bytes
+(<span class="pl-en">vec</span> head-bytes)
+=&gt; [-17 -36 <span class="pl-c1">76</span> <span class="pl-c1">76</span> <span class="pl-c1">1</span> -64 -24 -54 -9 -51 -34 <span class="pl-c1">110</span> <span class="pl-c1">101</span> <span class="pl-c1">120</span> <span class="pl-c1">116</span> -96 -64 -24 -54 -9 -128 -96 -64 -24 -54 -9 -51 -33 <span class="pl-c1">118</span> <span class="pl-c1">97</span> <span class="pl-c1">108</span> <span class="pl-c1">117</span> <span class="pl-c1">101</span> <span class="pl-c1">3</span> -54 -9 -128 -9 -54 -9 -127 <span class="pl-c1">2</span> -54 -9 -127 <span class="pl-c1">1</span>]
+(<span class="pl-en">DynamicObject/fromFressianByteArray</span> head-bytes)
+=&gt; #LL{<span class="pl-c1">:next</span> #LL{<span class="pl-c1">:next</span> #LL{<span class="pl-c1">:value</span> <span class="pl-c1">3</span>, <span class="pl-c1">:next</span> <span class="pl-c1">nil</span>}, <span class="pl-c1">:value</span> <span class="pl-c1">2</span>}, <span class="pl-c1">:value</span> <span class="pl-c1">1</span>}</pre></div>
+
+<h2>
+<a id="guidelines" class="anchor" href="#guidelines" aria-hidden="true"><span class="octicon octicon-link"></span></a>Guidelines</h2>
+
+<ul>
+<li>Always register a reader tag for any <code>DynamicObject</code> that will be serialized. This reader tag should be namespaced with some appropriate prefix (e.g. a Java package name), as all unprefixed reader tags are reserved for future use by the Edn specification.</li>
+<li>Always include a version number in data that will be serialized. This way, older consumers can check the version number and decline any messages that they are not capable of handling properly.</li>
+<li>Annotate required fields with <code>@Required</code> and call <code>validate()</code> to ensure that all required fields are present.</li>
+<li>Use <a href="http://docs.oracle.com/javase/8/docs/api/java/util/Optional.html"><code>java.util.Optional</code></a> in your schema with fields that are not <code>@Required</code>. Internally, DynamicObject unwraps <code>Optional</code> values; they do not affect serialization, and they provide additional null safety by making it obvious (at the actual call site, not just the schema) that a given field might not be present.
+
+<ul>
+<li>Correspondingly, unboxed primitive fields should always be marked <code>@Required</code>, as they cannot be effectively checked for null. Optional fields should always use the boxed type.</li>
+</ul>
+</li>
+<li>It is okay to submit a mutable collection such as a <code>java.util.ArrayList</code> to a <code>DynamicObject</code> builder method. Internally, all collection elements are copied to an immutable Clojure collection.
+
+<ul>
+<li>Similarly, all collection getter methods return an immutable persistent collection. Attempts to mutate these collections will result in an <code>UnsupportedOperationException</code>.</li>
+</ul>
+</li>
+<li>Do not abuse user-defined methods. A <a href="http://en.wikipedia.org/wiki/Pure_function">pure function</a> is often a good candidate for a custom method; anything else should be viewed with suspicion.</li>
+</ul>
+
+<h2>
+<a id="constraints-and-limitations" class="anchor" href="#constraints-and-limitations" aria-hidden="true"><span class="octicon octicon-link"></span></a>Constraints and Limitations</h2>
+
+<ul>
+<li>Since unboxed primitives cannot be null, any attempt to dereference an unboxed primitive field whose underlying value is null or missing will result in a <code>NullPointerException</code>.</li>
+<li>DynamicObject has no concept of inheritance. There is no provision for deriving one DynamicObject type from another.</li>
+<li>DynamicObject's builders and getters copy and transform collections--for instance, a getter returning a <code>List&lt;Integer&gt;</code> must copy from a <code>List&lt;Long&gt;</code>. This can have performance impact.</li>
+<li>There is no way to teach DynamicObject to make defensive copies of mutable types in getters and builders.</li>
+<li>Java arrays are not currently supported.</li>
+<li>Fressian does not support Clojure sets, vectors, or lists. The Fressian reader will return Java's mutable collection types instead.</li>
+</ul>
+
+<h2>
+<a id="developing" class="anchor" href="#developing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Developing</h2>
+
+<p>DynamicObject should work out-of-the-box with <a href="http://www.jetbrains.com/idea/download/">IntelliJ 14.1</a>. The Community Edition is sufficient. You'll need <a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">JDK8</a> installed and configured as an SDK within IntelliJ. You will also need the Maven plugin for dependency resolution; this is generally included by default.</p>
+
+<p>You can also run the build from the command line using <code>mvn package</code>. To just run the unit tests, use <code>mvn test</code>.</p>
+
+<h2>
+<a id="influences-and-similar-ideas" class="anchor" href="#influences-and-similar-ideas" aria-hidden="true"><span class="octicon octicon-link"></span></a>Influences and Similar Ideas</h2>
+
+<ul>
+<li>
+<a href="http://www.projectlombok.org/">Lombok</a> is a boilerplate elimination tool for Java. It offers the excellent <a href="http://projectlombok.org/features/Value.html"><code>@Value</code></a> annotation, which helps to take the pain out of Java data modeling. Unfortunately, Lombok by itself does little to solve the problem of serialization/deserialization, and its implementation does horrible violence to the internals of the compiler.</li>
+<li>
+<a href="https://github.com/Prismatic/schema">Prismatic Schema</a> is a Clojure library that offers declarative data validation and description in terms of "schemas."</li>
+<li>
+<a href="https://github.com/clojure/core.typed">core.typed</a> is a pluggable type system for Clojure. Its concept of <a href="https://github.com/clojure/core.typed/wiki/Types#heterogeneous-maps">heterogeneous maps</a> helped to clarify how Clojure's extremely general map type could be used effectively in a statically typed language like Java.</li>
+</ul>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
