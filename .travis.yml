@@ -4,3 +4,10 @@ script:
   - mvn clean test
   - mvn clean test -f pom-1.7.xml
 install: mvn install -DskipTests=true -Dgpg.skip=true
+
+env:
+    global:
+        - secure: "KQv0YbutcCv3GA1VOAUnqWaIn68o7yKEIpL2E5ux/rGpEJtOoh9+Qp+hf9eZaTKWD5Rb40FUzaTzshmWN5I1JibEc1OxlbIOJ1tnbwrb6sONzl7XUSzWndcWUEY98HWclodj1g0z3pBloTUn3s1DrHIiHLm08n9/ZJb+t0M/mgAOYeC3r7jji1MxUDGOkliFxPjT0ZrEuPOcF2/inINJEapw8HnVy2dnWqIOtPTzLKvrfE/KWKdNJklR6j4xY6c5k2mcCDDBDCq2xcZ+BR1aOaYlHICigA/nNzV2P+5jggL2hH4u1KPdE35MkvcO7mOdn/HzEhLr/UwBoG//8Jsr/K3WYlDz4m5uZxdt5IBB/F3Sh4R9Qr+ZmBMiQJ7d1twFcVohaOIQr9rGd3XdnTB1ayNhzo4O01toBIP29p4P0mGTFOggEX7REgBEjVogz/au4Qtmdi/rk7brtNf642T3sXcJfBsjUDqHTOxZ4rM1Xlwk4uj9XCaPfOkKtG184xA0lhu04eXyxOOmMi7SjCWHmGFqCoUU8YA1fRaJYXzgqQC31MIEhwRWXiMa9IMAXJk7kM0t2TW6VnKaS3/xic3g//sBE6IzAgwIqFNuLkh6G2ggkFms2c/XZ8oFxyGo12E2Aq4xVFIHNYGeDl7C6F7UiVksX+KZrl0ugtckWE4blH4="
+
+after_success:
+    - ./push-javadoc-to-gh-pages.sh
