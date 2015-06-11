@@ -15,7 +15,7 @@ if [ "$TRAVIS_REPO_SLUG" == "rschmitt/dynamic-object" ] && [ "$TRAVIS_PULL_REQUE
     git clone --quiet --branch=gh-pages https://${GH_TOKEN}@github.com/rschmitt/dynamic-object gh-pages > /dev/null
 
     cd gh-pages
-    git rm -rf ./javadoc
+    git rm -rf --ignore-unmatch ./javadoc
     cp -Rf $HOME/javadoc-latest ./javadoc
     git add -f .
     git commit -m "Lastest javadoc on successful travis build $TRAVIS_BUILD_NUMBER auto-pushed to gh-pages"
