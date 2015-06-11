@@ -483,7 +483,7 @@ IllegalStateException The following fields had the wrong type:
 
 ## Developing
 
-DynamicObject should work out-of-the-box with [IntelliJ 14.1](http://www.jetbrains.com/idea/download/). The Community Edition is sufficient. You'll need [JDK8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed and configured as an SDK within IntelliJ. You will also need the Maven plugin for dependency resolution; this is generally included by default.
+DynamicObject should work out-of-the-box with [IntelliJ 14.1](http://www.jetbrains.com/idea/download/); just import it as a Maven project using the pom.xml file. The Community Edition is sufficient. You'll need [JDK8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed and configured as an SDK within IntelliJ.
 
 You can also run the build from the command line using `mvn package`. To just run the unit tests, use `mvn test`.
 
