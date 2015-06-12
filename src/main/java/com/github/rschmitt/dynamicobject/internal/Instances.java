@@ -27,6 +27,7 @@ public class Instances {
     }
 
     private static <D extends DynamicObject<D>> D createIndyProxy(Map map, Class<D> type) {
+        ensureInitialized(type);
         try {
             Object proxy = proxyCache.computeIfAbsent(type, Instances::createProxy)
                     .constructor()
@@ -34,6 +35,21 @@ public class Instances {
             return type.cast(proxy);
         } catch (Throwable t) {
             throw new RuntimeException(t);
+        }
+    }
+
+    // This is to avoid hitting JDK-8062841 in the case where 'type' has a static field of type D
+    // that has not yet been initialized.
+    private static synchronized <D extends DynamicObject<D>> void ensureInitialized(Class<D> c) {
+        if (!proxyCache.containsKey(c))
+            load(c);
+    }
+
+    private static void load(Class<?> c) {
+        try {
+            Class.forName(c.getName());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 
