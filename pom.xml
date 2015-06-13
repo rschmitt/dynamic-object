@@ -43,14 +43,22 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>com.github.rschmitt</groupId>
+      <artifactId>collider</artifactId>
+      <version>[0.3.0,)</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>org.fressian</groupId>
       <artifactId>fressian</artifactId>
       <version>0.6.5</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>data.fressian</artifactId>
       <version>0.2.0</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>net.fushizen.invokedynamic.proxy</groupId>

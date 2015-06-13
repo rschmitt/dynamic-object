@@ -1,5 +1,11 @@
 package com.github.rschmitt.dynamicobject.internal;
 
+import com.github.rschmitt.collider.ClojureList;
+import com.github.rschmitt.collider.ClojureMap;
+import com.github.rschmitt.collider.ClojureSet;
+import com.github.rschmitt.collider.Collider;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.Instant;
@@ -10,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import com.github.rschmitt.dynamicobject.DynamicObject;
 
 class Conversions {
     /*
@@ -76,7 +80,8 @@ class Conversions {
      */
     @SuppressWarnings("unchecked")
     static Object clojureToJava(Object obj, Type genericReturnType) {
-        if (Reflection.getRawType(genericReturnType).equals(Optional.class)) {
+        Class<?> rawReturnType = Reflection.getRawType(genericReturnType);
+        if (rawReturnType.equals(Optional.class)) {
             Type nestedType = Reflection.getTypeArgument(genericReturnType, 0);
             return Optional.ofNullable(clojureToJava(obj, nestedType));
         }
@@ -92,14 +97,20 @@ class Conversions {
                 return DynamicObject.wrap((Map) obj, (Class<? extends DynamicObject>) returnType);
         }
 
-        if (obj instanceof List)
-            return convertCollectionToJavaTypes((Collection<?>) obj, ClojureStuff.EmptyVector, genericReturnType);
-        else if (obj instanceof Set)
-            return convertCollectionToJavaTypes((Collection<?>) obj, ClojureStuff.EmptySet, genericReturnType);
-        else if (obj instanceof Map)
-            return convertMapToJavaTypes((Map<?, ?>) obj, genericReturnType);
-        else
-            return obj;
+        if (obj instanceof List) {
+            obj = convertCollectionToJavaTypes((Collection<?>) obj, ClojureStuff.EmptyVector, genericReturnType);
+            if (rawReturnType.equals(ClojureList.class))
+                return Collider.intoClojureList((List) obj);
+        } else if (obj instanceof Set) {
+            obj = convertCollectionToJavaTypes((Collection<?>) obj, ClojureStuff.EmptySet, genericReturnType);
+            if (rawReturnType.equals(ClojureSet.class))
+                return Collider.intoClojureSet((Set) obj);
+        } else if (obj instanceof Map) {
+            obj = convertMapToJavaTypes((Map<?, ?>) obj, genericReturnType);
+            if (rawReturnType.equals(ClojureMap.class))
+                return Collider.intoClojureMap((Map) obj);
+        }
+        return obj;
     }
 
     private static Object convertCollectionToJavaTypes(Collection<?> coll, Object empty, Type genericReturnType) {
