@@ -142,12 +142,12 @@ public class ColliderTest {
         ClojureSet<Instant> set();
         ClojureList<Optional<String>> list();
 
-        Batch map(ClojureMap<String, Integer> map);
-        Batch set(ClojureSet<Instant> set);
-        Batch list(ClojureList<Optional<String>> list);
+        Batch map(Map<String, Integer> map);
+        Batch set(Set<Instant> set);
+        Batch list(List<Optional<String>> list);
 
-        @Key(":map") Batch map2(Map<String, Integer> map);
-        @Key(":set") Batch set2(Set<Instant> set);
-        @Key(":list") Batch list2(List<Optional<String>> list);
+        @Key(":map") Batch map2(ClojureMap<String, Integer> map);
+        @Key(":set") Batch set2(ClojureSet<Instant> set);
+        @Key(":list") Batch list2(ClojureList<Optional<String>> list);
     }
 }
