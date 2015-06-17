@@ -5,4 +5,5 @@
 /coverage-error.log
 /.idea
 /*.iml
-/project.clj
+/.lein*
+/.nrepl-port
