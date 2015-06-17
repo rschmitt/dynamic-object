@@ -35,6 +35,13 @@
     <url>git@github.com:rschmitt/dynamic-object.git</url>
   </scm>
 
+  <repositories>
+    <repository>
+      <id>clojars.org</id>
+      <url>http://clojars.org/repo</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.clojure</groupId>
@@ -70,6 +77,12 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>collection-check</groupId>
+      <artifactId>collection-check</artifactId>
+      <version>0.1.6</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
