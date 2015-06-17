@@ -1,6 +1,5 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import clojure.lang.*;
 import com.github.rschmitt.dynamicobject.DynamicObject;
 
 import java.io.StringWriter;
@@ -11,6 +10,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import clojure.lang.AFn;
+import clojure.lang.Associative;
+import clojure.lang.IHashEq;
+import clojure.lang.IMapEntry;
+import clojure.lang.IObj;
+import clojure.lang.IPersistentCollection;
+import clojure.lang.IPersistentMap;
+import clojure.lang.ISeq;
+import clojure.lang.MapEquivalence;
+import clojure.lang.Seqable;
 
 import static java.lang.String.format;
 
@@ -277,6 +287,11 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
     @Override
     public Object invoke(Object arg1, Object notFound) {
         return valAt(arg1, notFound);
+    }
+
+    @Override
+    public Iterator iterator() {
+        return ((IPersistentMap) map).iterator();
     }
 
     public Iterator valIterator() throws ReflectiveOperationException {
