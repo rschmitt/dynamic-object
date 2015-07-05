@@ -1,7 +1,6 @@
 [![Build Status](http://img.shields.io/travis/rschmitt/dynamic-object.svg)](https://travis-ci.org/rschmitt/dynamic-object)
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.rschmitt/dynamic-object.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.rschmitt/dynamic-object)
 [![License](https://img.shields.io/github/license/rschmitt/dynamic-object.svg)](https://creativecommons.org/about/cc0)
-# DynamicObject
 
 DynamicObject is a library that makes Clojure's powerful data modeling capabilities available to Java developers in an idiomatic way with minimal boilerplate. It reflects the belief that [values](http://www.infoq.com/presentations/Value-Values) should be immutable, cheap to specify, powerful to work with, and easy to convey to other processes. Browse the Javadoc [online](http://rschmitt.github.io/dynamic-object/javadoc/).
 
