@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Value;
+
 import static com.github.rschmitt.dynamicobject.DynamicObject.*;
 import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
 import static java.lang.String.format;
@@ -131,39 +133,10 @@ class DumbClassWriter implements WriteHandler {
 }
 
 // This is a POJO that has no knowledge of Edn.
+@Value
 class DumbClass {
-    private final long version;
-    private final String str;
-
-    DumbClass(long version, String str) {
-        this.version = version;
-        this.str = str;
-    }
-
-    public long getVersion() {
-        return version;
-    }
-
-    public String getStr() {
-        return str;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        DumbClass dumbClass = (DumbClass) o;
-
-        return version == dumbClass.version && str.equals(dumbClass.str);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (version ^ (version >>> 32));
-        result = 31 * result + str.hashCode();
-        return result;
-    }
+    long version;
+    String str;
 
     @Override
     public String toString() {
