@@ -2,7 +2,7 @@
 
 set -eux
 
-versions=(1.6.0 1.7.0-RC1 1.7.0-RC2 1.7.0-master-SNAPSHOT)
+versions=(1.6.0 1.7.0)
 
 for i in ${versions[@]}
 do
