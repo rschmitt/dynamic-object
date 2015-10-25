@@ -2,7 +2,7 @@
 
 set -eux
 
-versions=(1.{6,7}.0 clojure-1.8.0-alpha{1..5})
+versions=(1.{6,7}.0 clojure-1.8.0-beta1)
 
 for i in ${versions[@]}
 do
