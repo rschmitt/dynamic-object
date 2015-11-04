@@ -26,7 +26,7 @@ class Reflection {
     static <D extends DynamicObject<D>> Collection<Method> fieldGetters(Class<D> type) {
         Collection<Method> ret = new LinkedHashSet<>();
         for (Method method : type.getDeclaredMethods())
-            if (method.getParameterCount() == 0 && !method.isDefault() && !isMetadataGetter(method))
+            if (method.getParameterCount() == 0 && !method.isDefault() && !method.isSynthetic() && !isMetadataGetter(method))
                 ret.add(method);
         return ret;
     }
