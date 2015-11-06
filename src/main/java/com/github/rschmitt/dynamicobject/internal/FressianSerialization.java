@@ -88,7 +88,7 @@ public class FressianSerialization {
 
     static synchronized <D extends DynamicObject<D>> void registerTag(Class<D> type, String tag) {
         binaryTagCache.put(type, tag);
-        Handlers.installHandler(fressianWriteHandlers, type, tag, new FressianWriteHandler(type, tag));
+        Handlers.installHandler(fressianWriteHandlers, type, tag, new FressianWriteHandler(type, tag, Reflection.cachedKeys(type)));
         fressianReadHandlers.putIfAbsent(tag, new FressianReadHandler(type));
     }
 
