@@ -1,6 +1,10 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.cachedRead;
+import com.github.rschmitt.dynamicobject.Cached;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import com.github.rschmitt.dynamicobject.Key;
+import com.github.rschmitt.dynamicobject.Meta;
+import com.github.rschmitt.dynamicobject.Required;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -10,17 +14,25 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
-import com.github.rschmitt.dynamicobject.DynamicObject;
-import com.github.rschmitt.dynamicobject.Key;
-import com.github.rschmitt.dynamicobject.Meta;
-import com.github.rschmitt.dynamicobject.Required;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.cachedRead;
+import static java.util.stream.Collectors.toSet;
 
 class Reflection {
     static <D extends DynamicObject<D>> Collection<Method> requiredFields(Class<D> type) {
         Collection<Method> fields = fieldGetters(type);
-        return fields.stream().filter(Reflection::isRequired).collect(Collectors.toSet());
+        return fields.stream().filter(Reflection::isRequired).collect(toSet());
+    }
+
+    static <D extends DynamicObject<D>> Set<Object> cachedKeys(Class<D> type) {
+        return Arrays.stream(type.getMethods())
+                .filter(method -> method.getAnnotation(Cached.class) != null)
+                .map(method -> method.getAnnotation(Key.class))
+                .filter(key -> key != null)
+                .map(Key::value)
+                .map(Reflection::stringToKey)
+                .collect(toSet());
     }
 
     static <D extends DynamicObject<D>> Collection<Method> fieldGetters(Class<D> type) {

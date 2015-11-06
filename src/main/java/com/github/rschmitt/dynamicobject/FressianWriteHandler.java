@@ -11,15 +11,19 @@ import java.io.IOException;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHandler {
     private final Class<D> type;
     private final String tag;
+    private final Set<Object> cachedKeys;
 
-    public FressianWriteHandler(Class<D> type, String tag) {
+    public FressianWriteHandler(Class<D> type, String tag, Set<Object> cachedKeys) {
         this.type = type;
         this.tag = tag;
+        this.cachedKeys = cachedKeys;
     }
 
     @Override
@@ -30,7 +34,7 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
         w.writeTag("map", 1);
 
         Map map = ((DynamicObject) instance).getMap();
-        w.writeList(new TransformedMap(map, this::transformKey));
+        w.writeList(new TransformedMap(map, this::transformKey, this::transformValue));
     }
 
     /*
@@ -47,16 +51,26 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
         return new CachedObject(key);
     }
 
+    @SuppressWarnings("unchecked")
+    private Object transformValue(Object key, Object value) {
+        if (cachedKeys.contains(key)) {
+            return new CachedObject(value);
+        }
+
+        return value;
+    }
+
     @Immutable
     @RequiredArgsConstructor
     @SuppressWarnings("unchecked")
     private static class TransformedMap extends AbstractCollection {
         private final Map backingMap;
         private final Function<Object, Object> keysTransformation;
+        private final BiFunction<Object, Object, Object> valuesTransformation;
 
         @Override
         public Iterator iterator() {
-            return new TransformingKeyValueIterator(backingMap.entrySet().iterator(), keysTransformation);
+            return new TransformingKeyValueIterator(backingMap.entrySet().iterator(), keysTransformation, valuesTransformation);
         }
 
         @Override
@@ -70,6 +84,7 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
     private static class TransformingKeyValueIterator implements Iterator {
         private final Iterator<Map.Entry> entryIterator;
         private final Function<Object, Object> keysTransformation;
+        private final BiFunction<Object, Object, Object> valuesTransformation;
 
         Object pendingValue = null;
 
@@ -88,7 +103,7 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
             }
 
             Map.Entry entry = entryIterator.next();
-            pendingValue = entry.getValue();
+            pendingValue = valuesTransformation.apply(entry.getKey(), entry.getValue());
 
             return keysTransformation.apply(entry.getKey());
         }
