@@ -6,21 +6,25 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import com.github.rschmitt.dynamicobject.DynamicObject;
-import com.github.rschmitt.dynamicobject.Key;
-import com.github.rschmitt.dynamicobject.Meta;
-import com.github.rschmitt.dynamicobject.Required;
+import com.github.rschmitt.dynamicobject.*;
 
 class Reflection {
     static <D extends DynamicObject<D>> Collection<Method> requiredFields(Class<D> type) {
         Collection<Method> fields = fieldGetters(type);
         return fields.stream().filter(Reflection::isRequired).collect(Collectors.toSet());
+    }
+
+    static <D extends DynamicObject<D>> Set<Object> cachedKeys(Class<D> type) {
+        return Arrays.asList(type.getMethods()).stream()
+                .filter(method -> method.getAnnotation(Cached.class) != null)
+                .map(method -> method.getAnnotation(Key.class))
+                .filter(key -> key != null)
+                .map(Key::value)
+                .map(Reflection::stringToKey)
+                .collect(Collectors.toSet());
     }
 
     static <D extends DynamicObject<D>> Collection<Method> fieldGetters(Class<D> type) {

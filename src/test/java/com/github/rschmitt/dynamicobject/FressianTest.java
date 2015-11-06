@@ -1,12 +1,17 @@
 package com.github.rschmitt.dynamicobject;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 
 public class FressianTest {
 
@@ -41,7 +46,36 @@ public class FressianTest {
         assertEquals(SAMPLE_VALUE, deserialized);
     }
 
+    @Test
+    public void cachedKeys_canBeRoundTripped() throws Exception {
+        String cachedValue = "cached value";
+        BinarySerialized value = DynamicObject.newInstance(BinarySerialized.class).withCached(cachedValue);
+
+        byte[] fressian = DynamicObject.toFressianByteArray(Arrays.asList(value, value));
+        List<BinarySerialized> deserialized = (List<BinarySerialized>)DynamicObject.fromFressianByteArray(fressian);
+
+        assertEquals(value, deserialized.get(0));
+        assertEquals(value, deserialized.get(1));
+    }
+
+    @Test
+    public void cachedKeys_areNotRepeated() throws Exception {
+        String cachedValue = "cached value";
+        BinarySerialized value = DynamicObject.newInstance(BinarySerialized.class).withCached(cachedValue);
+
+        byte[] fressian = DynamicObject.toFressianByteArray(Arrays.asList(value, value));
+        // Interpret as an 8-bit charset just to make it easy to find the embedded string(s)
+        String s = new String(fressian, "ISO-8859-1");
+
+        int firstIndex = s.indexOf(cachedValue);
+        assertTrue(firstIndex >= 0);
+
+        int secondIndex = s.indexOf(cachedValue, firstIndex + 1);
+        assertEquals(-1, secondIndex);
+    }
+
     public interface BinarySerialized extends DynamicObject<BinarySerialized> {
         @Key(":hello") BinarySerialized withHello(String hello);
+        @Cached @Key(":cached") BinarySerialized withCached(String cached);
     }
 }

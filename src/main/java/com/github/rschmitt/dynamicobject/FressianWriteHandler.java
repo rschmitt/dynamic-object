@@ -6,19 +6,19 @@ import org.fressian.Writer;
 import org.fressian.handlers.WriteHandler;
 
 import java.io.IOException;
-import java.util.AbstractCollection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHandler {
     private final Class<D> type;
     private final String tag;
+    private final Set<Object> cachedKeys;
 
-    public FressianWriteHandler(Class<D> type, String tag) {
+    public FressianWriteHandler(Class<D> type, String tag, Set<Object> cachedKeys) {
         this.type = type;
         this.tag = tag;
+        this.cachedKeys = cachedKeys;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
         w.writeTag("map", 1);
 
         Map map = ((DynamicObject)instance).getMap();
-        w.writeList(new ExplodingCollection(map, this::transformKey));
+        w.writeList(new ExplodingCollection(map, this::transformKey, this::transformValue));
     }
 
     private Object transformKey(Object key) {
@@ -46,15 +46,24 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
         return new CachedObject(key);
     }
 
+    private Object transformValue(Object key, Object value) {
+        if (cachedKeys.contains(key)) {
+            return new CachedObject(value);
+        }
+
+        return value;
+    }
+
     @SuppressWarnings("unchecked")
     @RequiredArgsConstructor
     private static class ExplodingCollection extends AbstractCollection {
         final Map backingMap;
         final Function<Object, Object> keysTransformation; // k -> k
+        final BiFunction<Object, Object, Object> valuesTransformation;
 
         @Override
         public Iterator iterator() {
-            return new ExplodingIterator(backingMap.entrySet().iterator(), keysTransformation);
+            return new ExplodingIterator(backingMap.entrySet().iterator(), keysTransformation, valuesTransformation);
         }
 
         @Override
@@ -67,6 +76,7 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
     private static class ExplodingIterator implements Iterator {
         final Iterator<Map.Entry> entryIterator;
         final Function<Object, Object> keysTransformation; // k -> k
+        final BiFunction<Object, Object, Object> valuesTransformation;
 
         Optional<Object> pendingValue = Optional.empty();
 
@@ -85,7 +95,7 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
             }
 
             Map.Entry entry = entryIterator.next();
-            pendingValue = Optional.of(entry.getValue());
+            pendingValue = Optional.of(valuesTransformation.apply(entry.getKey(), entry.getValue()));
 
             return keysTransformation.apply(entry.getKey());
         }
