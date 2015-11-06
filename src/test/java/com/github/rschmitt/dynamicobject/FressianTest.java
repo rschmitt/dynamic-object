@@ -6,7 +6,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Base64;
+
 public class FressianTest {
+    public static final BinarySerialized SAMPLE_VALUE
+            = DynamicObject.newInstance(BinarySerialized.class).withHello("world");
+
     @Before
     public void setup() {
         DynamicObject.registerTag(BinarySerialized.class, "BinarySerialized");
@@ -19,12 +24,18 @@ public class FressianTest {
 
     @Test
     public void smokeTest() throws Exception {
-        BinarySerialized binarySerialized = DynamicObject.newInstance(BinarySerialized.class).withHello("world");
-
-        byte[] bytes = DynamicObject.toFressianByteArray(binarySerialized);
+        byte[] bytes = DynamicObject.toFressianByteArray(SAMPLE_VALUE);
         Object o = DynamicObject.fromFressianByteArray(bytes);
 
-        assertEquals(o, binarySerialized);
+        assertEquals(o, SAMPLE_VALUE);
+    }
+
+    @Test
+    public void formatCompatibilityTest() throws Exception {
+        String encoded = "7+MQQmluYXJ5U2VyaWFsaXplZAHA5sr3zd9oZWxsb993b3JsZA==";
+        BinarySerialized deserialized = DynamicObject.fromFressianByteArray(Base64.getDecoder().decode(encoded));
+
+        assertEquals(SAMPLE_VALUE, deserialized);
     }
 
     public interface BinarySerialized extends DynamicObject<BinarySerialized> {
