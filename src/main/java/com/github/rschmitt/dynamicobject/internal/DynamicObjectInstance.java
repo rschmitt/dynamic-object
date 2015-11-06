@@ -57,6 +57,9 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
 
     @Override
     public boolean equals(Object other) {
+        if (other == this) return true;
+        if (other == null) return false;
+
         if (other instanceof DynamicObject)
             return map.equals(((DynamicObject) other).getMap());
         else
