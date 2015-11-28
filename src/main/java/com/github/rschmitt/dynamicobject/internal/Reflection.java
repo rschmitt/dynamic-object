@@ -8,6 +8,7 @@ import com.github.rschmitt.dynamicobject.Required;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -15,6 +16,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.cachedRead;
 import static java.util.stream.Collectors.toSet;
@@ -27,24 +29,51 @@ class Reflection {
 
     static <D extends DynamicObject<D>> Set<Object> cachedKeys(Class<D> type) {
         return Arrays.stream(type.getMethods())
-                .filter(method -> method.getAnnotation(Cached.class) != null)
-                .map(method -> method.getAnnotation(Key.class))
-                .filter(key -> key != null)
-                .map(Key::value)
-                .map(Reflection::stringToKey)
+                .flatMap(Reflection::getCachedKeysForMethod)
                 .collect(toSet());
+    }
+
+    private static Stream<Object> getCachedKeysForMethod(Method method) {
+        if (isGetter(method)) {
+            if (method.getAnnotation(Cached.class) != null) {
+                return Stream.of(getKeyForGetter(method));
+            } else {
+                return Stream.empty();
+            }
+        } else if (isBuilder(method)) {
+            if (method.getAnnotation(Cached.class) != null) {
+                return Stream.of(getKeyForBuilder(method));
+            } else {
+                // If the getter has an annotation it'll contribute it directly
+                return Stream.empty();
+            }
+        } else {
+            return Stream.empty();
+        }
     }
 
     static <D extends DynamicObject<D>> Collection<Method> fieldGetters(Class<D> type) {
         Collection<Method> ret = new LinkedHashSet<>();
         for (Method method : type.getDeclaredMethods())
-            if (method.getParameterCount() == 0 && !method.isDefault() && !method.isSynthetic() && !isMetadataGetter(method))
+            if (isGetter(method))
                 ret.add(method);
         return ret;
     }
 
-    static boolean isMetadataGetter(Method getter) {
-        return getter.getParameterCount() == 0 && hasAnnotation(getter, Meta.class);
+    private static boolean isBuilder(Method method) {
+        return method.getParameterCount() == 1 && method.getDeclaringClass().isAssignableFrom(method.getReturnType());
+    }
+
+    private static boolean isAnyGetter(Method method) {
+        return method.getParameterCount() == 0 && !method.isDefault() && !method.isSynthetic();
+    }
+
+    private static boolean isGetter(Method method) {
+        return isAnyGetter(method) && !isMetadataGetter(method);
+    }
+
+    static boolean isMetadataGetter(Method method) {
+        return isAnyGetter(method) && hasAnnotation(method, Meta.class);
     }
 
     static boolean isRequired(Method getter) {
@@ -107,7 +136,7 @@ class Reflection {
             Method correspondingGetter = type.getMethod(builderMethod.getName());
             return correspondingGetter;
         } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException("Builder methods must have a corresponding getter method or a @Key annotation.", ex);
+            throw new IllegalStateException("Builder method " + builderMethod + " must have a corresponding getter method or a @Key annotation.", ex);
         }
     }
 
