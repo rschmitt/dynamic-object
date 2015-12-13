@@ -2,7 +2,7 @@
 
 set -eux
 
-versions=(1.{6,7}.0 1.8.0-RC2)
+versions=(1.{6,7}.0 1.8.0-RC3)
 
 for i in ${versions[@]}
 do
