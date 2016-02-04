@@ -87,23 +87,27 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
         private final BiFunction<Object, Object, Object> valuesTransformation;
 
         Object pendingValue = null;
+        boolean hasPendingValue = false;
 
         @Override
         public boolean hasNext() {
-            return pendingValue != null || entryIterator.hasNext();
+            return hasPendingValue || entryIterator.hasNext();
         }
 
         @Override
         public Object next() {
-            if (pendingValue != null) {
+            if (hasPendingValue) {
                 Object value = pendingValue;
                 pendingValue = null;
+                hasPendingValue = false;
 
                 return value;
             }
 
             Map.Entry entry = entryIterator.next();
             pendingValue = valuesTransformation.apply(entry.getKey(), entry.getValue());
+
+            hasPendingValue = true;
 
             return keysTransformation.apply(entry.getKey());
         }
