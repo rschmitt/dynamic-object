@@ -34,6 +34,16 @@ public class FressianTest {
     }
 
     @Test
+    public void testNullValues() throws Exception {
+        BinarySerialized testValue = SAMPLE_VALUE.withNull(null);
+
+        byte[] bytes = DynamicObject.toFressianByteArray(testValue);
+        Object o = DynamicObject.fromFressianByteArray(bytes);
+
+        assertEquals(o, testValue);
+    }
+
+    @Test
     public void formatCompatibilityTest() throws Exception {
         String encoded = "7+MQQmluYXJ5U2VyaWFsaXplZAHA5sr3zd9oZWxsb993b3JsZA==";
         BinarySerialized deserialized = DynamicObject.fromFressianByteArray(Base64.getDecoder().decode(encoded));
@@ -71,6 +81,7 @@ public class FressianTest {
 
     public interface BinarySerialized extends DynamicObject<BinarySerialized> {
         @Key(":hello") BinarySerialized withHello(String hello);
+        @Key(":null") BinarySerialized withNull(Object nil);
         @Cached @Key(":cached") BinarySerialized withCached(String cached);
     }
 }
