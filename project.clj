@@ -1,4 +1,4 @@
-(defproject dynamic-object "1.7.0-SNAPSHOT"
+(defproject dynamic-object "1.6.1"
   :profiles {:dev
              {:dependencies
               [[org.clojure/clojure "1.7.0"]
