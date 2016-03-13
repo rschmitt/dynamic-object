@@ -52,6 +52,13 @@ public class MapTest {
         assertEquals(TaggedEdn, actualEdn);
     }
 
+    @Test
+    public void mapDefaultMethodsAreUsable() throws Exception {
+        EmptyObject object = DynamicObject.newInstance(EmptyObject.class);
+
+        object.getOrDefault("some key", "some value");
+    }
+
     private void binaryRoundTrip(Object expected) {
         Object actual = DynamicObject.fromFressianByteArray(DynamicObject.toFressianByteArray(expected));
         assertEquals(expected, actual);
