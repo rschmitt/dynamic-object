@@ -79,7 +79,7 @@ public class DiffTest {
 
         assertEquals(null,               c.list().get(0));
         assertEquals(null,               c.list().get(1));
-        assertEquals(Integer.valueOf(3), c.list().get(2));
+        assertEquals(Long.valueOf(3), c.list().get(2));
     }
 
     @Test
@@ -94,7 +94,7 @@ public class DiffTest {
         assertEquals("different", diff.b());
         assertNull(diff.list().get(0));
         assertNull(diff.list().get(1));
-        assertEquals(Integer.valueOf(1), diff.list().get(2));
+        assertEquals(Long.valueOf(1), diff.list().get(2));
     }
 
     public interface Diffable extends DynamicObject<Diffable> {
@@ -102,6 +102,6 @@ public class DiffTest {
         String b();
         Diffable d();
         Set<Integer> set();
-        List<Integer> list();
+        List<Long> list();
     }
 }

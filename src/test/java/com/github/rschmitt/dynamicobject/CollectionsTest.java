@@ -1,13 +1,8 @@
 package com.github.rschmitt.dynamicobject;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
-import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.IntStream.range;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Base64;
 import java.util.HashMap;
@@ -16,9 +11,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.IntStream.range;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class CollectionsTest {
     private static final Random Random = new Random();
@@ -54,7 +54,7 @@ public class CollectionsTest {
         ListSchema listSchema = deserialize("{:strings [\"one\" \"two\" \"three\"]}", ListSchema.class);
         List<String> stringList = listSchema.strings();
 
-        List<Integer> collect = stringList.stream().map(x -> x.length()).collect(toList());
+        List<Integer> collect = stringList.stream().map(String::length).collect(toList());
 
         assertEquals(3, collect.get(0).intValue());
         assertEquals(3, collect.get(1).intValue());
@@ -83,28 +83,28 @@ public class CollectionsTest {
     }
 
     @Test
-    public void listOfIntegers() {
-        ListSchema deserialized = deserialize("{:ints [nil 2 nil 4 nil]}", ListSchema.class);
-        List<Integer> builtList = asList(null, 2, null, 4, null);
+    public void listOfLongs() {
+        ListSchema deserialized = deserialize("{:longs [nil 2 nil 4 nil]}", ListSchema.class);
+        List<Long> builtList = asList(null, 2L, null, 4L, null);
 
-        ListSchema built = newInstance(ListSchema.class).ints(builtList);
+        ListSchema built = newInstance(ListSchema.class).longs(builtList);
 
-        assertEquals(builtList, deserialized.ints());
-        assertEquals(builtList, built.ints());
+        assertEquals(builtList, deserialized.longs());
+        assertEquals(builtList, built.longs());
         binaryRoundTrip(built);
         binaryRoundTrip(deserialized);
     }
 
     @Test
-    public void mapOfIntegersToIntegers() {
-        MapSchema deserialized = deserialize("{:ints {1 2, 3 4}}", MapSchema.class);
-        Map<Integer, Integer> builtMap = new HashMap<>();
-        builtMap.put(1, 2);
-        builtMap.put(3, 4);
-        MapSchema built = newInstance(MapSchema.class).ints(builtMap);
+    public void mapOfLongsToLongs() {
+        MapSchema deserialized = deserialize("{:longs {1 2, 3 4}}", MapSchema.class);
+        Map<Long, Long> builtMap = new HashMap<>();
+        builtMap.put(1L, 2L);
+        builtMap.put(3L, 4L);
+        MapSchema built = newInstance(MapSchema.class).longs(builtMap);
 
-        assertEquals(builtMap, deserialized.ints());
-        assertEquals(builtMap, built.ints());
+        assertEquals(builtMap, deserialized.longs());
+        assertEquals(builtMap, built.longs());
         binaryRoundTrip(deserialized);
         binaryRoundTrip(built);
     }
@@ -143,10 +143,10 @@ public class CollectionsTest {
 
     public interface ListSchema extends DynamicObject<ListSchema> {
         List<String> strings();
-        List<Integer> ints();
+        List<Long> longs();
 
         ListSchema strings(List<String> strings);
-        ListSchema ints(List<Integer> ints);
+        ListSchema longs(List<Long> ints);
     }
 
     public interface SetSchema extends DynamicObject<SetSchema> {
@@ -155,9 +155,9 @@ public class CollectionsTest {
 
     public interface MapSchema extends DynamicObject<MapSchema> {
         Map<String, String> dictionary();
-        Map<Integer, Integer> ints();
+        Map<Long, Long> longs();
 
         MapSchema dictionary(Map<String, String> dictionary);
-        MapSchema ints(Map<Integer, Integer> ints);
+        MapSchema longs(Map<Long, Long> ints);
     }
 }

@@ -1,5 +1,15 @@
 package com.github.rschmitt.dynamicobject;
 
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import static com.github.rschmitt.dynamicobject.DynamicObject.deregisterTag;
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
@@ -7,16 +17,6 @@ import static com.github.rschmitt.dynamicobject.DynamicObject.registerTag;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 public class ValidationTest {
     @BeforeClass
@@ -90,7 +90,7 @@ public class ValidationTest {
         validationFailure("{:listOfListOfStrings [[\"str1\"] [\"str2\"] 3]}", CompoundLists.class);
         validationFailure("{:listOfListOfStrings [[\"str1\"] [\"str2\"] [3]]}", CompoundLists.class);
 
-        validationSuccess("{:ints #{1 4 3 2}}", CompoundSets.class);
+        validationSuccess("{:longs #{1 4 3 2}}", CompoundSets.class);
         validationSuccess("{:rawSet #{\"str1\" \"str2\" 3}}", CompoundSets.class);
         validationSuccess("{:strings #{nil \"str1\" \"str2\" \"str4\"}}", CompoundSets.class);
         validationSuccess("{:setOfSetOfStrings nil}", CompoundSets.class);
@@ -233,7 +233,7 @@ public class ValidationTest {
     }
 
     public interface RequiredBoxedFields extends DynamicObject<RequiredBoxedFields> {
-        @Required Integer x();
+        @Required Long x();
     }
 
     public interface Mismatch extends DynamicObject<Mismatch> {
@@ -256,7 +256,7 @@ public class ValidationTest {
 
     public interface CompoundLists extends DynamicObject<CompoundLists> {
         List<String> strings();
-        List<Integer> ints();
+        List<Long> longs();
         List rawList();
         List<?> wildcardList();
         List<List<String>> listOfListOfStrings();
@@ -264,7 +264,7 @@ public class ValidationTest {
 
     public interface CompoundSets extends DynamicObject<CompoundSets> {
         Set<String> strings();
-        Set<Integer> ints();
+        Set<Long> longs();
         Set rawSet();
         Set<?> wildcardSet();
         Set<Set<String>> setOfSetOfStrings();
@@ -276,7 +276,7 @@ public class ValidationTest {
         Map<?, String> wildcardKey();
         Map<String, ?> wildcardValue();
         Map<String, Map<String, String>> nestedGenericMaps();
-        Map<Integer, Map<Integer, Float>> nestedNumericMaps();
+        Map<Long, Map<Long, Double>> nestedNumericMaps();
     }
 
     public interface Custom extends DynamicObject<Custom> {

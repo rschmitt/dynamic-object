@@ -1,17 +1,17 @@
 package com.github.rschmitt.dynamicobject;
 
+import org.junit.Test;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-
-import org.junit.Test;
 
 public class OptionalTest {
     @Test
@@ -42,20 +42,20 @@ public class OptionalTest {
     }
 
     @Test
-    public void intPresent() {
-        OptWrapper instance = deserialize("{:i 24601}", OptWrapper.class).validate();
-        OptWrapper expected = newInstance(OptWrapper.class).i(Optional.of(24601)).validate();
+    public void longPresent() {
+        OptWrapper instance = deserialize("{:l 24601}", OptWrapper.class).validate();
+        OptWrapper expected = newInstance(OptWrapper.class).l(Optional.of(24601L)).validate();
 
-        assertEquals(Integer.valueOf(24601), instance.i().get());
+        assertEquals(Long.valueOf(24601), instance.l().get());
         assertEquals(expected, instance);
     }
 
     @Test
     public void listPresent() {
-        OptWrapper instance = deserialize("{:ints [1 2 3]}", OptWrapper.class).validate();
-        OptWrapper expected = newInstance(OptWrapper.class).ints(Optional.of(asList(1, 2, 3))).validate();
+        OptWrapper instance = deserialize("{:longs [1 2 3]}", OptWrapper.class).validate();
+        OptWrapper expected = newInstance(OptWrapper.class).longs(Optional.of(asList(1L, 2L, 3L))).validate();
 
-        assertEquals(asList(1, 2, 3), instance.ints().get());
+        assertEquals(asList(1L, 2L, 3L), instance.longs().get());
         assertEquals(expected, instance);
     }
 
@@ -74,8 +74,8 @@ public class OptionalTest {
     public void dynamicObjectPresent() {
         DynamicObject.registerTag(OptWrapper.class, "OptWrapper");
 
-        OptWrapper instance = deserialize("#OptWrapper{:wrapper #OptWrapper{:i 24}}", OptWrapper.class).validate();
-        OptWrapper expected = newInstance(OptWrapper.class).wrapper(Optional.of(newInstance(OptWrapper.class).i(Optional.of(24)))).validate();
+        OptWrapper instance = deserialize("#OptWrapper{:wrapper #OptWrapper{:l 24}}", OptWrapper.class).validate();
+        OptWrapper expected = newInstance(OptWrapper.class).wrapper(Optional.of(newInstance(OptWrapper.class).l(Optional.of(24L)))).validate();
 
         assertEquals(expected.wrapper().get(), instance.wrapper().get());
         assertEquals(expected, instance);
@@ -87,7 +87,6 @@ public class OptionalTest {
     public void optionalValidation() {
         deserialize("{}", OptWrapper.class).validate();
         deserialize("{:str \"value\"}", OptWrapper.class).validate();
-
     }
 
     @Test(expected = IllegalStateException.class)
@@ -97,14 +96,14 @@ public class OptionalTest {
 
     public interface OptWrapper extends DynamicObject<OptWrapper> {
         Optional<String> str();
-        Optional<Integer> i();
-        Optional<List<Integer>> ints();
+        Optional<Long> l();
+        Optional<List<Long>> longs();
         Optional<Instant> inst();
         Optional<OptWrapper> wrapper();
 
         OptWrapper str(Optional<String> str);
-        OptWrapper i(Optional<Integer> i);
-        OptWrapper ints(Optional<List<Integer>> ints);
+        OptWrapper l(Optional<Long> i);
+        OptWrapper longs(Optional<List<Long>> longs);
         OptWrapper inst(Optional<Instant> inst);
         OptWrapper wrapper(Optional<OptWrapper> wrapper);
 

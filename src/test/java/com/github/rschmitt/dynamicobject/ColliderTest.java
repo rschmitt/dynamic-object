@@ -8,10 +8,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 import static com.github.rschmitt.collider.Collider.clojureList;
 import static com.github.rschmitt.collider.Collider.clojureMap;
@@ -20,8 +16,6 @@ import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.fromFressianByteArray;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static com.github.rschmitt.dynamicobject.DynamicObject.toFressianByteArray;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -59,12 +53,12 @@ public class ColliderTest {
     public void clojureListDeserialization() throws Exception {
         Batch batch = deserialize("{:list [\"a\" nil \"c\"]}", Batch.class);
 
-        ClojureList<Optional<String>> list = batch.list();
+        ClojureList<String> list = batch.list();
 
-        assertEquals(of("a"), list.get(0));
-        assertEquals(empty(), list.get(1));
-        assertEquals(of("c"), list.get(2));
-        assertEquals(of("d"), list.append(of("d")).get(3));
+        assertEquals("a", list.get(0));
+        assertEquals(null, list.get(1));
+        assertEquals("c", list.get(2));
+        assertEquals("d", list.append("d").get(3));
         fressianRoundTrip(batch);
     }
 
@@ -90,7 +84,7 @@ public class ColliderTest {
 
     @Test
     public void clojureListBuilders() throws Exception {
-        ClojureList<Optional<String>> list = clojureList(of("a"), empty(), of("c"));
+        ClojureList<String> list = clojureList("a", null, "c");
 
         Batch batch = emptyBatch.list(list);
 
@@ -120,7 +114,7 @@ public class ColliderTest {
 
     @Test
     public void listBuilders() throws Exception {
-        ClojureList<Optional<String>> list = clojureList(of("a"), empty(), of("c"));
+        ClojureList<String> list = clojureList("a", null, "c");
 
         Batch batch = emptyBatch.list2(list);
 
@@ -140,14 +134,14 @@ public class ColliderTest {
     public interface Batch extends DynamicObject<Batch> {
         ClojureMap<String, Integer> map();
         ClojureSet<Instant> set();
-        ClojureList<Optional<String>> list();
+        ClojureList<String> list();
 
-        Batch map(Map<String, Integer> map);
-        Batch set(Set<Instant> set);
-        Batch list(List<Optional<String>> list);
+        Batch map(ClojureMap<String, Integer> map);
+        Batch set(ClojureSet<Instant> set);
+        Batch list(ClojureList<String> list);
 
         @Key(":map") Batch map2(ClojureMap<String, Integer> map);
         @Key(":set") Batch set2(ClojureSet<Instant> set);
-        @Key(":list") Batch list2(ClojureList<Optional<String>> list);
+        @Key(":list") Batch list2(ClojureList<String> list);
     }
 }
