@@ -32,7 +32,7 @@ public class ColliderTest {
     public void clojureMapDeserialization() throws Exception {
         Batch batch = deserialize("{:map {\"key\" 3}}", Batch.class);
 
-        ClojureMap<String, Integer> map = batch.map();
+        ClojureMap<String, Long> map = batch.map();
 
         assertEquals(3, map.get("key").intValue());
         assertTrue(map.dissoc("key").isEmpty());
@@ -64,7 +64,7 @@ public class ColliderTest {
 
     @Test
     public void clojureMapBuilders() throws Exception {
-        ClojureMap<String, Integer> map = clojureMap("key", 3);
+        ClojureMap<String, Long> map = clojureMap("key", 3L);
 
         Batch batch = emptyBatch.map(map);
 
@@ -94,7 +94,7 @@ public class ColliderTest {
 
     @Test
     public void mapBuilders() throws Exception {
-        ClojureMap<String, Integer> map = clojureMap("key", 3);
+        ClojureMap<String, Long> map = clojureMap("key", 3L);
 
         Batch batch = emptyBatch.map2(map);
 
@@ -132,15 +132,15 @@ public class ColliderTest {
     }
 
     public interface Batch extends DynamicObject<Batch> {
-        ClojureMap<String, Integer> map();
+        ClojureMap<String, Long> map();
         ClojureSet<Instant> set();
         ClojureList<String> list();
 
-        Batch map(ClojureMap<String, Integer> map);
+        Batch map(ClojureMap<String, Long> map);
         Batch set(ClojureSet<Instant> set);
         Batch list(ClojureList<String> list);
 
-        @Key(":map") Batch map2(ClojureMap<String, Integer> map);
+        @Key(":map") Batch map2(ClojureMap<String, Long> map);
         @Key(":set") Batch set2(ClojureSet<Instant> set);
         @Key(":list") Batch list2(ClojureList<String> list);
     }

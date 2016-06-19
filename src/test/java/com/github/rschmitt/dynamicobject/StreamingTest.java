@@ -1,11 +1,6 @@
 package com.github.rschmitt.dynamicobject;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.deserializeStream;
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -15,9 +10,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.Test;
-
 import clojure.java.api.Clojure;
+
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserializeStream;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class StreamingTest {
     @Test
@@ -44,7 +44,7 @@ public class StreamingTest {
 
         Stream<StreamingType> stream = deserializeStream(reader, StreamingType.class);
 
-        assertEquals(6, stream.mapToInt(StreamingType::x).sum());
+        assertEquals(6, stream.mapToLong(StreamingType::x).sum());
     }
 
     @Test
@@ -83,6 +83,6 @@ public class StreamingTest {
     }
 
     public interface StreamingType extends DynamicObject<StreamingType> {
-        int x();
+        long x();
     }
 }

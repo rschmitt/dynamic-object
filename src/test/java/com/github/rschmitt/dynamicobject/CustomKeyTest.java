@@ -1,18 +1,18 @@
 package com.github.rschmitt.dynamicobject;
 
+import org.junit.Test;
+
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
-
 public class CustomKeyTest {
     @Test
     public void customKeywordSupport() {
-        String edn = "{:a-sample-int 5}";
+        String edn = "{:a-sample-long 5}";
         KeywordInterface object = deserialize(edn, KeywordInterface.class);
-        assertEquals(5, object.aSampleInt());
-        assertEquals(object, newInstance(KeywordInterface.class).aSampleInt(5));
+        assertEquals(5L, object.aSampleLong());
+        assertEquals(object, newInstance(KeywordInterface.class).aSampleLong(5L));
     }
 
     @Test
@@ -34,9 +34,9 @@ public class CustomKeyTest {
     }
 
     public interface KeywordInterface extends DynamicObject<KeywordInterface> {
-        @Key(":a-sample-int") int aSampleInt();
+        @Key(":a-sample-long") long aSampleLong();
 
-        KeywordInterface aSampleInt(int aSampleInt);
+        KeywordInterface aSampleLong(long aSampleLong);
     }
 
     public interface StringInterface extends DynamicObject<StringInterface> {

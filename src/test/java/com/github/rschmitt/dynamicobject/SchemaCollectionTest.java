@@ -1,9 +1,8 @@
 package com.github.rschmitt.dynamicobject;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
-import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
-import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
-import static org.junit.Assert.assertEquals;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,9 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static org.junit.Assert.assertEquals;
 
 public class SchemaCollectionTest {
     @Before
@@ -101,8 +101,8 @@ public class SchemaCollectionTest {
     }
 
     public interface X extends DynamicObject<X> {
-        int y();
+        long y();
 
-        X y(int y);
+        X y(long y);
     }
 }

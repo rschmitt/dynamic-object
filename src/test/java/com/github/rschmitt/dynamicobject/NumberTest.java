@@ -1,17 +1,19 @@
 package com.github.rschmitt.dynamicobject;
 
+import org.junit.Before;
+import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import clojure.lang.BigInt;
+
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.fromFressianByteArray;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.toFressianByteArray;
 import static org.junit.Assert.assertEquals;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
-import org.junit.Before;
-import org.junit.Test;
 
 public class NumberTest {
     @Before
@@ -37,7 +39,7 @@ public class NumberTest {
         ArbitraryPrecision arbitraryPrecision = deserialize(edn, ArbitraryPrecision.class);
 
         assertEquals(edn, serialize(arbitraryPrecision));
-        assertEquals(newInstance(ArbitraryPrecision.class).bigInteger(new BigInteger("9234812039419082756912384500123")), arbitraryPrecision);
+        assertEquals(newInstance(ArbitraryPrecision.class).bigInteger(BigInt.fromBigInteger(new BigInteger("9234812039419082756912384500123"))), arbitraryPrecision);
         binaryRoundTrip(arbitraryPrecision);
     }
 
@@ -48,9 +50,9 @@ public class NumberTest {
 
     public interface ArbitraryPrecision extends DynamicObject<ArbitraryPrecision> {
         BigDecimal bigDecimal();
-        BigInteger bigInteger();
+        BigInt bigInteger();
 
         ArbitraryPrecision bigDecimal(BigDecimal bigDecimal);
-        ArbitraryPrecision bigInteger(BigInteger bigInteger);
+        ArbitraryPrecision bigInteger(BigInt bigInteger);
     }
 }

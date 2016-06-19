@@ -226,10 +226,10 @@ public class ValidationTest {
     }
 
     public interface RequiredFields extends DynamicObject<RequiredFields> {
-        @Required int x();
-        @Required int y();
+        @Required long x();
+        @Required long y();
 
-        int z();
+        long z();
     }
 
     public interface RequiredBoxedFields extends DynamicObject<RequiredBoxedFields> {
@@ -242,7 +242,7 @@ public class ValidationTest {
     }
 
     public interface Inner extends DynamicObject<Inner> {
-        @Required int x();
+        @Required long x();
     }
 
     public interface Outer extends DynamicObject<Outer> {
@@ -280,8 +280,8 @@ public class ValidationTest {
     }
 
     public interface Custom extends DynamicObject<Custom> {
-        @Required int oddsOnly();
-        @Required int required();
+        @Required long oddsOnly();
+        @Required long required();
 
         default Custom validate() {
             if (oddsOnly() % 2 == 0)
