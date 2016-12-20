@@ -1,6 +1,7 @@
 package com.github.rschmitt.dynamicobject.internal;
 
 import com.github.rschmitt.dynamicobject.DynamicObject;
+import com.github.rschmitt.dynamicobject.Equality;
 
 import java.io.StringWriter;
 import java.io.Writer;
@@ -52,15 +53,19 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
 
     @Override
     public int hashCode() {
-        return map.hashCode();
+        if(this instanceof Equality)
+           return ((Equality)this).getHashCode();
+        else
+           return map.hashCode();
     }
 
     @Override
     public boolean equals(Object other) {
         if (other == this) return true;
         if (other == null) return false;
-
-        if (other instanceof DynamicObject)
+        if(this instanceof Equality)
+            return ((Equality)this).isEqualTo(other);
+        else if (other instanceof DynamicObject)
             return map.equals(((DynamicObject) other).getMap());
         else
             return other.equals(map);
