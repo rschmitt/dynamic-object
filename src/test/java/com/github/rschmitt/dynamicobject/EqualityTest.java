@@ -1,23 +1,17 @@
 package com.github.rschmitt.dynamicobject;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
-import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-
-import com.github.rschmitt.dynamicobject.CustomKeyTest.CustomBuilder;
 
 public class EqualityTest {
     @Test
     public void customBuilderSupport() {
         String edn1 = "{:firstName \"Tom\",:lastName \"Brady\",:ssn \"123456789\" }";
         String edn2 = "{:firstName \"Thomas\",:lastName \"Brady\",:ssn \"123456789\" }";
-
         Person person1 = deserialize(edn1, Person.class);
-        Person person2 = deserialize(edn1, Person.class);
-       
-
+        Person person2 = deserialize(edn2, Person.class);      
         assertEquals(person1, person2);
     }
     public interface Person extends DynamicObject<Person>,Equality {
