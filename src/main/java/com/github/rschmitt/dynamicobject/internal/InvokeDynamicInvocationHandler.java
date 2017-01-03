@@ -16,39 +16,50 @@ import net.fushizen.invokedynamic.proxy.DynamicInvocationHandler;
 
 public class InvokeDynamicInvocationHandler implements DynamicInvocationHandler {
     private final Class dynamicObjectType;
-
+    
     public InvokeDynamicInvocationHandler(Class dynamicObjectType) {
         this.dynamicObjectType = dynamicObjectType;
     }
-
+    
     @Override
     @SuppressWarnings("unchecked")
-    public CallSite handleInvocation(
-            MethodHandles.Lookup lookup,
-            String methodName,
-            MethodType methodType,
-            MethodHandle superMethod
-    ) throws Throwable {
+    public CallSite handleInvocation(MethodHandles.Lookup lookup, String methodName, MethodType methodType, MethodHandle superMethod) throws Throwable {
         Class proxyType = methodType.parameterArray()[0];
-        MethodHandle mh;
-        if (superMethod != null && !"validate".equals(methodName)) {
+        MethodHandle mh = null;
+        if (superMethod != null && !"validate".equals(methodName) && !"equals".equals(methodName) && !"hashCode".equals(methodName)) {
             mh = superMethod.asType(methodType);
             return new ConstantCallSite(mh);
         }
-        if ("validate".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "$$validate", methodType(Object.class, new Class[]{}), proxyType).asType(methodType);
+        if ("equals".equals(methodName)) {
+            try {
+                mh = lookup.findSpecial(dynamicObjectType, "isEqualTo", methodType(Boolean.class, new Class[] { Object.class }), proxyType).asType(methodType);
+            } catch (NoSuchMethodException ex) {
+                mh = superMethod.asType(methodType);
+                return new ConstantCallSite(mh);
+            }
+        } else if ("hashCode".equals(methodName)) {
+            
+            try {
+                mh = lookup.findSpecial(dynamicObjectType, "getHashCode", methodType(Integer.class, new Class[] {}), proxyType).asType(methodType);
+            } catch (NoSuchMethodException ex) {
+                mh = superMethod.asType(methodType);
+                return new ConstantCallSite(mh);
+            }
+            
+        } else if ("validate".equals(methodName)) {
+            mh = lookup.findSpecial(DynamicObjectInstance.class, "$$validate", methodType(Object.class, new Class[] {}), proxyType).asType(methodType);
         } else if ("$$customValidate".equals(methodName)) {
             try {
                 mh = lookup.findSpecial(dynamicObjectType, "validate", methodType(dynamicObjectType), proxyType);
             } catch (NoSuchMethodException ex) {
-                mh = lookup.findSpecial(DynamicObjectInstance.class, "$$noop", methodType(Object.class, new Class[]{}), proxyType);
+                mh = lookup.findSpecial(DynamicObjectInstance.class, "$$noop", methodType(Object.class, new Class[] {}), proxyType);
             }
             mh = mh.asType(methodType);
         } else if ("afterDeserialization".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "$$noop", methodType(Object.class, new Class[]{}), proxyType).asType(methodType);
+            mh = lookup.findSpecial(DynamicObjectInstance.class, "$$noop", methodType(Object.class, new Class[] {}), proxyType).asType(methodType);
         } else {
             Method method = dynamicObjectType.getMethod(methodName, methodType.dropParameterTypes(0, 1).parameterArray());
-
+            
             if (isBuilderMethod(method)) {
                 Object key = Reflection.getKeyForBuilder(method);
                 if (Reflection.isMetadataBuilder(method)) {
@@ -77,7 +88,7 @@ public class InvokeDynamicInvocationHandler implements DynamicInvocationHandler 
         }
         return new ConstantCallSite(mh);
     }
-
+    
     private boolean isBuilderMethod(Method method) {
         return method.getReturnType().equals(dynamicObjectType) && method.getParameterCount() == 1;
     }
