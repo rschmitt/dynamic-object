@@ -65,7 +65,9 @@ class Reflection {
     }
 
     private static boolean isAnyGetter(Method method) {
-        return method.getParameterCount() == 0 && !method.isDefault() && !method.isSynthetic();
+        return method.getParameterCount() == 0 && !method.isDefault() && !method.isSynthetic()
+                && (method.getModifiers() & Modifier.STATIC) == 0
+                && method.getReturnType() != Void.TYPE;
     }
 
     private static boolean isGetter(Method method) {

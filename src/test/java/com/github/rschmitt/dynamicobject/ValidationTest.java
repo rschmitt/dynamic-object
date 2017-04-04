@@ -114,7 +114,9 @@ public class ValidationTest {
                           "Expected collection element of type java.math.BigInteger, got java.lang.String"
         );
         validationFailure("#LC{:list #{\"string!\" \"another string!\"}}", ListContainer.class,
-                          "Wrong collection type: expected List, got PersistentHashSet"
+                          "(Wrong collection type: expected List, got PersistentHashSet)|" +
+                                  "(The following fields had the wrong type:.*" +
+                                  "list \\(expected List, got PersistentHashSet\\))"
         );
         validationFailure("#LC{:inner [#I{:x 1}, #I{:x \"str\"}]}", ListContainer.class,
                           "The following fields had the wrong type:.*" +
@@ -267,6 +269,11 @@ public class ValidationTest {
     }
 
     @Test
+    public void strangeMethodsAreAccepted() throws Exception {
+        DynamicObject.deserialize("{}", HasWeirdMethods.class).validate();
+    }
+
+    @Test
     public void mutatingValidators() {
         MutatingValidator before = newInstance(MutatingValidator.class);
         MutatingValidator after = before.validate();
@@ -294,6 +301,14 @@ public class ValidationTest {
         assertEquals(edn, serialize(instance));
     }
 
+    @SuppressWarnings("unused")
+    public interface HasWeirdMethods extends DynamicObject<HasWeirdMethods> {
+        static void voidStatic() {}
+        static HasWeirdMethods voidReturning() { return null; }
+
+        default HasWeirdMethods returning() { return this; }
+        default void voidMethod() {}
+    }
 
     public interface NoRequiredFields extends DynamicObject<NoRequiredFields> {
         String s();

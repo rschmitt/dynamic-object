@@ -148,11 +148,6 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
         return this;
     }
 
-    public Object $$validate() {
-        Validation.validateInstance(this);
-        return $$customValidate();
-    }
-
     @Override
     public int size() {
         return map.size();
