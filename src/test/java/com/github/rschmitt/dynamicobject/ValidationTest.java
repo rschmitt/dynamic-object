@@ -7,16 +7,23 @@ import static com.github.rschmitt.dynamicobject.DynamicObject.registerTag;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.github.rschmitt.collider.ClojureList;
+import com.github.rschmitt.collider.ClojureMap;
+import com.github.rschmitt.collider.ClojureSet;
 
 public class ValidationTest {
     @BeforeClass
@@ -56,27 +63,72 @@ public class ValidationTest {
 
     @Test
     public void requiredFieldsMissing() {
-        validationFailure("#R{}", RequiredFields.class);
-        validationFailure("#R{:z 19}", RequiredFields.class);
-        validationFailure("#R{:x nil, :y 1}", RequiredFields.class);
-        validationFailure("#R{:x 1, :y nil}", RequiredFields.class);
-        validationFailure("#R{:x nil, :y nil}", RequiredFields.class);
+        validationFailure("#R{}", RequiredFields.class,
+                          "The following @Required fields were missing:(?=.* x)(?=.* y)"
+        );
+        validationFailure("#R{:z 19}", RequiredFields.class,
+                          "The following @Required fields were missing:(?=.* x)(?=.* y)"
+        );
+        validationFailure("#R{:x nil, :y 1}", RequiredFields.class,
+                          "The following @Required fields were missing:(?=.* x)(?!.* y)"
+        );
+        validationFailure("#R{:x 1, :y nil}", RequiredFields.class,
+                          "The following @Required fields were missing:(?!.* x)(?=.* y)"
+        );
+        validationFailure("#R{:x nil, :y nil}", RequiredFields.class,
+                          "The following @Required fields were missing:(?=.* x)(?=.* y)"
+        );
 
-        validationFailure("#O{:inner #I{}}", Outer.class);
-        validationFailure("#LC{:inner [#I{:x nil}, #I{:x nil}]}", ListContainer.class);
-        validationFailure("#LC{:inner [#I{}, #I{}]}", ListContainer.class);
+        validationFailure("#O{:inner #I{}}", Outer.class,
+                          "The following @Required fields were missing: x"
+        );
+        validationFailure("#LC{:inner [#I{:x nil}, #I{:x nil}]}", ListContainer.class,
+                          "The following @Required fields were missing: x"
+        );
+        validationFailure("#LC{:inner [#I{}, #I{}]}", ListContainer.class,
+                          "The following @Required fields were missing: x"
+        );
     }
 
     @Test
     public void typeMismatches() {
-        validationFailure("#M{:required-string \"str\", :optional-string 4}", Mismatch.class);
-        validationFailure("#R{:x \"strings!\", :y \"moar strings!\"}", RequiredFields.class);
-        validationFailure("#M{:required-string 4}", Mismatch.class);
-        validationFailure("#O{:inner #I{:x \"strings!\"}}", Outer.class);
-        validationFailure("#O{:inner 4}", Outer.class);
-        validationFailure("#LC{:list [\"string!\" \"another string!\"]}", ListContainer.class);
-        validationFailure("#LC{:list #{\"string!\" \"another string!\"}}", ListContainer.class);
-        validationFailure("#LC{:inner [#I{:x 1}, #I{:x \"str\"}]}", ListContainer.class);
+        validationFailure("#M{:required-string \"str\", :optional-string 4}", Mismatch.class,
+                          "The following fields had the wrong type:.*optionalString"
+        );
+        validationFailure("#R{:x \"strings!\", :y \"moar strings!\"}", RequiredFields.class,
+                          "The following fields had the wrong type:" +
+                                  // use zero-width positive lookahead matches to remain agnostic about order
+                                  "(?=.*x \\(expected int, got String\\))" +
+                                  "(?=.*y \\(expected int, got String\\))"
+        );
+        validationFailure("#M{:required-string 4}", Mismatch.class,
+                          "The following fields had the wrong type:.*requiredString"
+        );
+        validationFailure("#O{:inner #I{:x \"strings!\"}}", Outer.class,
+                          "The following fields had the wrong type:.*x \\("
+        );
+        validationFailure("#O{:inner 4}", Outer.class,
+                          "The following fields had the wrong type:.*inner \\(expected Inner, got Long\\)"
+        );
+        validationFailure("#LC{:list [\"string!\" \"another string!\"]}", ListContainer.class,
+                          "Expected collection element of type java.math.BigInteger, got java.lang.String"
+        );
+        validationFailure("#LC{:list #{\"string!\" \"another string!\"}}", ListContainer.class,
+                          "Wrong collection type: expected List, got PersistentHashSet"
+        );
+        validationFailure("#LC{:inner [#I{:x 1}, #I{:x \"str\"}]}", ListContainer.class,
+                          "The following fields had the wrong type:.*" +
+                                  "x \\(expected int, got String\\)"
+        );
+    }
+
+
+    @Test
+    public void mismatchAndMissing() throws Exception {
+        validationFailure("#M{:required-string nil, :optional-string 4}", Mismatch.class,
+                          "(?=.*The following fields had the wrong type:.*optionalString)" +
+                                  "(?=.*The following @Required fields were missing: requiredString)"
+        );
     }
 
     @Test
@@ -144,6 +196,23 @@ public class ValidationTest {
         validationFailure("{:nestedNumericMaps {#{1} {2 3}}}", CompoundMaps.class); // TODO better error message
     }
 
+    @Test
+    public void rawCollectionContentsAreValidated() throws Exception {
+        validationFailure("{:x [{}]}", ContainsCollection.class);
+        validationSuccess("{:x [{:x 0}]}", ContainsCollection.class);
+    }
+
+    @Test
+    public void clojureTypeContentsAreValidated() throws Exception {
+        validationFailure("{:map {\"foo\" {}}}", ContainsClojureTypes.class);
+        validationFailure("{:list [{}]}", ContainsClojureTypes.class);
+        validationFailure("{:set #{{}}}", ContainsClojureTypes.class);
+        validationSuccess(
+                "{:map {\"foo\" {:x 0}}, :list [{:x 0}], :set #{{:x 0}}}",
+                ContainsClojureTypes.class
+        );
+    }
+
     @Test(expected = UnsupportedOperationException.class)
     public void wildcardList() throws Exception {
         validationFailure("{:wildcardList [\"str1\", \"str2\", 3]}", CompoundLists.class);
@@ -206,11 +275,17 @@ public class ValidationTest {
     }
 
     private static <D extends DynamicObject<D>> void validationFailure(String edn, Class<D> type) {
+        validationFailure(edn, type, "");
+    }
+
+    private static <D extends DynamicObject<D>> void validationFailure(String edn, Class<D> type, String exnPattern) {
         try {
             deserialize(edn, type).validate();
             Assert.fail("Expected IllegalStateException");
         } catch (IllegalStateException ex) {
             System.out.println(String.format("%s => %s", edn, ex.getMessage()));
+            assertTrue("Incorrect exception message: " + ex.getMessage(),
+                       Pattern.compile(exnPattern, Pattern.DOTALL).matcher(ex.getMessage()).find());
         }
     }
 
@@ -247,6 +322,16 @@ public class ValidationTest {
 
     public interface Outer extends DynamicObject<Outer> {
         @Required Inner inner();
+    }
+
+    public interface ContainsCollection extends DynamicObject<ContainsCollection> {
+        Collection<Inner> x();
+    }
+
+    public interface ContainsClojureTypes extends DynamicObject<ContainsClojureTypes> {
+        ClojureMap<String, Inner> map();
+        ClojureList<Inner> list();
+        ClojureSet<Inner> set();
     }
 
     public interface ListContainer extends DynamicObject<ListContainer> {
