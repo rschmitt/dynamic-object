@@ -140,7 +140,7 @@ public abstract class DynamicObjectInstance<D extends DynamicObject<D>> extends 
     }
 
     public Object getValueFor(Object key, Type genericReturnType) {
-        Object val = ClojureStuff.Get.invoke(map, key);
+        Object val = map.get(key);
         return Conversions.clojureToJava(val, genericReturnType);
     }
 

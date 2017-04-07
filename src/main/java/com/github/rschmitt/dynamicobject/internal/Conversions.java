@@ -4,6 +4,7 @@ import com.github.rschmitt.collider.ClojureList;
 import com.github.rschmitt.collider.ClojureMap;
 import com.github.rschmitt.collider.ClojureSet;
 import com.github.rschmitt.collider.Collider;
+import com.github.rschmitt.collider.TransientMap;
 import com.github.rschmitt.dynamicobject.DynamicObject;
 
 import java.lang.reflect.ParameterizedType;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collector;
 
 class Conversions {
     /*
@@ -98,26 +100,19 @@ class Conversions {
         }
 
         if (obj instanceof List) {
-            obj = convertCollectionToJavaTypes((Collection<?>) obj, ClojureStuff.EmptyVector, genericReturnType);
-            if (rawReturnType.equals(ClojureList.class))
-                return Collider.intoClojureList((List) obj);
+            obj = ((Collection<?>)obj).stream().map(
+                    elem -> convertCollectionElementToJavaTypes(elem, genericReturnType)
+            ).collect(Collider.toClojureList());
         } else if (obj instanceof Set) {
-            obj = convertCollectionToJavaTypes((Collection<?>) obj, ClojureStuff.EmptySet, genericReturnType);
-            if (rawReturnType.equals(ClojureSet.class))
-                return Collider.intoClojureSet((Set) obj);
+            obj = ((Collection<?>)obj).stream().map(
+                    elem -> convertCollectionElementToJavaTypes(elem, genericReturnType)
+            ).collect(Collider.toClojureSet());
         } else if (obj instanceof Map) {
             obj = convertMapToJavaTypes((Map<?, ?>) obj, genericReturnType);
             if (rawReturnType.equals(ClojureMap.class))
                 return Collider.intoClojureMap((Map) obj);
         }
         return obj;
-    }
-
-    private static Object convertCollectionToJavaTypes(Collection<?> coll, Object empty, Type genericReturnType) {
-        Object ret = ClojureStuff.Transient.invoke(empty);
-        for (Object o : coll)
-            ret = ClojureStuff.ConjBang.invoke(ret, convertCollectionElementToJavaTypes(o, genericReturnType));
-        return ClojureStuff.Persistent.invoke(ret);
     }
 
     private static Object convertCollectionElementToJavaTypes(Object element, Type genericCollectionType) {
@@ -140,9 +135,12 @@ class Conversions {
         } else {
             keyType = valType = Object.class;
         }
-        Object ret = ClojureStuff.Transient.invoke(ClojureStuff.EmptyMap);
+
+        TransientMap<Object, Object> transientMap = Collider.transientMap();
+
         for (Map.Entry<?, ?> entry : unwrappedMap.entrySet())
-            ret = ClojureStuff.AssocBang.invoke(ret, clojureToJava(entry.getKey(), keyType), clojureToJava(entry.getValue(), valType));
-        return ClojureStuff.Persistent.invoke(ret);
+            transientMap.put(clojureToJava(entry.getKey(), keyType), clojureToJava(entry.getValue(), valType));
+
+        return transientMap.toPersistent();
     }
 }
