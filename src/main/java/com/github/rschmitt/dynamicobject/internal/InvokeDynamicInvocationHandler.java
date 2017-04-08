@@ -36,7 +36,7 @@ public class InvokeDynamicInvocationHandler implements DynamicInvocationHandler 
             return new ConstantCallSite(mh);
         }
         if ("validate".equals(methodName)) {
-            mh = lookup.findSpecial(DynamicObjectInstance.class, "$$validate", methodType(Object.class, new Class[]{}), proxyType).asType(methodType);
+            mh = Validation.buildValidatorFor(dynamicObjectType).asType(methodType);
         } else if ("$$customValidate".equals(methodName)) {
             try {
                 mh = lookup.findSpecial(dynamicObjectType, "validate", methodType(dynamicObjectType), proxyType);
