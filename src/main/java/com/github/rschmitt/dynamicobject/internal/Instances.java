@@ -1,5 +1,6 @@
 package com.github.rschmitt.dynamicobject.internal;
 
+import clojure.lang.IPersistentMap;
 import com.github.rschmitt.dynamicobject.DynamicObject;
 import net.fushizen.invokedynamic.proxy.DynamicProxy;
 
@@ -23,7 +24,15 @@ public class Instances {
         if (map instanceof DynamicObject)
             return type.cast(map);
 
-        return createIndyProxy(map, type);
+        return createIndyProxy(convertMap(map), type);
+    }
+
+    private static Map convertMap(Map map) {
+        if (map instanceof IPersistentMap) {
+            return map;
+        }
+
+        return (Map) WrappingMap.create(map);
     }
 
     private static <D extends DynamicObject<D>> D createIndyProxy(Map map, Class<D> type) {

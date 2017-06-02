@@ -161,7 +161,8 @@ public interface DynamicObject<D extends DynamicObject<D>> extends Map {
     }
 
     /**
-     * Use the supplied {@code map} to back an instance of {@code type}.
+     * Use the supplied {@code map} to back an instance of {@code type}. The map will be copied upon any modification
+     * attempt, but until then will reflect changes made to the underlying map.
      */
     static <D extends DynamicObject<D>> D wrap(Map map, Class<D> type) {
         return Instances.wrap(map, type);

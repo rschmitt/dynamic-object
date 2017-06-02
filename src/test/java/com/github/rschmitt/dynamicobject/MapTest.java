@@ -5,6 +5,7 @@ import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 import org.junit.After;
 import org.junit.Before;
@@ -12,6 +13,8 @@ import org.junit.Test;
 
 import clojure.lang.EdnReader;
 import clojure.lang.PersistentHashMap;
+
+import java.util.HashMap;
 
 public class MapTest {
     static final String SimpleEdn = "{:str \"expected value\", :i 4, :d 3.14}";
@@ -59,11 +62,55 @@ public class MapTest {
         object.getOrDefault("some key", "some value");
     }
 
+    @Test
+    public void wrappedMapGettersWork() throws Exception {
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("foo", "bar");
+
+        TestObject obj = DynamicObject.wrap(map, TestObject.class);
+
+        assertEquals("bar", obj.foo());
+    }
+
+
+    @Test
+    public void wrappedMapSettersWork() throws Exception {
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("foo", "bar");
+
+        TestObject obj = DynamicObject.wrap(map, TestObject.class);
+        obj = obj.withFoo("quux");
+
+        assertEquals("quux", obj.foo());
+    }
+
+    @Test
+    public void wrappedMapMetaWorks() throws Exception {
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("foo", "bar");
+
+        TestObject obj = DynamicObject.wrap(map, TestObject.class);
+
+        assertNull(obj.getMeta());
+        obj = obj.withMeta("x");
+        assertEquals("x", obj.getMeta());
+
+        assertEquals(1, obj.getMap().size());
+    }
+
     private void binaryRoundTrip(Object expected) {
         Object actual = DynamicObject.fromFressianByteArray(DynamicObject.toFressianByteArray(expected));
         assertEquals(expected, actual);
     }
 
     public interface EmptyObject extends DynamicObject<EmptyObject> {
+    }
+
+    public interface TestObject extends DynamicObject<TestObject> {
+        @Key("foo") String foo();
+        @Key("foo") TestObject withFoo(String foo);
+
+        @Meta @Key(":meta") String getMeta();
+        @Meta @Key(":meta") TestObject withMeta(String meta);
     }
 }
