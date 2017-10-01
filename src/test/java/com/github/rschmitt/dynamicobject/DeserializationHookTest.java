@@ -38,26 +38,26 @@ public class DeserializationHookTest {
         Unregistered u = deserialize("{}", Unregistered.class);
         assertEquals(42L, u.value());
     }
-}
 
-interface Registered extends DynamicObject<Registered> {
-    long value();
+    public interface Registered extends DynamicObject<Registered> {
+        long value();
 
-    Registered value(long value);
+        Registered value(long value);
 
-    @Override
-    default Registered afterDeserialization() {
-        return value(42);
+        @Override
+        default Registered afterDeserialization() {
+            return value(42);
+        }
     }
-}
 
-interface Unregistered extends DynamicObject<Unregistered> {
-    long value();
+    public interface Unregistered extends DynamicObject<Unregistered> {
+        long value();
 
-    Unregistered value(long value);
+        Unregistered value(long value);
 
-    @Override
-    default Unregistered afterDeserialization() {
-        return value(42);
+        @Override
+        default Unregistered afterDeserialization() {
+            return value(42);
+        }
     }
 }

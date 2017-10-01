@@ -47,14 +47,14 @@ public class PrintingTest {
         assertEquivalent("#Tagged{:untagged {}, :tagged #Tagged{}}", serialize(nestedTagged));
         assertEquivalent("{:untagged {}, :tagged #Tagged{}}", serialize(nestedUntagged));
     }
-}
 
-interface Tagged extends DynamicObject<Tagged> {
-    @Key(":tagged") Tagged tagged(Tagged tagged);
-    @Key(":untagged") Tagged untagged(Untagged untagged);
-}
+    public interface Tagged extends DynamicObject<Tagged> {
+        @Key(":tagged") Tagged tagged(Tagged tagged);
+        @Key(":untagged") Tagged untagged(Untagged untagged);
+    }
 
-interface Untagged extends DynamicObject<Untagged> {
-    @Key(":tagged") Untagged tagged(Tagged tagged);
-    @Key(":untagged") Untagged untagged(Untagged untagged);
+    public interface Untagged extends DynamicObject<Untagged> {
+        @Key(":tagged") Untagged tagged(Tagged tagged);
+        @Key(":untagged") Untagged untagged(Untagged untagged);
+    }
 }
