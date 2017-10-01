@@ -1,15 +1,21 @@
 package com.github.rschmitt.dynamicobject;
 
 
-import org.junit.Before;
-import org.junit.Test;
-
-import static com.github.rschmitt.dynamicobject.DynamicObject.*;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.fromFressianByteArray;
+import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.toFressianByteArray;
 import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class RecursionTest {
-    @Before
+    @BeforeEach
     public void setup() {
         try {
             DynamicObject.deregisterTag(LinkedList.class);

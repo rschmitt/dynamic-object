@@ -1,10 +1,12 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import static com.github.rschmitt.dynamicobject.DynamicObject.*;
+import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
+import static com.github.rschmitt.dynamicobject.DynamicObject.registerTag;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class PrintingTest {
     static Tagged emptyTagged;
@@ -12,7 +14,7 @@ public class PrintingTest {
     static Tagged nestedTagged;
     static Untagged nestedUntagged;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         registerTag(Tagged.class, "Tagged");
         emptyTagged = newInstance(Tagged.class);

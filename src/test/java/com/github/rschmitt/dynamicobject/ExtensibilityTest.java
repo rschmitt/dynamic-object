@@ -1,35 +1,38 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.fressian.Reader;
-import org.fressian.Writer;
-import org.fressian.handlers.ReadHandler;
-import org.fressian.handlers.WriteHandler;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.fromFressianByteArray;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static com.github.rschmitt.dynamicobject.DynamicObject.toFressianByteArray;
+import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
+import static java.lang.String.format;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Value;
+import org.fressian.Reader;
+import org.fressian.Writer;
+import org.fressian.handlers.ReadHandler;
+import org.fressian.handlers.WriteHandler;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.*;
-import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
-import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
+import lombok.Value;
 
 public class ExtensibilityTest {
     private static final String Edn = "#dh{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}";
 
-    @Before
+    @BeforeEach
     public void setup() {
         DynamicObject.registerType(DumbClass.class, new DumbClassTranslator());
         DynamicObject.registerTag(DumbClassHolder.class, "dh");
         DynamicObject.registerType(DumbClass.class, "dumb", new DumbClassReader(), new DumbClassWriter());
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         DynamicObject.deregisterType(DumbClass.class);
         DynamicObject.deregisterTag(DumbClassHolder.class);

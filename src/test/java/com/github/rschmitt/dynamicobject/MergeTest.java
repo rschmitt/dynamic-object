@@ -1,19 +1,19 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class MergeTest {
-    @Before
+    @BeforeEach
     public void setup() {
         DynamicObject.registerTag(Mergeable.class, "M");
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         DynamicObject.deregisterTag(Mergeable.class);
     }

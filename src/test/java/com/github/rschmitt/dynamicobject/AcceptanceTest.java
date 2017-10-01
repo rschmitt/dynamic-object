@@ -1,24 +1,24 @@
 package com.github.rschmitt.dynamicobject;
 
 import static java.util.UUID.randomUUID;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class AcceptanceTest {
-    @Before
+    @BeforeEach
     public void setup() {
         DynamicObject.registerType(Path.class, new PathTranslator());
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         DynamicObject.deregisterType(Path.class);
     }

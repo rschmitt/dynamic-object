@@ -3,12 +3,12 @@ package com.github.rschmitt.dynamicobject;
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import clojure.lang.EdnReader;
 import clojure.lang.PersistentHashMap;
@@ -18,12 +18,12 @@ public class MapTest {
     static final String NestedEdn = format("{:version 1, :simple %s}", SimpleEdn);
     static final String TaggedEdn = format("#eo%s", NestedEdn);
 
-    @Before
+    @BeforeEach
     public void setup() {
         DynamicObject.registerTag(EmptyObject.class, "eo");
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         DynamicObject.deregisterTag(EmptyObject.class);
     }

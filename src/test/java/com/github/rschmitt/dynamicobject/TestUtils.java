@@ -1,9 +1,12 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.lang.AFn;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Assoc;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Default;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.EmptyMap;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.ReadString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.*;
-import static org.junit.Assert.assertEquals;
+import clojure.lang.AFn;
 
 public class TestUtils {
     private static final Object readerOpts = Assoc.invoke(EmptyMap, Default, getUnknownReader());
@@ -26,6 +29,6 @@ public class TestUtils {
     }
 
     public static void assertEquivalent(String message, String expected, String actual) {
-        assertEquals(message, genericRead(expected), genericRead(actual));
+        assertEquals(genericRead(expected), genericRead(actual), message);
     }
 }

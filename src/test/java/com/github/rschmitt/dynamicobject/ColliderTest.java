@@ -1,18 +1,5 @@
 package com.github.rschmitt.dynamicobject;
 
-import com.github.rschmitt.collider.ClojureList;
-import com.github.rschmitt.collider.ClojureMap;
-import com.github.rschmitt.collider.ClojureSet;
-
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 import static com.github.rschmitt.collider.Collider.clojureList;
 import static com.github.rschmitt.collider.Collider.clojureMap;
 import static com.github.rschmitt.collider.Collider.clojureSet;
@@ -22,14 +9,27 @@ import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static com.github.rschmitt.dynamicobject.DynamicObject.toFressianByteArray;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import com.github.rschmitt.collider.ClojureList;
+import com.github.rschmitt.collider.ClojureMap;
+import com.github.rschmitt.collider.ClojureSet;
 
 public class ColliderTest {
     static final Batch emptyBatch = newInstance(Batch.class);
     static final Instant inst = Instant.parse("1985-04-12T23:20:50.52Z");
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         DynamicObject.registerTag(Batch.class, "batch");
     }

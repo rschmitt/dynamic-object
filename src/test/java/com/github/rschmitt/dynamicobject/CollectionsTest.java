@@ -6,8 +6,8 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.IntStream.range;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Base64;
 import java.util.HashMap;
@@ -16,22 +16,22 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class CollectionsTest {
     private static final Random Random = new Random();
     private static final Base64.Encoder Encoder = Base64.getEncoder();
 
-    @Before
+    @BeforeEach
     public void setup() {
         DynamicObject.registerTag(ListSchema.class, "ls");
         DynamicObject.registerTag(MapSchema.class, "ms");
         DynamicObject.registerTag(SetSchema.class, "ss");
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         DynamicObject.deregisterTag(ListSchema.class);
         DynamicObject.deregisterTag(MapSchema.class);

@@ -3,7 +3,7 @@ package com.github.rschmitt.dynamicobject;
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,18 +12,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class SchemaCollectionTest {
-    @Before
+    @BeforeEach
     public void setup() {
         DynamicObject.registerTag(X.class, "X");
         DynamicObject.registerTag(Coll.class, "Coll");
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         DynamicObject.deregisterTag(Coll.class);
         DynamicObject.deregisterTag(X.class);

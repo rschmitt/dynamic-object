@@ -1,26 +1,26 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class FressianTest {
     public static final BinarySerialized SAMPLE_VALUE
             = DynamicObject.newInstance(BinarySerialized.class).withHello("world");
 
-    @Before
+    @BeforeEach
     public void setup() {
         DynamicObject.registerTag(BinarySerialized.class, "BinarySerialized");
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         DynamicObject.deregisterTag(BinarySerialized.class);
     }

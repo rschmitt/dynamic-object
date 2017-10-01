@@ -5,9 +5,10 @@ import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static com.github.rschmitt.dynamicobject.DynamicObject.registerTag;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -16,17 +17,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.github.rschmitt.collider.ClojureList;
 import com.github.rschmitt.collider.ClojureMap;
 import com.github.rschmitt.collider.ClojureSet;
 
 public class ValidationTest {
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         registerTag(RequiredFields.class, "R");
         registerTag(Mismatch.class, "M");
@@ -35,7 +35,7 @@ public class ValidationTest {
         registerTag(ListContainer.class, "LC");
     }
 
-    @AfterClass
+    @AfterAll
     public static void teardown() {
         deregisterTag(RequiredFields.class);
         deregisterTag(Mismatch.class);
@@ -215,30 +215,34 @@ public class ValidationTest {
         );
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void wildcardList() throws Exception {
-        validationFailure("{:wildcardList [\"str1\", \"str2\", 3]}", CompoundLists.class);
+        assertThrows(UnsupportedOperationException.class, () ->
+                deserialize("{:wildcardList [\"str1\", \"str2\", 3]}", CompoundLists.class).validate());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void wildcardSet() throws Exception {
-        validationFailure("{:wildcardSet #{\"str1\", \"str2\", 3}}", CompoundSets.class);
+        assertThrows(UnsupportedOperationException.class, () ->
+                deserialize("{:wildcardSet #{\"str1\", \"str2\", 3}}", CompoundSets.class).validate());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void wildcardKey() throws Exception {
-        validationFailure("{:wildcardKey {\"str1\" \"str2\"}}", CompoundMaps.class);
+        assertThrows(UnsupportedOperationException.class, () ->
+                deserialize("{:wildcardKey {\"str1\" \"str2\"}}", CompoundMaps.class).validate());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void wildcardValue() throws Exception {
-        deserialize("{:wildcardValue {\"str1\" \"str2\"}}", CompoundMaps.class).validate();
+        assertThrows(UnsupportedOperationException.class, () ->
+                deserialize("{:wildcardValue {\"str1\" \"str2\"}}", CompoundMaps.class).validate());
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void nullRequiredFieldThrowsException() {
         RequiredBoxedFields instance = deserialize("{}", RequiredBoxedFields.class);
-        instance.x();
+        assertThrows(NullPointerException.class, () -> instance.x());
     }
 
     @Test
@@ -247,25 +251,23 @@ public class ValidationTest {
         validationFailure("{:oddsOnly 4, :required 0}", Custom.class);
         validationFailure("{:oddsOnly 5}", Custom.class);
 
-        try {
-            DynamicObject.deserialize("{:oddsOnly 4, :required 0}", Custom.class).validate();
-            Assert.fail();
-        } catch (IllegalStateException expected) {}
+        assertThrows(IllegalStateException.class, () ->
+                DynamicObject.deserialize("{:oddsOnly 4, :required 0}", Custom.class).validate());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void customValidationRunsLast() {
-        newInstance(Custom2.class).validate();
+        assertThrows(IllegalStateException.class, () -> newInstance(Custom2.class).validate());
     }
 
-    @Test(expected = CustomException.class)
+    @Test
     public void customExceptionsArePropagated() {
-        newInstance(Custom2.class).str("value").validate();
+        assertThrows(CustomException.class, () -> newInstance(Custom2.class).str("value").validate());
     }
 
-    @Test(expected = CustomException.class)
+    @Test
     public void customExceptionsArePropagated2() {
-        DynamicObject.deserialize("{:str \"value\"}", Custom2.class).validate();
+        assertThrows(CustomException.class, () -> DynamicObject.deserialize("{:str \"value\"}", Custom2.class).validate());
     }
 
     @Test
@@ -286,14 +288,10 @@ public class ValidationTest {
     }
 
     private static <D extends DynamicObject<D>> void validationFailure(String edn, Class<D> type, String exnPattern) {
-        try {
-            deserialize(edn, type).validate();
-            Assert.fail("Expected IllegalStateException");
-        } catch (IllegalStateException ex) {
-            System.out.println(String.format("%s => %s", edn, ex.getMessage()));
-            assertTrue("Incorrect exception message: " + ex.getMessage(),
-                       Pattern.compile(exnPattern, Pattern.DOTALL).matcher(ex.getMessage()).find());
-        }
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () -> deserialize(edn, type).validate());
+        System.out.println(String.format("%s => %s", edn, ex.getMessage()));
+        assertTrue(Pattern.compile(exnPattern, Pattern.DOTALL).matcher(ex.getMessage()).find(),
+                "Incorrect exception message: " + ex.getMessage());
     }
 
     private static <D extends DynamicObject<D>> void validationSuccess(String edn, Class<D> type) {

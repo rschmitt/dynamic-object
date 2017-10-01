@@ -1,10 +1,11 @@
 package com.github.rschmitt.dynamicobject;
 
-import clojure.lang.PersistentHashMap;
-import org.junit.Test;
-
 import static com.github.rschmitt.dynamicobject.TestUtils.assertEquivalent;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
+import clojure.lang.PersistentHashMap;
 
 public class BuilderTest {
     @Test

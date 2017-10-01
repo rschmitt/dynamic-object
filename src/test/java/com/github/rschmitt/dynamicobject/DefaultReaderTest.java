@@ -1,12 +1,13 @@
 package com.github.rschmitt.dynamicobject;
 
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import clojure.java.api.Clojure;
 
@@ -22,14 +23,11 @@ public class DefaultReaderTest {
         assertEquals(serialize(unknown), edn);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void disableUnknownReader() {
-        try {
-            DynamicObject.setDefaultReader(null);
-            DynamicObject.deserialize("#unknown{}", Object.class);
-        } finally {
-            DynamicObject.setDefaultReader(Unknown::new);
-        }
+        DynamicObject.setDefaultReader(null);
+        assertThrows(RuntimeException.class, () -> DynamicObject.deserialize("#unknown{}", Object.class));
+        DynamicObject.setDefaultReader(Unknown::new);
     }
 
     @Test

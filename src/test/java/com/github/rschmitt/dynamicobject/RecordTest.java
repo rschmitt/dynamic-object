@@ -1,20 +1,21 @@
 package com.github.rschmitt.dynamicobject;
 
 import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class RecordTest {
-    @Before
+    @BeforeEach
     public void setup() {
         DynamicObject.registerTag(Defrecord.class, "com.github.rschmitt.dynamicobject.Defrecord");
         DynamicObject.registerTag(Random.class, "com.github.rschmitt.dynamicobject.Random");
     }
 
-    @After
+    @AfterEach
     public void teardown() {
         DynamicObject.deregisterTag(Defrecord.class);
         DynamicObject.deregisterTag(Random.class);
@@ -37,11 +38,11 @@ public class RecordTest {
         assertEquals(format("%s%n", edn), record.toFormattedString());
     }
 
-    @Test(expected = ClassCastException.class)
+    @Test
     public void suppliedTypeMustMatchReaderTag() {
         String edn = "#com.github.rschmitt.dynamicobject.Defrecord{:str \"a string\"}";
 
-        DynamicObject.deserialize(edn, Random.class);
+        assertThrows(ClassCastException.class, () -> DynamicObject.deserialize(edn, Random.class));
     }
 
     public interface Defrecord extends DynamicObject<Defrecord> {

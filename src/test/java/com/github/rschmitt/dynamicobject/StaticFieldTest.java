@@ -1,8 +1,8 @@
 package com.github.rschmitt.dynamicobject;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import static org.junit.Assert.assertNull;
+import org.junit.jupiter.api.Test;
 
 /*
  * This test exposes a bug where proxyCache#computeIfAbsent in Instances was being called

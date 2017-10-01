@@ -1,6 +1,6 @@
 package com.github.rschmitt.dynamicobject.benchmark;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.rschmitt.dynamicobject.DynamicObject;
 

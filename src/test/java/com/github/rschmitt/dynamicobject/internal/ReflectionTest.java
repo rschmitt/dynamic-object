@@ -1,21 +1,22 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import clojure.java.api.Clojure;
 import com.github.rschmitt.dynamicobject.Cached;
 import com.github.rschmitt.dynamicobject.DynamicObject;
 import com.github.rschmitt.dynamicobject.Key;
 import com.github.rschmitt.dynamicobject.Meta;
 import com.github.rschmitt.dynamicobject.Required;
+
+import clojure.java.api.Clojure;
 
 public class ReflectionTest {
     @Test

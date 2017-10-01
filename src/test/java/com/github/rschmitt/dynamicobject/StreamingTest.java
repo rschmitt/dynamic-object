@@ -3,9 +3,10 @@ package com.github.rschmitt.dynamicobject;
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserializeStream;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -15,7 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import clojure.java.api.Clojure;
 
@@ -68,9 +69,11 @@ public class StreamingTest {
         assertEquals(expected, actual);
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void nilTest() {
-        deserializeStream(new PushbackReader(new StringReader("nil")), StreamingType.class).collect(toList());
+        assertThrows(NullPointerException.class, () ->
+                deserializeStream(new PushbackReader(new StringReader("nil")), StreamingType.class)
+                        .collect(toList()));
     }
 
     @Test

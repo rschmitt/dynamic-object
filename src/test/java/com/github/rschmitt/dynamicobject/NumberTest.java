@@ -5,16 +5,16 @@ import static com.github.rschmitt.dynamicobject.DynamicObject.fromFressianByteAr
 import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.toFressianByteArray;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class NumberTest {
-    @Before
+    @BeforeEach
     public void setup() {
         DynamicObject.registerTag(ArbitraryPrecision.class, "ap");
     }
