@@ -1,19 +1,19 @@
 package com.github.rschmitt.dynamicobject;
 
-import lombok.RequiredArgsConstructor;
-import org.fressian.CachedObject;
-import org.fressian.Writer;
-import org.fressian.handlers.WriteHandler;
-
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.IOException;
 import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import org.fressian.CachedObject;
+import org.fressian.Writer;
+import org.fressian.handlers.WriteHandler;
 
 public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHandler {
     private final Class<D> type;
@@ -61,12 +61,21 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
     }
 
     @Immutable
-    @RequiredArgsConstructor
     @SuppressWarnings("unchecked")
     private static class TransformedMap extends AbstractCollection {
         private final Map backingMap;
         private final Function<Object, Object> keysTransformation;
         private final BiFunction<Object, Object, Object> valuesTransformation;
+
+        private TransformedMap(
+            Map backingMap,
+            Function<Object, Object> keysTransformation,
+            BiFunction<Object, Object, Object> valuesTransformation
+        ) {
+            this.backingMap = backingMap;
+            this.keysTransformation = keysTransformation;
+            this.valuesTransformation = valuesTransformation;
+        }
 
         @Override
         public Iterator iterator() {
@@ -80,7 +89,6 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
     }
 
     @NotThreadSafe
-    @RequiredArgsConstructor
     private static class TransformingKeyValueIterator implements Iterator {
         private final Iterator<Map.Entry> entryIterator;
         private final Function<Object, Object> keysTransformation;
@@ -88,6 +96,16 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
 
         Object pendingValue = null;
         boolean hasPendingValue = false;
+
+        private TransformingKeyValueIterator(
+            Iterator<Entry> entryIterator,
+            Function<Object, Object> keysTransformation,
+            BiFunction<Object, Object, Object> valuesTransformation
+        ) {
+            this.entryIterator = entryIterator;
+            this.keysTransformation = keysTransformation;
+            this.valuesTransformation = valuesTransformation;
+        }
 
         @Override
         public boolean hasNext() {

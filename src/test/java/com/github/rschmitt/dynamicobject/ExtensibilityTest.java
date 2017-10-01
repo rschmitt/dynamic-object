@@ -20,8 +20,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import lombok.Value;
-
 public class ExtensibilityTest {
     private static final String Edn = "#dh{:dumb [#MyDumbClass{:version 1, :str \"str\"}]}";
 
@@ -136,10 +134,40 @@ class DumbClassWriter implements WriteHandler {
 }
 
 // This is a POJO that has no knowledge of Edn.
-@Value
 class DumbClass {
-    long version;
-    String str;
+    private final long version;
+    private final String str;
+
+    DumbClass(long version, String str) {
+        this.version = version;
+        this.str = str;
+    }
+
+    public long getVersion() {
+        return version;
+    }
+
+    public String getStr() {
+        return str;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DumbClass dumbClass = (DumbClass) o;
+
+        if (version != dumbClass.version) return false;
+        return str != null ? str.equals(dumbClass.str) : dumbClass.str == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (version ^ (version >>> 32));
+        result = 31 * result + (str != null ? str.hashCode() : 0);
+        return result;
+    }
 
     @Override
     public String toString() {
