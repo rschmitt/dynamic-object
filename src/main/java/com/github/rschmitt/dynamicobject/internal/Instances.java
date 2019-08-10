@@ -29,7 +29,14 @@ public class Instances {
     private static <D extends DynamicObject<D>> D createIndyProxy(Map map, Class<D> type) {
         ensureInitialized(type);
         try {
-            Object proxy = proxyCache.computeIfAbsent(type, Instances::createProxy)
+            DynamicProxy dynamicProxy;
+            // Use ConcurrentHashMap#computeIfAbsent only when key is not present to avoid locking: JDK-8161372
+            if (proxyCache.containsKey(type)) {
+                dynamicProxy = proxyCache.get(type);
+            } else {
+                dynamicProxy = proxyCache.computeIfAbsent(type, Instances::createProxy);
+            }
+            Object proxy = dynamicProxy
                     .constructor()
                     .invoke(map, type);
             return type.cast(proxy);
@@ -40,7 +47,7 @@ public class Instances {
 
     // This is to avoid hitting JDK-8062841 in the case where 'type' has a static field of type D
     // that has not yet been initialized.
-    private static synchronized <D extends DynamicObject<D>> void ensureInitialized(Class<D> c) {
+    private static <D extends DynamicObject<D>> void ensureInitialized(Class<D> c) {
         if (!proxyCache.containsKey(c))
             load(c);
     }
