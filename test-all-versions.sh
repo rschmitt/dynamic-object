@@ -2,16 +2,16 @@
 
 set -eux
 
-versions=(1.{6,7,8}.0)
+versions=(1.{6,7,8,9,10}.0)
 
 for i in ${versions[@]}
 do
-    cp pom.xml pom-$i.xml
-    perl -i -pe 's/\[1.6.0,\)/'"$i"'/g' pom-$i.xml
-    mvn clean test -f pom-$i.xml
+    cp build.gradle.kts build-$i.gradle.kts
+    perl -i -pe 's/\[1.6.0,\)/'"$i"'/g' build-$i.gradle.kts
+    ./gradlew clean build -b build-$i.gradle.kts
 done
 
 for i in ${versions[@]}
 do
-    rm pom-$i.xml
+    rm build-$i.gradle.kts
 done
