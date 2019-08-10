@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  * is instantiable, and can therefore participate in dependency injection. This makes it
  * straightforward to ensure that types and serialization tags are registered with DynamicObject
  * before any serialization is attempted.
- * <p/>
+ * <p>
  * For example, if you are using <a href="https://github.com/google/guice">Guice</a>, you can write
  * a {@code DynamicObjectSerializer} provider method that registers types: <blockquote><pre>
  * &#064;Provides

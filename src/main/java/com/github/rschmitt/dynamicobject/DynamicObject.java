@@ -45,7 +45,7 @@ public interface DynamicObject<D extends DynamicObject<D>> extends Map {
     /**
      * Return a copy of this instance with {@code other}'s fields merged in (nulls don't count). If a given field is
      * present in both instances, the fields in {@code other} will take precedence.
-     * <p/>
+     * <p>
      * Equivalent to: {@code (merge-with (fn [a b] (if (nil? b) a b)) this other)}
      */
     D merge(D other);
@@ -54,7 +54,7 @@ public interface DynamicObject<D extends DynamicObject<D>> extends Map {
      * Recursively compares this instance with {@code other}, returning a new instance containing all of the common
      * elements of both {@code this} and {@code other}. Maps and lists are compared recursively; everything else,
      * including sets, strings, and POJOs, is treated atomically.
-     * <p/>
+     * <p>
      * Equivalent to: {@code (nth (clojure.data/diff this other) 2)}
      */
     D intersect(D other);
@@ -62,7 +62,7 @@ public interface DynamicObject<D extends DynamicObject<D>> extends Map {
     /**
      * Recursively compares this instance with {@code other}, similar to {@link #intersect}, but returning the fields that
      * are unique to {@code this}. Uses the same recursion strategy as {@code intersect}.
-     * <p/>
+     * <p>
      * Equivalent to: {@code (nth (clojure.data/diff this other) 0)}
      */
     D subtract(D other);
@@ -78,9 +78,9 @@ public interface DynamicObject<D extends DynamicObject<D>> extends Map {
      * Post-deserialization hook. The intended use of this method is to facilitate format upgrades. For example, if a
      * new field has been added to a DynamicObject schema, this method can be implemented to add that field (with
      * some appropriate default value) to older data upon deserialization.
-     * <p/>
+     * <p>
      * If not implemented, this method does nothing.
-     * <p/>
+     * <p>
      * @deprecated This method is experimental.
      */
     @Deprecated
@@ -217,12 +217,12 @@ public interface DynamicObject<D extends DynamicObject<D>> extends Map {
      * Specify a default reader, which is a function that will be called when any unknown reader tags are encountered.
      * The function will be passed the reader tag (as a string) and the tagged Edn element, and can return whatever it
      * wants.
-     * <p/>
+     * <p>
      * DynamicObject comes with a built-in default reader for unknown elements, which returns an instance of {@link
      * com.github.rschmitt.dynamicobject.Unknown}, which simply captures the (tag, element) tuple from the Edn reader.
      * The {@code Unknown} class is handled specially during serialization so that unknown elements can be serialized
      * correctly; this allows unknown types to be passed through transparently.
-     * <p/>
+     * <p>
      * To disable the default reader, call {@code DynamicObject.setDefaultReader(null)}. This will cause the reader to
      * throw an exception if unknown reader tags are encountered.
      */
