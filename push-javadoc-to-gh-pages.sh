@@ -4,10 +4,10 @@ set -eux
 
 if [ "$TRAVIS_REPO_SLUG" == "rschmitt/dynamic-object" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" ]; then
     echo "Generating javadoc..."
-    mvn javadoc:javadoc
+    ./gradlew javadoc
     echo "Publishing javadoc..."
 
-    cp -R target/site/apidocs $HOME/javadoc-latest
+    cp -R build/docs/javadoc $HOME/javadoc-latest
 
     cd $HOME
     git config --global user.email "travis@travis-ci.org"
