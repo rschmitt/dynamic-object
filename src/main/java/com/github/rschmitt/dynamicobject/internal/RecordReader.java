@@ -1,10 +1,9 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import java.util.Map;
-
+import clojure.lang.AFn;
 import com.github.rschmitt.dynamicobject.DynamicObject;
 
-import clojure.lang.AFn;
+import java.util.Map;
 
 public final class RecordReader<D extends DynamicObject<D>> extends AFn {
     private final Class<D> type;
@@ -17,6 +16,7 @@ public final class RecordReader<D extends DynamicObject<D>> extends AFn {
      * For use by clojure.edn/read only. Do not call directly.
      */
     @Override
+    @SuppressWarnings("deprecation")
     public Object invoke(Object map) {
         return DynamicObject.wrap((Map) map, type).afterDeserialization();
     }

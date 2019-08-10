@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.EmptyMap;
 
+@SuppressWarnings("rawtypes")
 public class Instances {
     private static final ConcurrentMap<Class, DynamicProxy> proxyCache = new ConcurrentHashMap<>();
 
@@ -16,7 +17,6 @@ public class Instances {
         return wrap(EmptyMap, type);
     }
 
-    @SuppressWarnings("unchecked")
     public static <D extends DynamicObject<D>> D wrap(Map map, Class<D> type) {
         if (map == null)
             throw new NullPointerException("A null reference cannot be used as a DynamicObject");

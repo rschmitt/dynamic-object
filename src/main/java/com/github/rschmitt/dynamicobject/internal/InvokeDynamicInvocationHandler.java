@@ -1,6 +1,7 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import static java.lang.invoke.MethodType.methodType;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import net.fushizen.invokedynamic.proxy.DynamicInvocationHandler;
 
 import java.lang.invoke.CallSite;
 import java.lang.invoke.ConstantCallSite;
@@ -10,10 +11,9 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import com.github.rschmitt.dynamicobject.DynamicObject;
+import static java.lang.invoke.MethodType.methodType;
 
-import net.fushizen.invokedynamic.proxy.DynamicInvocationHandler;
-
+@SuppressWarnings("rawtypes")
 public class InvokeDynamicInvocationHandler implements DynamicInvocationHandler {
     private final Class dynamicObjectType;
 

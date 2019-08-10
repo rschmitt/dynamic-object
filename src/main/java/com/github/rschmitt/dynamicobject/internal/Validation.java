@@ -1,8 +1,6 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import static java.lang.String.format;
-import static java.lang.invoke.MethodType.methodType;
-import static java.util.stream.Collectors.toList;
+import com.github.rschmitt.dynamicobject.DynamicObject;
 
 import javax.annotation.CheckReturnValue;
 import java.lang.invoke.MethodHandle;
@@ -12,21 +10,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.github.rschmitt.dynamicobject.DynamicObject;
+import static java.lang.String.format;
+import static java.lang.invoke.MethodType.methodType;
+import static java.util.stream.Collectors.toList;
 
 class Validation {
 
@@ -198,7 +189,7 @@ class Validation {
             Consumer<Object> valChecker = buildElementChecker(valType);
 
             return value -> {
-                Map m = (Map)value;
+                Map<?, ?> m = (Map<?, ?>) value;
 
                 m.forEach((k, v) -> {
                     keyChecker.accept(k);

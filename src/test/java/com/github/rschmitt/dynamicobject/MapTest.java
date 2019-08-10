@@ -1,18 +1,18 @@
 package com.github.rschmitt.dynamicobject;
 
+import clojure.lang.EdnReader;
+import clojure.lang.PersistentHashMap;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
 import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
 import static java.lang.String.format;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import clojure.lang.EdnReader;
-import clojure.lang.PersistentHashMap;
-
+@SuppressWarnings("unchecked")
 public class MapTest {
     static final String SimpleEdn = "{:str \"expected value\", :i 4, :d 3.14}";
     static final String NestedEdn = format("{:version 1, :simple %s}", SimpleEdn);

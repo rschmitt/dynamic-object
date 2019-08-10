@@ -1,16 +1,16 @@
 package com.github.rschmitt.dynamicobject;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import clojure.java.api.Clojure;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.junit.jupiter.api.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import clojure.java.api.Clojure;
-
+@SuppressWarnings("rawtypes")
 public class DefaultReaderTest {
     @Test
     public void testUnknownReader() {

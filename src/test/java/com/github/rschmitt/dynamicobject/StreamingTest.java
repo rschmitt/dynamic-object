@@ -1,12 +1,7 @@
 package com.github.rschmitt.dynamicobject;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.deserializeStream;
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import clojure.java.api.Clojure;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -16,10 +11,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.deserializeStream;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.*;
 
-import clojure.java.api.Clojure;
-
+@SuppressWarnings("rawtypes")
 public class StreamingTest {
     @Test
     public void iteratorTest() {

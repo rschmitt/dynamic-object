@@ -1,9 +1,10 @@
 package com.github.rschmitt.dynamicobject;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+@SuppressWarnings("unchecked")
 public class ObjectMethodsTest {
     @Test
     public void equalsNullTest() throws Exception {

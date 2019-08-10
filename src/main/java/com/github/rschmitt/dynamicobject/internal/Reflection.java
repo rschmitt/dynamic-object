@@ -82,7 +82,7 @@ class Reflection {
         return hasAnnotation(getter, Required.class);
     }
 
-    private static boolean hasAnnotation(Method method, Class ann) {
+    private static boolean hasAnnotation(Method method, Class<? extends Annotation> ann) {
         List<Annotation> annotations = Arrays.asList(method.getAnnotations());
         for (Annotation annotation : annotations)
             if (annotation.annotationType().equals(ann))

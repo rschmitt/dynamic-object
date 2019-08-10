@@ -1,12 +1,11 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Deref;
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Eval;
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.PreferMethod;
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.PrintMethod;
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.ReadString;
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.SimpleDispatch;
-import static java.lang.String.format;
+import clojure.java.api.Clojure;
+import clojure.lang.AFn;
+import clojure.lang.IPersistentMap;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import com.github.rschmitt.dynamicobject.EdnTranslator;
+import com.github.rschmitt.dynamicobject.Unknown;
 
 import java.io.IOException;
 import java.io.PushbackReader;
@@ -24,14 +23,10 @@ import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.github.rschmitt.dynamicobject.DynamicObject;
-import com.github.rschmitt.dynamicobject.EdnTranslator;
-import com.github.rschmitt.dynamicobject.Unknown;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.*;
+import static java.lang.String.format;
 
-import clojure.java.api.Clojure;
-import clojure.lang.AFn;
-import clojure.lang.IPersistentMap;
-
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class EdnSerialization {
     static {
         String clojureCode =
@@ -117,7 +112,7 @@ public class EdnSerialization {
         return deserialize(new PushbackReader(new StringReader(edn)), type);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "deprecation"})
     static <T, D extends DynamicObject<D>> T deserialize(PushbackReader streamReader, Class<T> type) {
         Object opts = getReadOptions();
         opts = ClojureStuff.Assoc.invoke(opts, EOF, EOF);

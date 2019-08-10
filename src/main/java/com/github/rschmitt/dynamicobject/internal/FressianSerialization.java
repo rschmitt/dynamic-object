@@ -1,5 +1,16 @@
 package com.github.rschmitt.dynamicobject.internal;
 
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import com.github.rschmitt.dynamicobject.FressianReadHandler;
+import com.github.rschmitt.dynamicobject.FressianWriteHandler;
+import org.fressian.FressianReader;
+import org.fressian.FressianWriter;
+import org.fressian.handlers.ReadHandler;
+import org.fressian.handlers.WriteHandler;
+import org.fressian.impl.Handlers;
+import org.fressian.impl.InheritanceLookup;
+import org.fressian.impl.MapLookup;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -13,18 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.fressian.FressianReader;
-import org.fressian.FressianWriter;
-import org.fressian.handlers.ReadHandler;
-import org.fressian.handlers.WriteHandler;
-import org.fressian.impl.Handlers;
-import org.fressian.impl.InheritanceLookup;
-import org.fressian.impl.MapLookup;
-
-import com.github.rschmitt.dynamicobject.DynamicObject;
-import com.github.rschmitt.dynamicobject.FressianReadHandler;
-import com.github.rschmitt.dynamicobject.FressianWriteHandler;
-
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class FressianSerialization {
     private static final ConcurrentHashMap<Class, Map<String, WriteHandler>> fressianWriteHandlers = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Object, ReadHandler> fressianReadHandlers = new ConcurrentHashMap<>();
@@ -54,11 +54,10 @@ public class FressianSerialization {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (FressianWriter fressianWriter = DynamicObject.createFressianWriter(baos)) {
             fressianWriter.writeObject(o);
-            fressianWriter.close();
-            return baos.toByteArray();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
+        return baos.toByteArray();
     }
 
     public static <T> T fromFressianByteArray(byte[] bytes) {

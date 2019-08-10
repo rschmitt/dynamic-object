@@ -1,12 +1,13 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import static clojure.java.api.Clojure.read;
-import static clojure.java.api.Clojure.var;
+import clojure.lang.IFn;
 
 import java.util.Map;
 
-import clojure.lang.IFn;
+import static clojure.java.api.Clojure.read;
+import static clojure.java.api.Clojure.var;
 
+@SuppressWarnings("rawtypes")
 public class ClojureStuff {
     public static final Map EmptyMap = (Map) read("{}");
     public static final Object EmptySet = read("#{}");

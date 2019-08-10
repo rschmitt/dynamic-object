@@ -1,14 +1,11 @@
 package com.github.rschmitt.dynamicobject;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.deregisterTag;
-import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
-import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
-import static com.github.rschmitt.dynamicobject.DynamicObject.registerTag;
-import static com.github.rschmitt.dynamicobject.DynamicObject.serialize;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.github.rschmitt.collider.ClojureList;
+import com.github.rschmitt.collider.ClojureMap;
+import com.github.rschmitt.collider.ClojureSet;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -17,14 +14,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import static com.github.rschmitt.dynamicobject.DynamicObject.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import com.github.rschmitt.collider.ClojureList;
-import com.github.rschmitt.collider.ClojureMap;
-import com.github.rschmitt.collider.ClojureSet;
-
+@SuppressWarnings("rawtypes")
 public class ValidationTest {
     @BeforeAll
     public static void setup() {
@@ -408,5 +401,6 @@ public class ValidationTest {
         }
     }
 
+    @SuppressWarnings("serial")
     public static class CustomException extends RuntimeException {}
 }

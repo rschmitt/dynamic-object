@@ -1,5 +1,14 @@
 package com.github.rschmitt.dynamicobject;
 
+import com.github.rschmitt.dynamicobject.internal.EdnSerialization;
+import com.github.rschmitt.dynamicobject.internal.FressianSerialization;
+import com.github.rschmitt.dynamicobject.internal.Instances;
+import com.github.rschmitt.dynamicobject.internal.Serialization;
+import org.fressian.FressianReader;
+import org.fressian.FressianWriter;
+import org.fressian.handlers.ReadHandler;
+import org.fressian.handlers.WriteHandler;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PushbackReader;
@@ -8,16 +17,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
-import org.fressian.FressianReader;
-import org.fressian.FressianWriter;
-import org.fressian.handlers.ReadHandler;
-import org.fressian.handlers.WriteHandler;
-
-import com.github.rschmitt.dynamicobject.internal.EdnSerialization;
-import com.github.rschmitt.dynamicobject.internal.FressianSerialization;
-import com.github.rschmitt.dynamicobject.internal.Instances;
-import com.github.rschmitt.dynamicobject.internal.Serialization;
-
+@SuppressWarnings("rawtypes")
 public interface DynamicObject<D extends DynamicObject<D>> extends Map {
     /**
      * @return the underlying Clojure map backing this instance. Downcasting the return value of this method to any

@@ -1,14 +1,14 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Bigint;
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Biginteger;
-
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Bigint;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.Biginteger;
 
 /*
  * This class deals with the numeric types that need to be converted to and from long/double/clojure.lang.BigInt.
@@ -44,7 +44,7 @@ public class Numerics {
         return numericTypes.contains(type);
     }
 
-    static Object maybeDownconvert(Class type, Object val) {
+    static Object maybeDownconvert(Class<?> type, Object val) {
         if (val == null) return null;
         if (type.equals(int.class) || type.equals(Integer.class)) return ((Long) val).intValue();
         if (type.equals(float.class) || type.equals(Float.class)) return ((Double) val).floatValue();

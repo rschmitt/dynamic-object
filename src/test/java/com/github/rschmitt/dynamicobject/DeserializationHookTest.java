@@ -1,15 +1,12 @@
 package com.github.rschmitt.dynamicobject;
 
-import static com.github.rschmitt.dynamicobject.DynamicObject.deserialize;
-import static com.github.rschmitt.dynamicobject.DynamicObject.fromFressianByteArray;
-import static com.github.rschmitt.dynamicobject.DynamicObject.newInstance;
-import static com.github.rschmitt.dynamicobject.DynamicObject.registerTag;
-import static com.github.rschmitt.dynamicobject.DynamicObject.toFressianByteArray;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static com.github.rschmitt.dynamicobject.DynamicObject.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@SuppressWarnings("deprecation")
 public class DeserializationHookTest {
     @BeforeAll
     public static void setup() {

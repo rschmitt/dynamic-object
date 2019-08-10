@@ -1,5 +1,9 @@
 package com.github.rschmitt.dynamicobject;
 
+import org.fressian.CachedObject;
+import org.fressian.Writer;
+import org.fressian.handlers.WriteHandler;
+
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
 import java.io.IOException;
@@ -11,10 +15,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.fressian.CachedObject;
-import org.fressian.Writer;
-import org.fressian.handlers.WriteHandler;
-
+@SuppressWarnings("rawtypes")
 public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHandler {
     private final Class<D> type;
     private final String tag;

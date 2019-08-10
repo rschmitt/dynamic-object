@@ -1,8 +1,6 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import com.github.rschmitt.collider.ClojureList;
 import com.github.rschmitt.collider.ClojureMap;
-import com.github.rschmitt.collider.ClojureSet;
 import com.github.rschmitt.collider.Collider;
 import com.github.rschmitt.collider.TransientMap;
 import com.github.rschmitt.dynamicobject.DynamicObject;
@@ -17,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collector;
 
+@SuppressWarnings("rawtypes")
 class Conversions {
     /*
      * Convert a Java object (e.g. passed in to a builder method) into the Clojure-style representation used internally.
