@@ -3,6 +3,7 @@ package com.github.rschmitt.dynamicobject.benchmark;
 import com.github.rschmitt.dynamicobject.DynamicObject;
 import com.github.rschmitt.dynamicobject.Key;
 import org.fressian.FressianWriter;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -19,6 +20,7 @@ public class DeserializationBenchmark {
     private final int NUM_THREADS = 8;
 
     @Test
+    @Tag("benchmark")
     public void run() throws Exception {
         DynamicObject.registerTag(StringFieldList.class, "string-field-list-tag");
         DynamicObject.registerTag(StringField.class, "string-field-tag");

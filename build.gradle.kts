@@ -20,7 +20,15 @@ dependencies {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags("benchmark")
+    }
+}
+
+tasks.register<Test>("benchmark") {
+    useJUnitPlatform {
+        includeTags("benchmark")
+    }
 }
 
 tasks.javadoc {
