@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.rschmitt"
-version = "1.6.3"
+version = "1.7.0-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
@@ -50,9 +50,6 @@ tasks.register<Jar>("javadocJar") {
 
 val sonatypeUsername: String? by project
 val sonatypePassword: String? by project
-
-println("sonatypeUsername = $sonatypeUsername")
-println("sonatypePassword = $sonatypePassword")
 
 repositories {
     mavenLocal()
