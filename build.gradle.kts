@@ -1,10 +1,11 @@
 plugins {
     `java-library`
     `maven-publish`
+    signing
 }
 
 group = "com.github.rschmitt"
-version = "1.6.3-SNAPSHOT"
+version = "1.6.3"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
@@ -47,6 +48,12 @@ tasks.register<Jar>("javadocJar") {
     archiveClassifier.set("javadoc")
 }
 
+val sonatypeUsername: String? by project
+val sonatypePassword: String? by project
+
+println("sonatypeUsername = $sonatypeUsername")
+println("sonatypePassword = $sonatypePassword")
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -59,13 +66,50 @@ repositories {
 }
 
 publishing {
+    repositories {
+        maven {
+            url = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = sonatypeUsername
+                password = sonatypePassword
+            }
+        }
+    }
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
             artifact(tasks["sourcesJar"])
             artifact(tasks["javadocJar"])
+            pom {
+                name.set("dynamic-object")
+                description.set("Lightweight data modeling for Java, powered by Clojure.")
+                url.set("https://github.com/rschmitt/dynamic-object")
+                licenses {
+                    license {
+                        name.set("CC0")
+                        url.set("http://creativecommons.org/publicdomain/zero/1.0/")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("rschmitt")
+                        name.set("Ryan Schmitt")
+                        email.set("rschmitt@pobox.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git@github.com:rschmitt/dynamic-object.git")
+                    developerConnection.set("scm:git:git@github.com:rschmitt/dynamic-object.git")
+                    url.set("git@github.com:rschmitt/dynamic-object.git")
+                }
+            }
         }
     }
+}
+
+signing {
+    useGpgCmd()
+    sign(publishing.publications["maven"])
 }
 
 tasks.withType(JavaCompile::class) {
