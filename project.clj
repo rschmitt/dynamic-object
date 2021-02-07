@@ -6,5 +6,5 @@
                [org.fressian/fressian "0.6.5"]
                [org.clojure/data.fressian "0.2.0"]
                [junit/junit "4.11"]
-               [net.fushizen.invokedynamic.proxy/invokedynamic-proxy "1.1.0"]
+               [org.ow2.asm/asm "7.1"]
                [collection-check  "0.1.6"]]}})

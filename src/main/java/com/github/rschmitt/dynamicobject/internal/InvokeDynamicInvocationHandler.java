@@ -1,7 +1,7 @@
 package com.github.rschmitt.dynamicobject.internal;
 
 import com.github.rschmitt.dynamicobject.DynamicObject;
-import net.fushizen.invokedynamic.proxy.DynamicInvocationHandler;
+import com.github.rschmitt.dynamicobject.internal.indyproxy.DynamicInvocationHandler;
 
 import java.lang.invoke.CallSite;
 import java.lang.invoke.ConstantCallSite;

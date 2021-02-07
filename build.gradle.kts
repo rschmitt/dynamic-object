@@ -13,7 +13,7 @@ dependencies {
     api("com.github.rschmitt:collider:[0.3.0,)")
     api("org.fressian:fressian:0.6.5")
     api("org.clojure:data.fressian:0.2.0")
-    implementation("net.fushizen.invokedynamic.proxy:invokedynamic-proxy:1.2.1")
+    implementation("org.ow2.asm:asm:7.1")
 
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.5.1")
     testRuntime("org.junit.jupiter:junit-jupiter-engine:5.5.1")

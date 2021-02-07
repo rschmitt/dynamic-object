@@ -1,7 +1,7 @@
 package com.github.rschmitt.dynamicobject.internal;
 
 import com.github.rschmitt.dynamicobject.DynamicObject;
-import net.fushizen.invokedynamic.proxy.DynamicProxy;
+import com.github.rschmitt.dynamicobject.internal.indyproxy.DynamicProxy;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
