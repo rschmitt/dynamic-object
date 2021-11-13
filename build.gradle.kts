@@ -14,6 +14,7 @@ dependencies {
     api("org.fressian:fressian:0.6.6")
     api("org.clojure:data.fressian:1.0.0")
     implementation("org.ow2.asm:asm:7.1")
+    implementation("net.bytebuddy:byte-buddy:1.12.1")
 
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.+")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.+")
