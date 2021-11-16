@@ -1,13 +1,9 @@
 package com.github.rschmitt.dynamicobject.internal;
 
-import com.github.rschmitt.dynamicobject.DynamicObject;
-import com.github.rschmitt.dynamicobject.internal.indyproxy.DynamicProxy;
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.DynamicType;
-import net.bytebuddy.implementation.MethodCall;
-import net.bytebuddy.implementation.bytecode.assign.Assigner;
-import net.bytebuddy.matcher.ElementMatchers;
+import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.EmptyMap;
+import static net.bytebuddy.matcher.ElementMatchers.is;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -15,8 +11,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static com.github.rschmitt.dynamicobject.internal.ClojureStuff.EmptyMap;
-import static net.bytebuddy.matcher.ElementMatchers.is;
+import com.github.rschmitt.dynamicobject.DynamicObject;
+import com.github.rschmitt.dynamicobject.internal.indyproxy.DynamicProxy;
+
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.DynamicType;
+import net.bytebuddy.implementation.MethodCall;
+import net.bytebuddy.implementation.bytecode.assign.Assigner;
+import net.bytebuddy.matcher.ElementMatchers;
 
 @SuppressWarnings("rawtypes")
 public class Instances {
@@ -97,15 +99,14 @@ public class Instances {
                 .implement(dynamicObjectType, CustomValidationHook.class);
 
         try {
-            boolean hasCustomValidate = false;
+            Method customValidateMethod = null;
             boolean hasDeserializationHook = false;
             for (Method method : dynamicObjectType.getDeclaredMethods()) {
-                System.out.println("method: " + method.toString());
+                if (dynamicObjectType.equals(DynamicObject.class)) break;
+
                 String methodName = method.getName();
                 if ("validate".equals(methodName)) {
-                    hasCustomValidate = true;
-                } else if ("$$customValidate".equals(methodName)) {
-//                    hasCustomValidate = true;
+                    customValidateMethod = method;
                 } else if ("afterDeserialization".equals(methodName)) {
                     hasDeserializationHook = true;
                 } else if (method.isDefault()) {
@@ -113,7 +114,6 @@ public class Instances {
                 } else if (isBuilderMethod(method, dynamicObjectType)) {
                     Object key = Reflection.getKeyForBuilder(method);
                     if (Reflection.isMetadataBuilder(method)) {
-                        System.out.println("-> binding metadata builder");
                         builder = builder.method(is(method))
                                 .intercept(MethodCall.invoke(DynamicObjectInstance.class.getMethod("assocMeta",
                                                 Object.class, Object.class))
@@ -121,7 +121,6 @@ public class Instances {
                                         .withArgument(0)
                                         .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC));
                     } else {
-                        System.out.println("-> binding value builder");
                         builder = builder.method(is(method))
                                 .intercept(MethodCall.invoke(DynamicObjectInstance.class.getMethod("convertAndAssoc",
                                                 Object.class, Object.class))
@@ -132,14 +131,12 @@ public class Instances {
                 } else {
                     Object key = Reflection.getKeyForGetter(method);
                     if (Reflection.isMetadataGetter(method)) {
-                        System.out.println("-> binding metadata getter");
                         builder = builder.method(is(method))
                                 .intercept(MethodCall.invoke(DynamicObjectInstance.class.getMethod("getMetadataFor",
                                                 Object.class))
                                         .with(key)
                                         .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC));
                     } else {
-                        System.out.println("-> binding value getter");
                         boolean isRequired = Reflection.isRequired(method);
                         Type genericReturnType = method.getGenericReturnType();
 
@@ -157,11 +154,26 @@ public class Instances {
                         .intercept(MethodCall.invoke(DynamicObjectInstance.class.getMethod("$$noop"))
                                 .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC));
             }
-            if (!hasCustomValidate) {
-                builder = builder.method(ElementMatchers.named("validate"))
+            if (customValidateMethod != null) {
+                builder = builder.method(ElementMatchers.named("$$customValidate"))
+                        .intercept(MethodCall.invoke(customValidateMethod)
+                                .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC));
+            } else {
+                builder = builder.method(ElementMatchers.named("$$customValidate"))
                         .intercept(MethodCall.invoke(DynamicObjectInstance.class.getMethod("$$noop"))
                                 .withAssigner(Assigner.DEFAULT, Assigner.Typing.DYNAMIC));
             }
+
+            MethodHandle mh = Validation.buildValidatorFor(dynamicObjectType);
+            System.out.println(dynamicObjectType + ": " + mh.type());
+            builder = builder.method(ElementMatchers.named("validate"))
+                    .intercept(MethodCall.call(() -> {
+                        try {
+                            return (D) mh.invoke();
+                        } catch (Throwable t) {
+                            throw new RuntimeException(t);
+                        }
+                    }));
 
             Class<?> dynamicType = builder
                     .make()
@@ -170,7 +182,7 @@ public class Instances {
 
             Constructor<?> constructor = dynamicType.getConstructor(Map.class, Class.class);
             return (D) constructor.newInstance(map, dynamicObjectType);
-        } catch (ReflectiveOperationException ex) {
+        } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
