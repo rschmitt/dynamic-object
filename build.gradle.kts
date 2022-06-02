@@ -6,7 +6,12 @@ plugins {
 
 group = "com.github.rschmitt"
 version = "1.7.0"
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    withSourcesJar()
+    withJavadocJar()
+}
 
 dependencies {
     api("org.clojure:clojure:[1.6.0,)")
@@ -38,16 +43,6 @@ tasks.javadoc {
     exclude("com/github/rschmitt/dynamicobject/internal/**")
 }
 
-tasks.register<Jar>("sourcesJar") {
-    from(sourceSets.main.get().allJava)
-    archiveClassifier.set("sources")
-}
-
-tasks.register<Jar>("javadocJar") {
-    from(tasks["javadoc"])
-    archiveClassifier.set("javadoc")
-}
-
 val sonatypeUsername: String? by project
 val sonatypePassword: String? by project
 
@@ -75,8 +70,6 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
-            artifact(tasks["sourcesJar"])
-            artifact(tasks["javadocJar"])
             pom {
                 name.set("dynamic-object")
                 description.set("Lightweight data modeling for Java, powered by Clojure.")
