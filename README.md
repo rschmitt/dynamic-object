@@ -152,7 +152,7 @@ public class PhoneNumberTranslator implements EdnTranslator<PhoneNumber> {
   }
 
   // Return an Edn string representing the serialized phone number.
-  public void write(PhoneNumber phoneNumber) {
+  public String write(PhoneNumber phoneNumber) {
     return String.format("\"(%s) %s-%s\"",
       phoneNumber.areaCode, phoneNumber.firstThree, phoneNumber.lastFour);
   }
