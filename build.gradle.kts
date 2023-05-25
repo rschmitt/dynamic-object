@@ -5,10 +5,10 @@ plugins {
 }
 
 group = "com.github.rschmitt"
-version = "1.7.0"
+version = "1.8.0"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
     withSourcesJar()
     withJavadocJar()
 }
