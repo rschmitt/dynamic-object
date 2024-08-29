@@ -29,6 +29,7 @@ public class FressianSerialization {
     private static final ConcurrentHashMap<Class, Map<String, WriteHandler>> fressianWriteHandlers = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Object, ReadHandler> fressianReadHandlers = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<?>, String> binaryTagCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, String> binaryTypeCache = new ConcurrentHashMap<>();
 
     static {
         fressianWriteHandlers.putAll(ClojureStuff.clojureWriteHandlers);
@@ -71,28 +72,35 @@ public class FressianSerialization {
     }
 
     public static synchronized void registerType(Class type, String tag, ReadHandler readHandler, WriteHandler writeHandler) {
-        binaryTagCache.put(type, tag);
+        String currentTagForType = binaryTypeCache.put(type, tag);
+        if (currentTagForType != null) {
+            // already registered
+            return;
+        }
         Handlers.installHandler(fressianWriteHandlers, type, tag, writeHandler);
         fressianReadHandlers.putIfAbsent(tag, readHandler);
     }
 
     static synchronized <T> void deregisterType(Class<T> type) {
         fressianWriteHandlers.remove(type);
-        String tag = binaryTagCache.get(type);
+        String tag = binaryTypeCache.remove(type);
         if (tag != null) {
             fressianReadHandlers.remove(tag);
-            binaryTagCache.remove(type);
         }
     }
 
     static synchronized <D extends DynamicObject<D>> void registerTag(Class<D> type, String tag) {
-        binaryTagCache.put(type, tag);
+        String currentTagForType = binaryTagCache.put(type, tag);
+        if (currentTagForType != null) {
+            // already registered
+            return;
+        }
         Handlers.installHandler(fressianWriteHandlers, type, tag, new FressianWriteHandler(type, tag, Reflection.cachedKeys(type)));
         fressianReadHandlers.putIfAbsent(tag, new FressianReadHandler(type));
     }
 
     static synchronized <D extends DynamicObject<D>> void deregisterTag(Class<D> type) {
-        String tag = binaryTagCache.get(type);
+        String tag = binaryTagCache.remove(type);
         fressianWriteHandlers.remove(type);
         fressianReadHandlers.remove(tag);
     }
