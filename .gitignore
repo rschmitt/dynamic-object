@@ -7,3 +7,5 @@
 /*.iml
 /.lein*
 /.nrepl-port
+/bin
+.DS_Store
