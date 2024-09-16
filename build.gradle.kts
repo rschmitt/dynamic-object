@@ -8,16 +8,17 @@ group = "com.github.rschmitt"
 version = "1.7.0"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
     withSourcesJar()
     withJavadocJar()
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 dependencies {
     api("org.clojure:clojure:[1.6.0,)")
     api("com.github.rschmitt:collider:1.0.0")
-    api("org.fressian:fressian:0.6.6")
-    api("org.clojure:data.fressian:1.0.0")
+    api("org.fressian:fressian:0.6.8")
+    api("org.clojure:data.fressian:1.1.0")
     implementation("org.ow2.asm:asm:7.1")
 
     testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.+")
