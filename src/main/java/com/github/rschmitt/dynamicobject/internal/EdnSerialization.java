@@ -166,7 +166,11 @@ public class EdnSerialization {
 
     public static synchronized <T> void registerType(Class<T> type, EdnTranslator<T> translator) {
         EdnTranslatorAdapter<T> adapter = new EdnTranslatorAdapter<>(translator);
-        translatorCache.put(type, adapter);
+        EdnTranslatorAdapter<?> currentAdapter = translatorCache.put(type, adapter);
+        if (currentAdapter != null) {
+            // already registered
+            return;
+        }
         translators.getAndUpdate(translators -> ClojureStuff.Assoc.invoke(translators, ClojureStuff.cachedRead(
                 translator.getTag()), adapter));
         String clojureCode = format(
@@ -186,7 +190,12 @@ public class EdnSerialization {
     }
 
     public static synchronized <D extends DynamicObject<D>> void registerTag(Class<D> type, String tag) {
-        recordTagCache.put(type, tag);
+        String currentTagForType = recordTagCache.put(type, tag);
+        if (currentTagForType != null) {
+            // already registered
+            return;
+        }
+
         translators.getAndUpdate(translators -> ClojureStuff.Assoc.invoke(translators, ClojureStuff.cachedRead(
                 tag), new RecordReader<>(type)));
     }
