@@ -106,3 +106,5 @@ signing {
 tasks.withType(JavaCompile::class) {
     options.encoding = "UTF-8"
 }
+
+defaultTasks("build")
