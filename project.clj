@@ -1,4 +1,4 @@
-(defproject dynamic-object "1.7.0"
+(defproject dynamic-object "1.7.1"
   :profiles {:dev
              {:dependencies
               [[org.clojure/clojure "1.7.0"]

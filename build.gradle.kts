@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.rschmitt"
-version = "1.7.0"
+version = "1.7.1"
 
 java {
     withSourcesJar()
