@@ -8,10 +8,11 @@ group = "com.github.rschmitt"
 version = "1.7.1"
 
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
     withSourcesJar()
     withJavadocJar()
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 dependencies {
@@ -105,6 +106,7 @@ signing {
 
 tasks.withType(JavaCompile::class) {
     options.encoding = "UTF-8"
+    options.release.set(8)
 }
 
 defaultTasks("build")
