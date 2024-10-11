@@ -133,7 +133,7 @@ class Validation {
                 try {
                     value = checkedGet.invokeExact((DynamicObjectInstance)instance);
                 } catch (ClassCastException | AssertionError e) {
-                    result.mismatchedFields.put(info.getter, instance.getMap().get(info.key).getClass());
+                    result.addMismatchedField(info.getter, instance.getMap().get(info.key).getClass());
                     return;
                 } catch (RuntimeException | Error e) {
                     // usually some form of conversion error
@@ -144,7 +144,7 @@ class Validation {
 
                 if (value == null) {
                     if (info.isRequired) {
-                        result.missingFields.add(info.getter);
+                        result.addMissingField(info.getter);
                     }
 
                     return;
@@ -329,11 +329,11 @@ class Validation {
     }
 
     private static class ValidationResult {
-        private final Collection<Method> missingFields = new LinkedHashSet<>();
-        private final Map<Method, Class<?>> mismatchedFields = new HashMap<>();
+        private Collection<Method> missingFields;
+        private Map<Method, Class<?>> mismatchedFields;
 
         void checkResult() {
-            if (!missingFields.isEmpty() || !mismatchedFields.isEmpty())
+            if ((missingFields != null && !missingFields.isEmpty()) || (mismatchedFields != null && !mismatchedFields.isEmpty()))
                 throw new IllegalStateException(getValidationErrorMessage());
         }
 
@@ -346,7 +346,7 @@ class Validation {
         }
 
         private void describeMismatchedFields(StringBuilder ret) {
-            if (!mismatchedFields.isEmpty()) {
+            if (mismatchedFields != null && !mismatchedFields.isEmpty()) {
                 ret.append("The following fields had the wrong type:\n");
                 for (Map.Entry<Method, Class<?>> methodClassEntry : mismatchedFields.entrySet()) {
                     Method method = methodClassEntry.getKey();
@@ -359,7 +359,7 @@ class Validation {
         }
 
         private void describeMissingFields(StringBuilder ret) {
-            if (!missingFields.isEmpty()) {
+            if (missingFields != null && !missingFields.isEmpty()) {
                 ret.append("The following @Required fields were missing: ");
                 List<String> fieldNames = missingFields.stream().map(Method::getName).collect(toList());
                 ret.append(join(fieldNames));
@@ -371,6 +371,19 @@ class Validation {
             return strings.stream().collect(Collectors.joining(", "));
         }
 
+        private void addMismatchedField(Method method, Class<?> aClass) {
+            if (mismatchedFields == null) {
+                mismatchedFields = new HashMap<>(1);
+            }
+            mismatchedFields.put(method, aClass);
+        }
+
+        private void addMissingField(Method method) {
+            if (missingFields == null) {
+                missingFields = new LinkedHashSet<>(1);
+            }
+            missingFields.add(method);
+        }
     }
 
 }
