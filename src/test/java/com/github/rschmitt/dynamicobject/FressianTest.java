@@ -64,6 +64,15 @@ public class FressianTest {
     }
 
     @Test
+    public void deregisteringAClassRepeatedly_doesNotThrowAnNPE() throws Exception {
+        // First call to deregister & remove values from internal caches
+        DynamicObject.deregisterTag(BinarySerialized.class);
+
+        // This call should not throw an exception
+        DynamicObject.deregisterTag(BinarySerialized.class);
+    }
+
+    @Test
     public void cachedKeys_areNotRepeated() throws Exception {
         String cachedValue = "cached value";
         BinarySerialized value = DynamicObject.newInstance(BinarySerialized.class).withCached(cachedValue);
