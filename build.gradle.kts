@@ -9,7 +9,7 @@ version = "1.7.2"
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(17)
     }
     withSourcesJar()
     withJavadocJar()
