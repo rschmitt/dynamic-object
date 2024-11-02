@@ -102,6 +102,8 @@ public class FressianSerialization {
     static synchronized <D extends DynamicObject<D>> void deregisterTag(Class<D> type) {
         String tag = binaryTagCache.remove(type);
         fressianWriteHandlers.remove(type);
-        fressianReadHandlers.remove(tag);
+        if (tag != null) {
+            fressianReadHandlers.remove(tag);
+        }
     }
 }
