@@ -1,5 +1,6 @@
 package com.github.rschmitt.dynamicobject;
 
+import clojure.lang.PersistentHashMap;
 import org.fressian.CachedObject;
 import org.fressian.Writer;
 import org.fressian.handlers.WriteHandler;
@@ -73,7 +74,14 @@ public class FressianWriteHandler<D extends DynamicObject<D>> implements WriteHa
             Function<Object, Object> keysTransformation,
             BiFunction<Object, Object, Object> valuesTransformation
         ) {
-            this.backingMap = backingMap;
+            if (backingMap.size() == 8) {
+                // If the backing map has 8 fields, Clojure Fressian deserializes it to a PersistentHashMap
+                // which means serializing -> deserializing -> serializing will yield a different value from the
+                // first serialization unless we serialize it as a PersistentHashMap here.
+                this.backingMap = (Map) PersistentHashMap.create(backingMap);
+            } else {
+                this.backingMap = backingMap;
+            }
             this.keysTransformation = keysTransformation;
             this.valuesTransformation = valuesTransformation;
         }

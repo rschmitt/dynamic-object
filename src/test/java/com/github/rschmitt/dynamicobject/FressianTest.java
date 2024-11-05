@@ -1,5 +1,6 @@
 package com.github.rschmitt.dynamicobject;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -52,6 +53,30 @@ public class FressianTest {
     }
 
     @Test
+    public void repeatedSerializationYieldsSameResultWith8Fields() throws Exception {
+        // This only surfaces with 8 fields, because Clojure Fressian deserializes maps with 8 keys
+        // as a PersistentHashMap, when it should deserialize it as a PersistentArrayMap.
+
+        DynamicObject.registerTag(DOWith8Fields.class, "doWith8Fields");
+        DOWith8Fields initialDO = DynamicObject.newInstance(DOWith8Fields.class)
+                .withField1("a")
+                .withField2("b")
+                .withField3("c")
+                .withField4("d")
+                .withField5("e")
+                .withField6("f")
+                .withField7("g")
+                .withField8("h");
+
+        byte[] serialized = DynamicObject.toFressianByteArray(initialDO);
+        DOWith8Fields deserialized = DynamicObject.fromFressianByteArray(serialized);
+
+        byte[] reserialized = DynamicObject.toFressianByteArray(deserialized);
+
+        assertArrayEquals(serialized, reserialized);
+    }
+
+    @Test
     public void cachedKeys_canBeRoundTripped() throws Exception {
         String cachedValue = "cached value";
         BinarySerialized value = DynamicObject.newInstance(BinarySerialized.class).withCached(cachedValue);
@@ -92,5 +117,16 @@ public class FressianTest {
         @Key(":hello") BinarySerialized withHello(String hello);
         @Key(":null") BinarySerialized withNull(Object nil);
         @Cached @Key(":cached") BinarySerialized withCached(String cached);
+    }
+
+    public interface DOWith8Fields extends DynamicObject<DOWith8Fields> {
+        @Key(":field1") DOWith8Fields withField1(String field1);
+        @Key(":field2") DOWith8Fields withField2(String field2);
+        @Key(":field3") DOWith8Fields withField3(String field3);
+        @Key(":field4") DOWith8Fields withField4(String field4);
+        @Key(":field5") DOWith8Fields withField5(String field5);
+        @Key(":field6") DOWith8Fields withField6(String field6);
+        @Key(":field7") DOWith8Fields withField7(String field7);
+        @Key(":field8") DOWith8Fields withField8(String field8);
     }
 }
