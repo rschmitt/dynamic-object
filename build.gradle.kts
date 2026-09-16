@@ -22,9 +22,9 @@ dependencies {
     api("org.clojure:data.fressian:1.1.0")
     implementation("org.ow2.asm:asm:7.1")
 
-    testCompileOnly("org.junit.jupiter:junit-jupiter-api:5.+")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.+")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testCompileOnly("org.junit.jupiter:junit-jupiter-api:6.+")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.+")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.+")
     testImplementation("collection-check:collection-check:0.1.6")
 }
 
